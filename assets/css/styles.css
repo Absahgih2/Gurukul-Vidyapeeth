@@ -153,6 +153,7 @@ h1, h2, h3, h4, h5, h6 {
 .text-gold { color: var(--gold) !important; }
 .text-muted { color: var(--text-muted) !important; }
 .hidden { display: none !important; }
+.show-mobile-inline { display: none !important; }
 .mt-2 { margin-top: 0.5rem; }
 .mt-3 { margin-top: 1rem; }
 .btn-block { width: 100%; display: block; text-align: center; }
@@ -271,6 +272,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .badge-accent { background: var(--primary-light); color: var(--primary); }
@@ -1565,8 +1567,13 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 768px) {
   .hide-mobile { display: none !important; }
+  .show-mobile-inline { display: inline-block !important; }
   .mobile-toggle { display: flex; align-items: center; justify-content: center; }
   .nav-menu { display: none; }
+  
+  .header-container { height: 64px; }
+  .brand-logo { gap: 0.5rem; }
+  .header-cta .btn { padding: 0.5rem 1.05rem; font-size: 0.85rem; }
   
   .hero-section { padding: 3rem 0 4rem; }
   .hero-title { font-size: 2.2rem; }
@@ -1595,6 +1602,8 @@ h1, h2, h3, h4, h5, h6 {
   .brand-sub { font-size: 0.65rem; }
   .hero-title { font-size: 1.85rem; }
   .announcement-bar { font-size: 0.75rem; }
+  .announcement-content { gap: 0.5rem; }
+  .announcement-actions { gap: 0.5rem; }
   .form-row { flex-direction: column; gap: 0; }
   .wizard-steps { font-size: 0.75rem; }
 }
