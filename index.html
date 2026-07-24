@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Campus Facilities & Infrastructure | Gurukul Vidyapeeth University, Sikkim</title>
-  <meta name="description" content="Explore the VPO Melli campus of Gurukul Vidyapeeth University in Namchi, Sikkim. Authentic photographs of our student dorms, software engineering labs, physical libraries, and virtual video walkthroughs.">
-  <meta name="keywords" content="Gurukul Vidyapeeth campus, Namchi Sikkim university, Sikkim hostel, software labs Namchi, Melli Sikkim college">
+  <title>Gurukul Vidyapeeth University | Namchi, Sikkim | UGC Sec 2(f) Recognized</title>
+  <meta name="description" content="Official Portal of Gurukul Vidyapeeth University, Namchi, Sikkim. Established under Sikkim State Legislative Act 2024, UGC 2(f) Recognized, sponsored by Council of Software Engineers. Offering Engineering, Tech, Vocational & Skill India Programs.">
+  <meta name="keywords" content="Gurukul Vidyapeeth University, Sikkim University, Namchi Sikkim, VPO Melli, UGC 2(f) Recognized, Council of Software Engineers, Skill India Vocational Degrees, GVIET Banur">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,34 +16,48 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="../assets/css/styles.css">
-
-  <!-- Schema Markup: CollegeOrUniversity & EducationalOrganization -->
+  <link rel="stylesheet" href="assets/css/styles.css">
+  
+  <!-- Schema Markup: CollegeOrUniversity & Course -->
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "CollegeOrUniversity",
-    "name": "Gurukul Vidyapeeth University",
-    "description": "State Private University in Sikkim focused on software engineering, technology management, and vocational trade standards.",
-    "url": "https://gurukulvidyapeethuniversity.com/campus-facilities/",
-    "logo": "https://gurukulvidyapeethuniversity.com/brand-logo.png",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "VPO Melli",
-      "addressLocality": "Namchi District",
-      "addressRegion": "Sikkim",
-      "postalCode": "737128",
-      "addressCountry": "IN"
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollegeOrUniversity",
+      "name": "Gurukul Vidyapeeth University",
+      "description": "State Private University in Sikkim focused on software engineering, technology management, and vocational trade standards.",
+      "url": "https://gurukulvidyapeethuniversity.com/",
+      "logo": "https://gurukulvidyapeethuniversity.com/brand-logo.png",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "VPO Melli",
+        "addressLocality": "Namchi District",
+        "addressRegion": "Sikkim",
+        "postalCode": "737128",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 27.0906,
+        "longitude": 88.4561
+      },
+      "telephone": "+91-03595-295012",
+      "email": "info@gurukulvidyapeeth.edu.in",
+      "hasCredential": "UGC Section 2(f) Recognized Degree"
     },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 27.0906,
-      "longitude": 88.4561
-    },
-    "telephone": "+91-03595-295012",
-    "email": "info@gurukulvidyapeeth.edu.in",
-    "hasCredential": "UGC Section 2(f) Recognized Degree"
-  }
+    {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      "name": "B.Tech Computer Science & Software Engineering",
+      "description": "A comprehensive four-year undergraduate engineering degree co-designed with the Council of Software Engineers.",
+      "courseCode": "GVU-BTECH-CSE",
+      "provider": {
+        "@type": "CollegeOrUniversity",
+        "name": "Gurukul Vidyapeeth University",
+        "url": "https://gurukulvidyapeethuniversity.com/"
+      }
+    }
+  ]
   </script>
 </head>
 <body>
@@ -63,7 +77,7 @@
         <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Theme">
           <i class="fa-solid fa-moon" id="themeIcon"></i>
         </button>
-        <a href="../degree-verification/" class="quick-link-btn"><i class="fa-solid fa-certificate"></i> <span class="hide-mobile">Verify Credentials</span><span class="show-mobile-inline">Verify</span></a>
+        <a href="degree-verification/" class="quick-link-btn"><i class="fa-solid fa-certificate"></i> <span class="hide-mobile">Verify Credentials</span><span class="show-mobile-inline">Verify</span></a>
       </div>
     </div>
   </div>
@@ -71,8 +85,8 @@
   <!-- Header / Navigation -->
   <header class="site-header" id="siteHeader">
     <div class="container header-container">
-      <a href="../" class="brand-logo">
-        <img src="../brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
+      <a href="#" class="brand-logo">
+        <img src="brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
         <div class="logo-text">
           <span class="brand-name">GURUKUL VIDYAPEETH</span>
           <span class="brand-sub">UNIVERSITY • NAMCHI, SIKKIM</span>
@@ -80,12 +94,12 @@
       </a>
 
       <nav class="nav-menu" id="navMenu">
-        <a href="../#about" class="nav-link">About & UGC Status</a>
-        <a href="../#academics" class="nav-link">Programs & Skill India</a>
-        <a href="#" class="nav-link active">Campus & Labs</a>
-        <a href="../degree-verification/" class="nav-link">Verify Credentials</a>
-        <a href="../fee-structure-scholarship/" class="nav-link">Fee Estimator</a>
-        <a href="../#contact" class="nav-link">Contact & Location</a>
+        <a href="#about" class="nav-link">About & UGC Status</a>
+        <a href="#academics" class="nav-link">Programs & Skill India</a>
+        <a href="campus-facilities/" class="nav-link">Campus & Labs</a>
+        <a href="degree-verification/" class="nav-link">Verify Credentials</a>
+        <a href="fee-structure-scholarship/" class="nav-link">Fee Estimator</a>
+        <a href="#contact" class="nav-link">Contact & Location</a>
       </nav>
 
       <div class="header-cta">
@@ -103,7 +117,7 @@
   <div class="mobile-drawer" id="mobileDrawer">
     <div class="drawer-header">
       <div class="brand-logo">
-        <img src="../brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
+        <img src="brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
         <div class="logo-text">
           <span class="brand-name">GURUKUL VIDYAPEETH</span>
           <span class="brand-sub">UNIVERSITY • SIKKIM</span>
@@ -112,108 +126,310 @@
       <button class="drawer-close" id="drawerClose"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="drawer-links">
-      <a href="../#about" class="drawer-link"><i class="fa-solid fa-landmark"></i> About & Statutory Status</a>
-      <a href="../#academics" class="drawer-link"><i class="fa-solid fa-book-open-reader"></i> Academic Programs</a>
-      <a href="#" class="drawer-link active"><i class="fa-solid fa-microscope"></i> Campus, Labs & Hostels</a>
-      <a href="../degree-verification/" class="drawer-link"><i class="fa-solid fa-square-check"></i> Degree Verification Portal</a>
-      <a href="../fee-structure-scholarship/" class="drawer-link"><i class="fa-solid fa-calculator"></i> Fee & Scholarship Estimator</a>
-      <a href="../#contact" class="drawer-link"><i class="fa-solid fa-location-dot"></i> Location & Reach Us</a>
+      <a href="#about" class="drawer-link"><i class="fa-solid fa-landmark"></i> About & Statutory Status</a>
+      <a href="#academics" class="drawer-link"><i class="fa-solid fa-book-open-reader"></i> Academic Programs</a>
+      <a href="campus-facilities/" class="drawer-link"><i class="fa-solid fa-microscope"></i> Campus, Labs & Hostels</a>
+      <a href="degree-verification/" class="drawer-link"><i class="fa-solid fa-square-check"></i> Degree Verification Portal</a>
+      <a href="fee-structure-scholarship/" class="drawer-link"><i class="fa-solid fa-calculator"></i> Fee & Scholarship Estimator</a>
+      <a href="#contact" class="drawer-link"><i class="fa-solid fa-location-dot"></i> Location & Reach Us</a>
     </div>
     <div class="drawer-footer">
       <button class="btn btn-primary btn-block" id="drawerApplyBtn"><i class="fa-solid fa-paper-plane"></i> Apply Online 2026-27</button>
     </div>
   </div>
 
-  <!-- Inner Hero Section -->
-  <section class="hero-section" style="padding: 4rem 0 3rem;">
+  <!-- Hero Section -->
+  <section class="hero-section">
     <div class="hero-bg">
-      <img src="../assets/images/campus_exterior.jpg" alt="Campus Facilities Cover" class="hero-img">
-      <div class="hero-overlay" style="background: linear-gradient(180deg, rgba(250, 248, 240, 0.7) 0%, rgba(250, 248, 240, 0.95) 100%);"></div>
+      <img src="assets/images/campus_hero.jpg" alt="Gurukul Vidyapeeth University Sikkim Campus" class="hero-img">
+      <div class="hero-overlay"></div>
     </div>
     <div class="container hero-content">
       <div class="hero-badge">
-        <i class="fa-solid fa-mountain-sun"></i> VPO Melli, Namchi District Campus
+        <i class="fa-solid fa-laptop-code"></i> Sponsored by Council of Software Engineers • Sikkim Legislative Act 2024
       </div>
-      <h1 class="hero-title" style="font-size: 2.85rem; margin-bottom: 0.75rem;">
-        Campus Facilities & <span class="text-gradient">Infrastructure</span>
+      <h1 class="hero-title">
+        Empowering Next-Gen <span class="text-gradient">Technologists & Engineers</span> in Sikkim
       </h1>
-      <p class="hero-description" style="max-width: 720px; margin: 0 auto;">
-        Explore the state-of-the-art facilities designed to build industrial tradecraft, software engineering skills, and comprehensive technician trade capabilities in Sikkim.
+      <p class="hero-description">
+        Gurukul Vidyapeeth University (VPO Melli, Namchi District) is a recognized State Private University focused on industry-aligned degrees, technician tradecraft, and cutting-edge software engineering. UGC Section 2(f) approved & legally valid nationwide.
       </p>
+
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" id="heroApplyBtn">
+          <i class="fa-solid fa-graduation-cap"></i> Admissions Open 2026-27
+        </button>
+        <button class="btn btn-glass btn-lg" id="heroVerifyBtn">
+          <i class="fa-solid fa-award"></i> Verify Degree / AISHE Code
+        </button>
+        <a href="#campus" class="btn btn-secondary btn-lg">
+          <i class="fa-solid fa-compass"></i> Virtual Campus Tour
+        </a>
+      </div>
+
+      <!-- Quick Metric Counters -->
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-shield-check"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">Sec 2(f)</span>
+            <span class="stat-label">UGC Act 1956 Recognized</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-code"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">0-Gap</span>
+            <span class="stat-label">Software & Tech Curriculum</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-toolbox"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">Skill India</span>
+            <span class="stat-label">Vocational & Trade Standards</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-mountain-city"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">Namchi</span>
+            <span class="stat-label">VPO Melli, Sikkim Campus</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Real Photo Gallery Showcase -->
-  <section class="trust-banner-section" style="padding: 3rem 0;">
+  <!-- Accreditation & Statutory Trust Banner -->
+  <section class="trust-banner-section" id="about">
     <div class="container">
-      <div class="section-header text-center" style="margin-bottom: 2rem;">
-        <span class="section-tag"><i class="fa-solid fa-images"></i> Authentic Infrastructure</span>
-        <h2 class="section-title" style="font-size: 2rem;">Real Campus Infrastructure Galleries</h2>
-        <p class="section-subtitle">Take a look inside the actual classrooms, computing laboratories, and residential hostels located in VPO Melli.</p>
+      <div class="section-header text-center">
+        <span class="section-tag"><i class="fa-solid fa-gavel"></i> Legal Recognition & Accreditation</span>
+        <h2 class="section-title">Government Recognized & Legally Shielded Higher Education</h2>
+        <p class="section-subtitle">
+          Established under the Sikkim Legislative Assembly Bill (March 2024), Gurukul Vidyapeeth University operates under the statutory framework of Section 2(f) of the UGC Act, 1956.
+        </p>
       </div>
 
-      <div class="campus-gallery-grid">
-        <!-- Photo 1: Campus Exterior -->
-        <div class="gallery-card">
-          <div class="gallery-img-wrapper">
-            <img src="../assets/images/campus_exterior.jpg" alt="Academic Block, Gurukul Vidyapeeth University" class="gallery-img">
-          </div>
-          <div class="gallery-info">
-            <h4>Himalayan Academic Block</h4>
-            <p>Modern architectural structures fitted with smart classrooms and interactive software engineering labs, nestled in the green hills of Sikkim.</p>
+      <div class="trust-grid">
+        <div class="trust-card">
+          <div class="trust-icon"><i class="fa-solid fa-landmark-flag"></i></div>
+          <h3>UGC Act Section 2(f) Protection</h3>
+          <p>Degrees, postgraduate certificates, and engineering diplomas awarded by the university carry legal validity across all Indian State & Central Public Sector examinations (UPSC, GATE, State PSCs) and global evaluations.</p>
+          <div class="trust-footer">
+            <span class="badge badge-accent">UGC Statutory Compliance</span>
           </div>
         </div>
-        <!-- Photo 2: Computer Lab -->
-        <div class="gallery-card">
-          <div class="gallery-img-wrapper">
-            <img src="../assets/images/computer_lab.jpg" alt="Computer Science Laboratory, Gurukul Vidyapeeth" class="gallery-img">
-          </div>
-          <div class="gallery-info">
-            <h4>Software Engineering Lab</h4>
-            <p>Equipped with high-performance computing rigs, software sandbox testbeds, and local server setups co-designed by the Council of Software Engineers.</p>
+
+        <div class="trust-card">
+          <div class="trust-icon"><i class="fa-solid fa-microchip"></i></div>
+          <h3>Council of Software Engineers Sponsorship</h3>
+          <p>Conceptualized and sponsored by the Council of Software Engineers to bridge the post-graduation training gap. Direct industry mentorship, software lab design, and global tech trade alignment.</p>
+          <div class="trust-footer">
+            <span class="badge badge-primary">Industry Sponsor</span>
           </div>
         </div>
-        <!-- Photo 3: Dorm Room -->
-        <div class="gallery-card">
-          <div class="gallery-img-wrapper">
-            <img src="../assets/images/dorm_room.jpg" alt="Student Dorm Hostel Room, Gurukul Vidyapeeth" class="gallery-img">
+
+        <div class="trust-card">
+          <div class="trust-icon"><i class="fa-solid fa-hands-holding-circle"></i></div>
+          <h3>Skill India Vocational Matrix</h3>
+          <p>Aligned with National Credit Framework (NCrF) and NSQF competency levels. Short-duration technician certifications alongside standard 3- and 4-year degree tracks.</p>
+          <div class="trust-footer">
+            <span class="badge badge-success">Skill India Aligned</span>
           </div>
-          <div class="gallery-info">
-            <h4>Residential Dorm Quarters</h4>
-            <p>Furnished residential rooms featuring cozy desks, natural light, high-speed study hotspots, and 24/7 solar heating facilities.</p>
+        </div>
+
+        <div class="trust-card">
+          <div class="trust-icon"><i class="fa-solid fa-database"></i></div>
+          <h3>AISHE Code & ExamMint Integration</h3>
+          <p>Tracked under the All India Survey on Higher Education portal for national educational metrics, seamless transcript verification, and instant digital credential validation.</p>
+          <div class="trust-footer">
+            <span class="badge badge-gold">AISHE Portal Metric</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Video Walkthrough & Virtual Tour Section -->
-  <section class="trust-banner-section" style="padding: 0 0 3rem; background: transparent;">
+  <!-- Interactive Credential & Degree Verification Portal Section -->
+  <section class="verify-section" id="verify">
     <div class="container">
-      <div class="video-walkthrough-card">
-        <div class="video-info-side">
-          <span class="section-tag" style="align-self: flex-start;"><i class="fa-solid fa-video"></i> Campus Tour</span>
-          <h3>Virtual 360-Degree Video Tour</h3>
-          <p style="color:var(--text-muted); font-size:0.95rem; margin-top:0.75rem; line-height: 1.6;">
-            Walk through our academic corridors, laboratory equipment racks, library aisles, and recreational grounds from anywhere in the world. 
+      <div class="verify-wrapper">
+        <div class="verify-info">
+          <span class="section-tag"><i class="fa-solid fa-qrcode"></i> Instant Official Portal</span>
+          <h2 class="section-title">Degree & Certificate Verification Engine</h2>
+          <p>
+            Verify student transcripts, vocational trade diplomas, and academic credentials issued under the gazetted incorporation of Gurukul Vidyapeeth University (Sikkim Act 2024).
           </p>
-          <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.5rem; line-height: 1.6;">
-            <strong>Duration:</strong> 4 Minutes | High-Definition Walkthrough.
-          </p>
+          <ul class="verify-list">
+            <li><i class="fa-solid fa-check-circle"></i> Instant verification for government background checks & employer validation.</li>
+            <li><i class="fa-solid fa-check-circle"></i> Direct lookup by Roll Number, Registration No, or AISHE student ID.</li>
+            <li><i class="fa-solid fa-check-circle"></i> Digital cryptographic signature preview & printable official verification slip.</li>
+          </ul>
+          
+          <div class="demo-rolls">
+            <span>Try sample roll numbers:</span>
+            <div class="roll-chips">
+              <button class="roll-chip" onclick="fillRoll('GVU2024-CSE-108')">GVU2024-CSE-108</button>
+              <button class="roll-chip" onclick="fillRoll('GVU2025-VOC-304')">GVU2025-VOC-304</button>
+              <button class="roll-chip" onclick="fillRoll('GVU2026-ENG-042')">GVU2026-ENG-042</button>
+            </div>
+          </div>
         </div>
-        <div class="video-player-side" onclick="alert('Virtual Tour Player: Loading interactive 360-degree video walkthrough of the Namchi Campus...')">
-          <img src="../assets/images/campus_exterior.jpg" alt="Virtual Tour Thumbnail" class="video-thumbnail-bg">
-          <div class="play-button-overlay">
-            <i class="fa-solid fa-play"></i>
+
+        <div class="verify-card-box">
+          <div class="verify-card-header">
+            <i class="fa-solid fa-shield-halved"></i> Official Credential Lookup
+          </div>
+          <form id="verifyForm" onsubmit="event.preventDefault(); runVerification();">
+            <div class="form-group">
+              <label for="rollInput">Roll Number / Registration No / Enrollment ID</label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-id-card"></i>
+                <input type="text" id="rollInput" class="form-control" placeholder="e.g. GVU2024-CSE-108" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="verifyDocType">Document Type</label>
+              <select id="verifyDocType" class="form-control">
+                <option value="degree">Undergraduate / Postgraduate Degree</option>
+                <option value="diploma">Skill India Vocational Diploma</option>
+                <option value="trade">Technician & Trade Certificate</option>
+                <option value="transcript">Official Academic Transcript</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fa-solid fa-magnifying-glass"></i> Verify Credential Now
+            </button>
+          </form>
+
+          <div id="verifyResult" class="verify-result-box hidden">
+            <!-- Results populated by JS -->
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Campus Facilities Tabbed Details -->
-  <section class="campus-section" style="padding: 1rem 0 5rem;">
+  <!-- Academic Scope & Skill India Programs -->
+  <section class="academics-section" id="academics">
     <div class="container">
+      <div class="section-header text-center">
+        <span class="section-tag"><i class="fa-solid fa-book-bookmark"></i> Curriculum Matrix</span>
+        <h2 class="section-title">Academic Scope & Vocational Trade Offerings</h2>
+        <p class="section-subtitle">
+          Designed under the Council of Software Engineers sponsorship, combining rigorous 4-year engineering tracks with high-impact short-term technician diplomas.
+        </p>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="academic-tabs">
+        <button class="academic-tab active" data-filter="all">All Programs</button>
+        <button class="academic-tab" data-filter="cse">Software & AI Tech</button>
+        <button class="academic-tab" data-filter="eng">Engineering & Robotics</button>
+        <button class="academic-tab" data-filter="skill">Skill India Vocational</button>
+        <button class="academic-tab" data-filter="mgmt">Tech Management</button>
+      </div>
+
+      <!-- Programs Grid -->
+      <div class="programs-grid" id="programsGrid">
+        
+        <!-- Program 1 -->
+        <div class="program-card" data-category="cse">
+          <div class="program-badge">4 Years • UG Degree</div>
+          <div class="program-icon"><i class="fa-solid fa-code-branch"></i></div>
+          <h3 class="program-title">B.Tech Computer Science & Software Engineering</h3>
+          <p class="program-desc">Co-designed with the Council of Software Engineers. Focus on Full-Stack, Cloud Architecture, DevOps & AI pipelines.</p>
+          <div class="program-meta">
+            <span><i class="fa-solid fa-graduation-cap"></i> Eligibility: 10+2 (PCM 50%)</span>
+            <span><i class="fa-solid fa-certificate"></i> UGC 2(f) Approved Track</span>
+          </div>
+          <button class="btn btn-outline btn-block" onclick="openProgramDetail('btech-cse')">View Syllabus & Details</button>
+        </div>
+
+        <!-- Program 2 -->
+        <div class="program-card" data-category="cse">
+          <div class="program-badge">2 Years • PG Degree</div>
+          <div class="program-icon"><i class="fa-solid fa-brain"></i></div>
+          <h3 class="program-title">M.Tech Artificial Intelligence & Machine Learning</h3>
+          <p class="program-desc">Advanced research degree covering deep learning, natural language processing, scalable ML ops, and data engineering.</p>
+          <div class="program-meta">
+            <span><i class="fa-solid fa-graduation-cap"></i> Eligibility: B.Tech / BE / MCA</span>
+            <span><i class="fa-solid fa-flask"></i> Digital Lab Access</span>
+          </div>
+          <button class="btn btn-outline btn-block" onclick="openProgramDetail('mtech-ai')">View Syllabus & Details</button>
+        </div>
+
+        <!-- Program 3 -->
+        <div class="program-card" data-category="eng">
+          <div class="program-badge">4 Years • UG Degree</div>
+          <div class="program-icon"><i class="fa-solid fa-robot"></i></div>
+          <h3 class="program-title">B.Tech Robotics & Industrial Automation</h3>
+          <p class="program-desc">Integrates mechanical precision, microcontroller programming, IoT sensors, and practical workshop technician skills.</p>
+          <div class="program-meta">
+            <span><i class="fa-solid fa-graduation-cap"></i> Eligibility: 10+2 (PCM)</span>
+            <span><i class="fa-solid fa-gears"></i> Workshop Practical</span>
+          </div>
+          <button class="btn btn-outline btn-block" onclick="openProgramDetail('btech-robotics')">View Syllabus & Details</button>
+        </div>
+
+        <!-- Program 4 -->
+        <div class="program-card" data-category="skill">
+          <div class="program-badge">1 Year • Vocational Diploma</div>
+          <div class="program-icon"><i class="fa-solid fa-shield-virus"></i></div>
+          <h3 class="program-title">Skill India Diploma in Cybersecurity & Cloud Ops</h3>
+          <p class="program-desc">Short-duration technician training program under Skill India framework. Ethical hacking, SIEM monitoring, and cloud administration.</p>
+          <div class="program-meta">
+            <span><i class="fa-solid fa-graduation-cap"></i> Eligibility: 10+2 / ITI</span>
+            <span><i class="fa-solid fa-bolt"></i> Fast-Track Job Skill</span>
+          </div>
+          <button class="btn btn-outline btn-block" onclick="openProgramDetail('diploma-cyber')">View Syllabus & Details</button>
+        </div>
+
+        <!-- Program 5 -->
+        <div class="program-card" data-category="skill">
+          <div class="program-badge">6 Months • Certification</div>
+          <div class="program-icon"><i class="fa-solid fa-toolbox"></i></div>
+          <h3 class="program-title">Technician Certificate in IoT & Microcontroller Hardware</h3>
+          <p class="program-desc">Practical tradecraft certification for hardware testing, PCB assembly, embedded sensors, and technician workshops.</p>
+          <div class="program-meta">
+            <span><i class="fa-solid fa-graduation-cap"></i> Eligibility: 10th / 12th</span>
+            <span><i class="fa-solid fa-wrench"></i> Trade Certified</span>
+          </div>
+          <button class="btn btn-outline btn-block" onclick="openProgramDetail('cert-iot')">View Syllabus & Details</button>
+        </div>
+
+        <!-- Program 6 -->
+        <div class="program-card" data-category="mgmt">
+          <div class="program-badge">2 Years • PG Degree</div>
+          <div class="program-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <h3 class="program-title">MBA in Technology Management & Software Enterprise</h3>
+          <p class="program-desc">Designed for future CTOs, product managers, and tech entrepreneurs with curriculum tailored by software trade leaders.</p>
+          <div class="program-meta">
+            <span><i class="fa-solid fa-graduation-cap"></i> Eligibility: Graduation in any discipline</span>
+            <span><i class="fa-solid fa-briefcase"></i> Executive Industry Mentorship</span>
+          </div>
+          <button class="btn btn-outline btn-block" onclick="openProgramDetail('mba-tech')">View Syllabus & Details</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Campus Infrastructure & Facilities Showcase (Namchi, Sikkim) -->
+  <section class="campus-section" id="campus">
+    <div class="container">
+      <div class="section-header text-center">
+        <span class="section-tag"><i class="fa-solid fa-building"></i> Namchi, Sikkim Campus</span>
+        <h2 class="section-title">Self-Contained Infrastructure & Modern Facilities</h2>
+        <p class="section-subtitle">
+          Situated at VPO Melli, Namchi District, Sikkim (Zip: 737128), offering state-of-the-art laboratories, digital libraries, and serene residential quarters.
+        </p>
+      </div>
+
       <div class="campus-tabs-header">
         <button class="facility-tab active" onclick="switchFacilityTab('library')"><i class="fa-solid fa-book"></i> Digital & Physical Library</button>
         <button class="facility-tab" onclick="switchFacilityTab('labs')"><i class="fa-solid fa-microchip"></i> Dedicated Labs & Workshops</button>
@@ -248,7 +464,7 @@
           <div class="facility-visual">
             <div class="facility-img-card">
               <div class="visual-badge"><i class="fa-solid fa-book-open"></i> 24/7 Digital Portal</div>
-              <div class="facility-placeholder-graphic library-graphic" style="background: url('../assets/images/campus_exterior.jpg') center/cover;">
+              <div class="facility-placeholder-graphic library-graphic" style="background: url('assets/images/campus_exterior.jpg') center/cover;">
                 <div style="background: rgba(0,0,0,0.5); width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                   <i class="fa-solid fa-book-atlas" style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #fff;"></i>
                   <span style="color: #fff; font-weight: 600;">Digital Library Hub</span>
@@ -276,7 +492,7 @@
           <div class="facility-visual">
             <div class="facility-img-card">
               <div class="visual-badge"><i class="fa-solid fa-laptop-code"></i> High-Tech Workstations</div>
-              <div class="facility-placeholder-graphic lab-graphic" style="background: url('../assets/images/computer_lab.jpg') center/cover;">
+              <div class="facility-placeholder-graphic lab-graphic" style="background: url('assets/images/computer_lab.jpg') center/cover;">
                 <div style="background: rgba(0,0,0,0.5); width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                   <i class="fa-solid fa-network-wired" style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #fff;"></i>
                   <span style="color: #fff; font-weight: 600;">Advanced Practical Workshop</span>
@@ -304,7 +520,7 @@
           <div class="facility-visual">
             <div class="facility-img-card">
               <div class="visual-badge"><i class="fa-solid fa-mountain-sun"></i> Mountain View Hostels</div>
-              <div class="facility-placeholder-graphic hostel-graphic" style="background: url('../assets/images/dorm_room.jpg') center/cover;">
+              <div class="facility-placeholder-graphic hostel-graphic" style="background: url('assets/images/dorm_room.jpg') center/cover;">
                 <div style="background: rgba(0,0,0,0.5); width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                   <i class="fa-solid fa-building-user" style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #fff;"></i>
                   <span style="color: #fff; font-weight: 600;">Namchi Residential Quarters</span>
@@ -318,12 +534,147 @@
     </div>
   </section>
 
+  <!-- Interactive Fee & Scholarship Estimator -->
+  <section class="calculator-section" id="fee-calculator">
+    <div class="container">
+      <div class="calc-wrapper">
+        <div class="calc-header text-center">
+          <span class="section-tag"><i class="fa-solid fa-calculator"></i> Transparent Fee Structure</span>
+          <h2 class="section-title">Interactive Fee & Scholarship Estimator</h2>
+          <p class="section-subtitle">
+            Calculate your estimated per-semester tuition fee, Sikkim state domicile grants, and residential hostel fees.
+          </p>
+        </div>
+
+        <div class="calc-grid">
+          <form class="calc-form" id="feeCalcForm" onsubmit="event.preventDefault(); calculateFee();">
+            <div class="form-group">
+              <label for="calcProgram">Select Academic Program</label>
+              <select id="calcProgram" class="form-control" onchange="calculateFee()">
+                <option value="btech">B.Tech Computer Science / Robotics (UG)</option>
+                <option value="mtech">M.Tech AI & Software Eng. (PG)</option>
+                <option value="diploma">Skill India Vocational Diploma (1 Year)</option>
+                <option value="trade">Technician Trade Certificate (6 Months)</option>
+                <option value="mba">MBA Technology Management (PG)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="calcDomicile">Student Domicile Status</label>
+              <select id="calcDomicile" class="form-control" onchange="calculateFee()">
+                <option value="sikkim">Sikkim State Resident (Eligible for 25% State Grant)</option>
+                <option value="ne">North-East Region Resident (Eligible for 15% Merit Grant)</option>
+                <option value="other">Pan-India / International Applicant</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="calcHostel">Hostel Accommodation</label>
+              <select id="calcHostel" class="form-control" onchange="calculateFee()">
+                <option value="none">Day Scholar (No Hostel)</option>
+                <option value="double">Standard Double Sharing (Incl. Food)</option>
+                <option value="single">Premium Single Room (Incl. Food)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="calcMerit">Academic Merit Percentage (Class 12 / Grad)</label>
+              <input type="range" id="calcMerit" min="50" max="95" value="75" step="5" class="range-slider" oninput="updateMeritLabel(this.value); calculateFee();">
+              <div class="range-label">Merit Score: <span id="meritValue">75%</span></div>
+            </div>
+          </form>
+
+          <div class="calc-result-card">
+            <h3><i class="fa-solid fa-receipt"></i> Estimated Fee Breakdown</h3>
+            <div class="calc-row">
+              <span>Base Semester Tuition:</span>
+              <strong id="resBaseTuition">₹45,000</strong>
+            </div>
+            <div class="calc-row text-success">
+              <span>Scholarship & State Grant:</span>
+              <strong id="resGrant">-₹11,250</strong>
+            </div>
+            <div class="calc-row">
+              <span>Hostel & Mess Charges:</span>
+              <strong id="resHostel">₹0</strong>
+            </div>
+            <div class="calc-divider"></div>
+            <div class="calc-row calc-total">
+              <span>Net Payable Per Semester:</span>
+              <strong id="resTotal">₹33,750</strong>
+            </div>
+            <div class="calc-note">
+              <i class="fa-solid fa-circle-info"></i> All fee structures strictly comply with Sikkim State Private University Fee Guidelines and UGC Sec 2(f) statutory norms.
+            </div>
+            <button class="btn btn-primary btn-block mt-3" onclick="openApplyWithFee()">
+              <i class="fa-solid fa-file-signature"></i> Apply with this Fee Estimate
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Location & Contact Section -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="section-header text-center">
+        <span class="section-tag"><i class="fa-solid fa-map-location-dot"></i> Reach Campus</span>
+        <h2 class="section-title">Campus Location & Contact Channels</h2>
+        <p class="section-subtitle">
+          Gurukul Vidyapeeth University is located in VPO Melli, Namchi District, Sikkim.
+        </p>
+      </div>
+
+      <div class="contact-grid">
+        <div class="contact-card">
+          <div class="contact-icon"><i class="fa-solid fa-building-columns"></i></div>
+          <h3>University Campus Address</h3>
+          <p><strong>Gurukul Vidyapeeth University</strong><br>VPO Melli, Namchi District,<br>Sikkim, India – Zip Code: 737128</p>
+          <div class="contact-badge"><i class="fa-solid fa-location-crosshairs"></i> Namchi Headquarters</div>
+        </div>
+
+        <div class="contact-card">
+          <div class="contact-icon"><i class="fa-solid fa-headset"></i></div>
+          <h3>Admissions & Verification Desk</h3>
+          <p>
+            <strong>Phone Helpline:</strong> +91 (03595) 295012 / +91 98765 43210<br>
+            <strong>Official Email:</strong> admissions@gurukulvidyapeeth.edu.in<br>
+            <strong>Verification Email:</strong> verify@gurukulvidyapeeth.edu.in
+          </p>
+          <div class="contact-badge"><i class="fa-solid fa-clock"></i> Mon-Sat: 9:00 AM - 5:00 PM</div>
+        </div>
+
+        <div class="contact-card">
+          <div class="contact-icon"><i class="fa-solid fa-plane-arrival"></i></div>
+          <h3>How to Reach Namchi, Sikkim</h3>
+          <p>
+            <strong>Nearest Airport:</strong> Pakyong Airport (Sikkim) / Bagdogra Airport (Siliguri, ~85 km)<br>
+            <strong>Nearest Railway:</strong> New Jalpaiguri (NJP, ~80 km)<br>
+            <strong>Road Travel:</strong> Regular taxis & SNT buses from Siliguri / Gangtok to Melli, Namchi.
+          </p>
+          <div class="contact-badge"><i class="fa-solid fa-route"></i> Well Connected Transport</div>
+        </div>
+      </div>
+
+      <!-- Sister Campus Reference Box -->
+      <div class="sister-campus-banner">
+        <div class="sister-icon"><i class="fa-solid fa-network-wired"></i></div>
+        <div class="sister-text">
+          <h4><i class="fa-solid fa-building"></i> Sister Institutional Hub: GVIET Banur</h4>
+          <p>Gurukul Vidyapeeth also features the <strong>Gurukul Vidyapeeth Institute of Engineering & Technology (GVIET)</strong> in Banur (Mohali/Patiala, Punjab), serving as a pioneer technical institution across North India.</p>
+        </div>
+        <a href="#about" class="btn btn-outline btn-sm"><i class="fa-solid fa-circle-info"></i> Learn More</a>
+      </div>
+    </div>
+  </section>
+
   <!-- Footer -->
   <footer class="site-footer">
     <div class="container footer-top">
       <div class="footer-brand">
-        <a href="../" class="brand-logo" style="margin-bottom: 1rem;">
-          <img src="../brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
+        <a href="#" class="brand-logo" style="margin-bottom: 1rem;">
+          <img src="brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
           <div class="logo-text">
             <span class="brand-name">GURUKUL VIDYAPEETH</span>
             <span class="brand-sub">UNIVERSITY • NAMCHI, SIKKIM</span>
@@ -341,11 +692,11 @@
       <div class="footer-col">
         <h4>Quick Navigation</h4>
         <ul>
-          <li><a href="../#about"><i class="fa-solid fa-angle-right"></i> UGC 2(f) Recognition</a></li>
-          <li><a href="../programs/btech-computer-science/"><i class="fa-solid fa-angle-right"></i> Software Engineering UG</a></li>
-          <li><a href="../#academics"><i class="fa-solid fa-angle-right"></i> Skill India Vocational Tracks</a></li>
-          <li><a href="#"><i class="fa-solid fa-angle-right"></i> Centralized Digital Library</a></li>
-          <li><a href="../degree-verification/"><i class="fa-solid fa-angle-right"></i> Degree Verification Lookup</a></li>
+          <li><a href="#about"><i class="fa-solid fa-angle-right"></i> UGC 2(f) Recognition</a></li>
+          <li><a href="programs/btech-computer-science/"><i class="fa-solid fa-angle-right"></i> Software Engineering UG</a></li>
+          <li><a href="#academics"><i class="fa-solid fa-angle-right"></i> Skill India Vocational Tracks</a></li>
+          <li><a href="campus-facilities/"><i class="fa-solid fa-angle-right"></i> Centralized Digital Library</a></li>
+          <li><a href="degree-verification/"><i class="fa-solid fa-angle-right"></i> Degree Verification Lookup</a></li>
         </ul>
       </div>
 
@@ -379,9 +730,6 @@
       </div>
     </div>
   </footer>
-
-  <!-- Sticky CTA -->
-  <button class="sticky-cta-btn" id="stickyCtaBtn" onclick="openApplyModal()"><i class="fa-solid fa-graduation-cap"></i> Book Campus Tour</button>
 
   <!-- MODAL 1: Admissions Multi-Step Wizard -->
   <div class="modal-overlay" id="applyModal">
@@ -517,6 +865,6 @@
   </div>
 
   <!-- Script -->
-  <script src="../assets/js/script.js"></script>
+  <script src="assets/js/script.js"></script>
 </body>
 </html>
