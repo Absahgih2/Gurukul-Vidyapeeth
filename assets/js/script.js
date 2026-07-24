@@ -449,8 +449,25 @@ function calculateFee() {
 }
 
 function openApplyWithFee() {
+  const calcProg = document.getElementById('calcProgram')?.value;
+  const appProgSelect = document.getElementById('appProgram');
+  if (appProgSelect && calcProg) {
+    let targetVal = 'B.Tech CSE';
+    if (calcProg === 'mtech') targetVal = 'M.Tech AI';
+    else if (calcProg === 'diploma') targetVal = 'Diploma Cyber';
+    else if (calcProg === 'trade') targetVal = 'Cert IoT';
+    else if (calcProg === 'mba') targetVal = 'MBA Tech';
+    appProgSelect.value = targetVal;
+  }
+  
+  const calcHostel = document.getElementById('calcHostel')?.value;
+  const appHostelSelect = document.getElementById('appHostelOpt');
+  if (appHostelSelect && calcHostel) {
+    appHostelSelect.value = calcHostel !== 'none' ? 'Yes' : 'No';
+  }
+
   openApplyModal();
-  nextWizardStep(2);
+  nextWizardStep(1);
 }
 
 /* 7. Multi-Step Admissions Wizard */
@@ -549,14 +566,26 @@ function closeStatutoryModal() {
 
 // Global modal triggers
 document.getElementById('openVerifyBtn')?.addEventListener('click', () => {
-  document.getElementById('verify')?.scrollIntoView({ behavior: 'smooth' });
+  const verifySection = document.getElementById('verify');
+  if (verifySection) {
+    verifySection.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    const isSub = window.location.pathname.includes('/programs/');
+    window.location.href = isSub ? '../../degree-verification/' : '../degree-verification/';
+  }
 });
 
 document.getElementById('openApplyBtn')?.addEventListener('click', openApplyModal);
 document.getElementById('heroApplyBtn')?.addEventListener('click', openApplyModal);
 document.getElementById('drawerApplyBtn')?.addEventListener('click', openApplyModal);
 document.getElementById('heroVerifyBtn')?.addEventListener('click', () => {
-  document.getElementById('verify')?.scrollIntoView({ behavior: 'smooth' });
+  const verifySection = document.getElementById('verify');
+  if (verifySection) {
+    verifySection.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    const isSub = window.location.pathname.includes('/programs/');
+    window.location.href = isSub ? '../../degree-verification/' : '../degree-verification/';
+  }
 });
 
 // Close modals when clicking overlay
