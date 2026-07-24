@@ -15,8 +15,14 @@ function initTheme() {
   const themeIcon = document.getElementById('themeIcon');
   const html = document.documentElement;
 
-  // Load saved theme or default to dark
-  const savedTheme = localStorage.getItem('gvu_theme') || 'dark';
+  // Migration: force-reset theme to light once to clear any previous dark mode cache
+  if (!localStorage.getItem('gvu_theme_migrated')) {
+    localStorage.setItem('gvu_theme_migrated', 'true');
+    localStorage.setItem('gvu_theme', 'light');
+  }
+
+  // Load saved theme or default to light
+  const savedTheme = localStorage.getItem('gvu_theme') || 'light';
   html.setAttribute('data-theme', savedTheme);
   updateThemeIcon(savedTheme);
 
@@ -202,7 +208,7 @@ function viewFullCertificate(record) {
   if (!certModalBody || !certModal) return;
 
   certModalBody.innerHTML = `
-    <div style="background:#0c1222; border:2px solid var(--emerald); padding:2rem; border-radius:var(--radius-md); text-align:center; position:relative;">
+    <div style="background:var(--bg-card); border:2px solid var(--emerald); padding:2rem; border-radius:var(--radius-md); text-align:center; position:relative;">
       <!-- Watermark emblem -->
       <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.04; font-size:12rem; color:var(--emerald); pointer-events:none;">
         <i class="fa-solid fa-graduation-cap"></i>
@@ -227,7 +233,7 @@ function viewFullCertificate(record) {
         <p style="font-size:0.875rem; color:var(--text-main); margin-top:0.25rem;">Result: ${record.division} (${record.cgpa})</p>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; text-align:left; font-size:0.85rem; background:rgba(255,255,255,0.02); padding:1rem; border-radius:var(--radius-sm); margin-bottom:1.5rem;">
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; text-align:left; font-size:0.85rem; background:var(--bg-main); border:1px solid var(--border-color); padding:1rem; border-radius:var(--radius-sm); margin-bottom:1.5rem;">
         <div><strong>Roll Number:</strong><br>${record.roll}</div>
         <div><strong>Registration No:</strong><br>${record.regNo}</div>
         <div><strong>Academic Period:</strong><br>${record.year}</div>
