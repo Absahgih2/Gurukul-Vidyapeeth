@@ -304,7 +304,7 @@ function openProgramDetail(programKey) {
     },
     'msc-anatomy': {
       title: 'MSc Medical in Anatomy',
-      duration: '2 Years (4 Semesters)',
+      duration: '3 Years (6 Semesters)',
       eligibility: 'B.Sc. in Medical Anatomy / biological sciences / allied health or equivalent (Min 50% Marks)',
       description: 'Master of Science in Medical Anatomy focuses on human body structure at gross, microscopic, and developmental levels, combining theoretical foundation with dissection, histology, and modern imaging.',
       careers: 'Anatomical Lab In-Charge, Anatomy Lecturer, Medical Research Associate, Pathology Support Specialist'
