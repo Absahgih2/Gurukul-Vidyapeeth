@@ -577,30 +577,30 @@ function submitApplication() {
     panelStep4.innerHTML = `<div class="success-box" style="padding: 0.5rem 0;">${receiptHtml}</div>`;
   }
 
-  // Execute background fetch API email dispatch request
-  fetch('/api/admission-submit', {
+  // Execute background fetch API email dispatch request to send_email.php
+  fetch('/send_email.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      registrarEmail: 'home.gurukulvidhyapeethuniversity.com',
+      fullName: fullName,
       studentEmail: studentEmail,
-      subject: `New GVU Admission Application - ${program} - ${fullName}`,
-      details: {
-        applicationId: appId,
-        fullName,
-        studentEmail,
-        phone,
-        state,
-        program,
-        hostel
-      }
+      phone: phone,
+      state: state,
+      program: program,
+      hostel: hostel,
+      applicationId: appId
     })
   })
-  .then(res => {
-    console.log(`[Email Dispatch Hub] Details sent successfully to registrar (home.gurukulvidhyapeethuniversity.com) and copy to student (${studentEmail}).`);
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      console.log(`[Email Dispatch Success] ${data.message}`);
+    } else {
+      console.warn(`[Email Dispatch Warning] Server failed to dispatch: ${data.message}`);
+    }
   })
   .catch(err => {
-    console.warn('[Email Dispatch Simulation] Background API dispatch handled. Simulated receipt logged successfully.');
+    console.warn('[Email Dispatch Client Warning] Local environment fallback: Cannot contact /send_email.php mailer script.');
   });
 
   nextWizardStep(4);
