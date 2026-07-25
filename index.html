@@ -329,6 +329,7 @@
       <div class="academic-tabs">
         <button class="academic-tab active" data-filter="all">All Programs</button>
         <button class="academic-tab" data-filter="cse">Software & AI Tech</button>
+        <button class="academic-tab" data-filter="med">Medical & Science</button>
         <button class="academic-tab" data-filter="eng">Engineering & Robotics</button>
         <button class="academic-tab" data-filter="skill">Skill India Vocational</button>
         <button class="academic-tab" data-filter="mgmt">Tech Management</button>
@@ -361,6 +362,19 @@
             <span><i class="fa-solid fa-flask"></i> Digital Lab Access</span>
           </div>
           <button class="btn btn-outline btn-block" onclick="openProgramDetail('mtech-ai')">View Syllabus & Details</button>
+        </div>
+
+        <!-- Program: MSc Medical Anatomy -->
+        <div class="program-card" data-category="med">
+          <div class="program-badge">2 Years • PG Degree</div>
+          <div class="program-icon"><i class="fa-solid fa-flask-vial"></i></div>
+          <h3 class="program-title">MSc Medical in Anatomy</h3>
+          <p class="program-desc">Focuses on human body structures at gross, microscopic, and developmental levels. Practical dissection, histology, and pathology.</p>
+          <div class="program-meta">
+            <span><i class="fa-solid fa-graduation-cap"></i> Eligibility: B.Sc. Medical / Life Sciences</span>
+            <span><i class="fa-solid fa-microscope"></i> Anatomy & Imaging Labs</span>
+          </div>
+          <button class="btn btn-outline btn-block" onclick="openProgramDetail('msc-anatomy')">View Syllabus & Details</button>
         </div>
 
         <!-- Program 3 -->
@@ -553,6 +567,7 @@
               <select id="calcProgram" class="form-control" onchange="calculateFee()">
                 <option value="btech">B.Tech Computer Science / Robotics (UG)</option>
                 <option value="mtech">M.Tech AI & Software Eng. (PG)</option>
+                <option value="msc-anatomy">MSc Medical in Anatomy (PG)</option>
                 <option value="diploma">Skill India Vocational Diploma (1 Year)</option>
                 <option value="trade">Technician Trade Certificate (6 Months)</option>
                 <option value="mba">MBA Technology Management (PG)</option>
@@ -694,6 +709,7 @@
         <ul>
           <li><a href="#about"><i class="fa-solid fa-angle-right"></i> UGC 2(f) Recognition</a></li>
           <li><a href="programs/btech-computer-science/"><i class="fa-solid fa-angle-right"></i> Software Engineering UG</a></li>
+          <li><a href="programs/msc-medical-anatomy/"><i class="fa-solid fa-angle-right"></i> MSc Medical Anatomy PG</a></li>
           <li><a href="#academics"><i class="fa-solid fa-angle-right"></i> Skill India Vocational Tracks</a></li>
           <li><a href="campus-facilities/"><i class="fa-solid fa-angle-right"></i> Centralized Digital Library</a></li>
           <li><a href="degree-verification/"><i class="fa-solid fa-angle-right"></i> Degree Verification Lookup</a></li>
@@ -784,6 +800,7 @@
             <div class="form-group">
               <label for="appProgram">Target Academic Track</label>
               <select id="appProgram" class="form-control">
+                <option value="MSc Anatomy">MSc Medical in Anatomy (2 Yrs)</option>
                 <option value="B.Tech CSE">B.Tech Computer Science & Software Engineering (4 Yrs)</option>
                 <option value="M.Tech AI">M.Tech AI & Machine Learning (2 Yrs)</option>
                 <option value="B.Tech Robotics">B.Tech Robotics & Automation (4 Yrs)</option>

@@ -302,6 +302,13 @@ function openProgramDetail(programKey) {
       description: 'Advanced postgraduate track focusing on generative models, neural network optimization, natural language processing, and enterprise MLOps.',
       careers: 'AI Research Scientist, ML Engineer, Data Scientist, Tech Lead'
     },
+    'msc-anatomy': {
+      title: 'MSc Medical in Anatomy',
+      duration: '2 Years (4 Semesters)',
+      eligibility: 'B.Sc. in Medical Anatomy / biological sciences / allied health or equivalent (Min 50% Marks)',
+      description: 'Master of Science in Medical Anatomy focuses on human body structure at gross, microscopic, and developmental levels, combining theoretical foundation with dissection, histology, and modern imaging.',
+      careers: 'Anatomical Lab In-Charge, Anatomy Lecturer, Medical Research Associate, Pathology Support Specialist'
+    },
     'btech-robotics': {
       title: 'B.Tech Robotics & Industrial Automation',
       duration: '4 Years (8 Semesters)',
@@ -341,6 +348,14 @@ function openProgramDetail(programKey) {
 
   if (modalTitle && modalBody && modal) {
     modalTitle.innerHTML = `<i class="fa-solid fa-book-open"></i> ${p.title}`;
+    
+    let detailButton = '';
+    if (programKey === 'btech-cse') {
+      detailButton = `<button class="btn btn-outline btn-block mt-2" onclick="closeStatutoryModal(); window.location.href='programs/btech-computer-science/';"><i class="fa-solid fa-circle-info"></i> View Full Syllabus & Detailed Page</button>`;
+    } else if (programKey === 'msc-anatomy') {
+      detailButton = `<button class="btn btn-outline btn-block mt-2" onclick="closeStatutoryModal(); window.location.href='programs/msc-medical-anatomy/';"><i class="fa-solid fa-circle-info"></i> View Full Syllabus & Detailed Page</button>`;
+    }
+
     modalBody.innerHTML = `
       <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
         <span class="badge badge-accent"><i class="fa-solid fa-clock"></i> ${p.duration}</span>
@@ -354,6 +369,7 @@ function openProgramDetail(programKey) {
       <button class="btn btn-primary btn-block mt-3" onclick="closeStatutoryModal(); openApplyModal();">
         <i class="fa-solid fa-paper-plane"></i> Apply for this Program
       </button>
+      ${detailButton}
     `;
     modal.classList.add('active');
   }
@@ -411,6 +427,7 @@ function calculateFee() {
 
   let baseTuition = 45000;
   if (program === 'mtech') baseTuition = 55000;
+  else if (program === 'msc-anatomy') baseTuition = 45000;
   else if (program === 'diploma') baseTuition = 28000;
   else if (program === 'trade') baseTuition = 18000;
   else if (program === 'mba') baseTuition = 60000;
@@ -454,6 +471,7 @@ function openApplyWithFee() {
   if (appProgSelect && calcProg) {
     let targetVal = 'B.Tech CSE';
     if (calcProg === 'mtech') targetVal = 'M.Tech AI';
+    else if (calcProg === 'msc-anatomy') targetVal = 'MSc Anatomy';
     else if (calcProg === 'diploma') targetVal = 'Diploma Cyber';
     else if (calcProg === 'trade') targetVal = 'Cert IoT';
     else if (calcProg === 'mba') targetVal = 'MBA Tech';
