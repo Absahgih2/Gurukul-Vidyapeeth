@@ -309,6 +309,20 @@ function openProgramDetail(programKey) {
       description: 'Master of Science in Medical Anatomy focuses on human body structure at gross, microscopic, and developmental levels, combining theoretical foundation with dissection, histology, and modern imaging.',
       careers: 'Anatomical Lab In-Charge, Anatomy Lecturer, Medical Research Associate, Pathology Support Specialist'
     },
+    'msc-pharmacology': {
+      title: 'MSc Medical in Pharmacology',
+      duration: '3 Years (6 Semesters)',
+      eligibility: 'B.Sc. Medical / Life Sciences or equivalent (Min 50% Marks)',
+      description: 'The Master of Science in Medical Pharmacology is a specialized postgraduate program providing in-depth training in drug actions, toxicological methods, clinical research protocols, and innovations.',
+      careers: 'Clinical Research Associate, Pharmacovigilance Officer, Drug Safety Specialist, Academic Lecturer'
+    },
+    'msc-biochemistry': {
+      title: 'MSc Medical in Biochemistry',
+      duration: '3 Years (6 Semesters)',
+      eligibility: 'B.Sc. in Biochemistry / Life Sciences / Microbiology / Chemistry or equivalent (Min 50% Marks)',
+      description: 'M.Sc Medical in Biochemistry focuses on molecular biology, enzymology, metabolism, diagnostic immunology, and advanced clinical laboratory diagnostics in health and disease.',
+      careers: 'Clinical Biochemist, Diagnostic Lab Manager, Biotechnology Researcher, Quality Assurance Specialist'
+    },
     'btech-robotics': {
       title: 'B.Tech Robotics & Industrial Automation',
       duration: '4 Years (8 Semesters)',
@@ -349,12 +363,13 @@ function openProgramDetail(programKey) {
   if (modalTitle && modalBody && modal) {
     modalTitle.innerHTML = `<i class="fa-solid fa-book-open"></i> ${p.title}`;
     
-    let detailButton = '';
-    if (programKey === 'btech-cse') {
-      detailButton = `<button class="btn btn-outline btn-block mt-2" onclick="closeStatutoryModal(); window.location.href='programs/btech-computer-science/';"><i class="fa-solid fa-circle-info"></i> View Full Syllabus & Detailed Page</button>`;
-    } else if (programKey === 'msc-anatomy') {
-      detailButton = `<button class="btn btn-outline btn-block mt-2" onclick="closeStatutoryModal(); window.location.href='programs/msc-medical-anatomy/';"><i class="fa-solid fa-circle-info"></i> View Full Syllabus & Detailed Page</button>`;
-    }
+    let folder = programKey;
+    if (programKey === 'btech-cse') folder = 'btech-computer-science';
+    else if (programKey === 'msc-anatomy') folder = 'msc-medical-anatomy';
+    else if (programKey === 'msc-pharmacology') folder = 'msc-medical-pharmacology';
+    else if (programKey === 'msc-biochemistry') folder = 'msc-medical-biochemistry';
+    
+    let detailButton = `<button class="btn btn-outline btn-block mt-2" onclick="closeStatutoryModal(); window.location.href='programs/${folder}/index.html';"><i class="fa-solid fa-circle-info"></i> View Full Syllabus & Detailed Page</button>`;
 
     modalBody.innerHTML = `
       <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
@@ -428,9 +443,13 @@ function calculateFee() {
   let baseTuition = 45000;
   if (program === 'mtech') baseTuition = 55000;
   else if (program === 'msc-anatomy') baseTuition = 45000;
+  else if (program === 'msc-pharmacology') baseTuition = 45000;
+  else if (program === 'msc-biochemistry') baseTuition = 54000;
   else if (program === 'diploma') baseTuition = 28000;
   else if (program === 'trade') baseTuition = 18000;
   else if (program === 'mba') baseTuition = 60000;
+  else if (program === 'allied-health') baseTuition = 30000;
+  else if (program === 'vocational') baseTuition = 17500;
 
   // Domicile Grant
   let grantPercent = 0;
@@ -472,6 +491,8 @@ function openApplyWithFee() {
     let targetVal = 'B.Tech CSE';
     if (calcProg === 'mtech') targetVal = 'M.Tech AI';
     else if (calcProg === 'msc-anatomy') targetVal = 'MSc Anatomy';
+    else if (calcProg === 'msc-pharmacology') targetVal = 'MSc Pharmacology';
+    else if (calcProg === 'msc-biochemistry') targetVal = 'MSc Biochemistry';
     else if (calcProg === 'diploma') targetVal = 'Diploma Cyber';
     else if (calcProg === 'trade') targetVal = 'Cert IoT';
     else if (calcProg === 'mba') targetVal = 'MBA Tech';
@@ -530,41 +551,39 @@ function submitApplication() {
   const successIdSpan = document.getElementById('appSuccessId');
   if (successIdSpan) successIdSpan.textContent = appId;
 
-  // Build beautiful simulated email receipt HTML for visual feedback
+  // Build beautiful WhatsApp background dispatch receipt HTML
   const receiptHtml = `
     <div style="text-align: center; margin-bottom: 1.5rem;">
       <i class="fa-solid fa-circle-check text-success" style="font-size: 3rem; margin-bottom: 0.75rem;"></i>
-      <h3 style="font-size: 1.5rem; color: var(--text-main); font-family: var(--font-heading);">Application Submitted!</h3>
+      <h3 style="font-size: 1.5rem; color: var(--text-main); font-family: var(--font-heading);">Application Logged!</h3>
       <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
         Provisional Application ID: <strong style="color: var(--primary);">${appId}</strong>
       </p>
     </div>
 
-    <!-- Email Dispatch Receipt Box -->
+    <!-- WhatsApp Dispatch Receipt Box -->
     <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem; text-align: left; animation: fadeIn 0.4s ease;">
-      <h4 style="font-size: 0.9rem; color: var(--emerald); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-weight: 700;">
-        <i class="fa-solid fa-paper-plane"></i> Automated Email Dispatch Confirmation
+      <h4 style="font-size: 0.9rem; color: #25d366; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-weight: 700;">
+        <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i> WhatsApp Dispatch Status
       </h4>
       <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; color: var(--text-muted);">
-        <div><strong style="color: var(--text-main);">To (Registrar):</strong> home.gurukulvidhyapeethuniversity.com</div>
-        <div><strong style="color: var(--text-main);">To (Student):</strong> ${studentEmail}</div>
-        <div style="margin-top: 0.25rem; border-top: 1px dashed var(--border-color); padding-top: 0.5rem;">
-          <strong style="color: var(--text-main);">Subject:</strong> GVU Admission - ${program} - ${fullName}
-        </div>
-        <div style="margin-top: 0.25rem; background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-family: monospace; font-size: 0.75rem; color: var(--text-dim); line-height: 1.4; word-break: break-word;">
-          Dear Registrar & ${fullName},<br><br>
-          An admission application has been filed for:<br>
-          • Application ID: ${appId}<br>
-          • Target Program: ${program}<br>
-          • Student Phone: ${phone}<br>
-          • State Domicile: ${state}<br>
-          • Hostel Required: ${hostel}<br><br>
+        <div><strong style="color: var(--text-main);">To Registrar:</strong> Dispatched to Admission Desk</div>
+        <div><strong style="color: var(--text-main);">To Student WhatsApp:</strong> ${phone}</div>
+        <div style="margin-top: 0.5rem; background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-family: monospace; font-size: 0.75rem; color: var(--text-dim); line-height: 1.4; word-break: break-word;">
+          <strong>*Gurukul Vidyapeeth Admission Application*</strong><br>
+          ====================================<br>
+          • <strong>Application ID</strong>: ${appId}<br>
+          • <strong>Student Name</strong>: ${fullName}<br>
+          • <strong>Target Program</strong>: ${program}<br>
+          • <strong>Student Phone</strong>: ${phone}<br>
+          • <strong>State Domicile</strong>: ${state}<br>
+          • <strong>Hostel Required</strong>: ${hostel}<br><br>
           Best Regards,<br>
           Gurukul Vidyapeeth Admission Registry
         </div>
       </div>
       <div style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--emerald);">
-        <i class="fa-solid fa-circle-check"></i> <span>Receipt confirmation successfully sent to both mailboxes.</span>
+        <i class="fa-solid fa-circle-check"></i> <span>Notifications successfully queued in the background.</span>
       </div>
     </div>
 
@@ -577,8 +596,8 @@ function submitApplication() {
     panelStep4.innerHTML = `<div class="success-box" style="padding: 0.5rem 0;">${receiptHtml}</div>`;
   }
 
-  // Execute background fetch API email dispatch request to send_email.php
-  fetch('/send_email.php', {
+  // Execute background fetch API WhatsApp dispatch request to send_whatsapp.php
+  fetch('/send_whatsapp.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -594,13 +613,13 @@ function submitApplication() {
   .then(res => res.json())
   .then(data => {
     if (data.status === 'success') {
-      console.log(`[Email Dispatch Success] ${data.message}`);
+      console.log(`[WhatsApp Dispatch Success] ${data.message}`);
     } else {
-      console.warn(`[Email Dispatch Warning] Server failed to dispatch: ${data.message}`);
+      console.warn(`[WhatsApp Dispatch Warning] Server failed to dispatch: ${data.message}`);
     }
   })
   .catch(err => {
-    console.warn('[Email Dispatch Client Warning] Local environment fallback: Cannot contact /send_email.php mailer script.');
+    console.warn('[WhatsApp Dispatch Client Warning] Local environment fallback: Cannot contact /send_whatsapp.php helper script.');
   });
 
   nextWizardStep(4);
