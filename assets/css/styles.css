@@ -1851,3 +1851,177 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 12px 30px rgba(99, 102, 241, 0.7);
   border-color: rgba(255, 255, 255, 0.8);
 }
+
+/* Custom Header Branding Layout - Two-Row Header Design */
+.site-header .header-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: auto !important;
+  min-height: unset !important;
+  padding: 12px 0 !important;
+}
+
+.header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.brand-logo-large {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center university name/address container */
+  position: relative;
+  width: 100%;
+  text-decoration: none;
+}
+
+.brand-logo-img-large {
+  position: absolute;
+  left: 0;
+  height: 84px !important;
+  width: auto !important;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.brand-logo-large:hover .brand-logo-img-large {
+  transform: scale(1.02);
+}
+
+.logo-text-large {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* Center align inside the text block */
+  text-align: center; /* Center text */
+}
+
+.brand-name-large {
+  font-family: var(--font-heading) !important;
+  font-weight: 800 !important;
+  font-size: 2.2rem !important; /* Big size from left to right */
+  line-height: 1.1 !important;
+  letter-spacing: -0.015em !important;
+  color: #0f223f !important; /* Premium dark navy color */
+  transition: var(--transition);
+}
+
+[data-theme="dark"] .brand-name-large {
+  color: #ffffff !important;
+}
+
+.brand-location-large {
+  font-family: var(--font-body) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  color: var(--emerald) !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  margin-top: 3px !important;
+}
+
+.header-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid var(--border-color);
+  margin-top: 12px;
+  padding-top: 10px;
+  flex-wrap: nowrap !important; /* Single line layout */
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem !important; /* Spacing adjusted to fit in single line */
+  flex-wrap: nowrap !important; /* Single line layout */
+}
+
+.nav-link {
+  white-space: nowrap !important; /* Single line link text */
+}
+
+.header-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: nowrap !important; /* Single line layout */
+}
+
+.header-cta .btn {
+  white-space: nowrap !important; /* Single line button text */
+}
+
+/* Make sure mobile hamburger toggle displays inside the top row */
+.header-top-row .mobile-toggle {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .nav-menu {
+    gap: 0.75rem !important; /* Even smaller gap on tablets */
+  }
+}
+
+@media (max-width: 768px) {
+  .site-header .header-container {
+    padding: 8px 0 !important;
+  }
+  
+  .header-bottom-row {
+    display: none !important; /* Hide navigation and CTA row on mobile */
+  }
+
+  .header-top-row {
+    gap: 12px;
+  }
+
+  .header-top-row .mobile-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .brand-logo-large {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    position: static;
+    width: auto;
+    gap: 0.75rem;
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .brand-logo-img-large {
+    position: static;
+    height: 48px !important;
+    width: auto !important;
+    flex-shrink: 0;
+  }
+
+  .logo-text-large {
+    align-items: flex-start;
+    text-align: left;
+    min-width: 0;
+  }
+
+  .brand-name-large {
+    font-size: 1.15rem !important;
+    white-space: normal !important;
+    word-break: break-word;
+  }
+
+  .brand-location-large {
+    font-size: 0.72rem !important;
+    margin-top: 1px !important;
+  }
+}
+
+
