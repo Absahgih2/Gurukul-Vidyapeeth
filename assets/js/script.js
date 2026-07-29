@@ -350,6 +350,13 @@ function openProgramDetail(programKey) {
       eligibility: 'Graduation degree in any discipline (Min 50%)',
       description: 'Blends executive business administration with software product management, IT governance, agile leadership, and venture building.',
       careers: 'IT Product Manager, CTO Executive Trainee, Tech Business Analyst'
+    },
+    'vlda': {
+      title: 'Veterinary Livestock Development Assistant (VLDA)',
+      duration: '2 Years (4 Semesters)',
+      eligibility: '10+2 with Physics, Chemistry & Biology/Agriculture (Min 50% Marks)',
+      description: 'A comprehensive 2-year diploma program (commonly known as VLDD) equipping students with practical trade skills in domestic animal anatomy, feeding, reproduction, and first-aid healthcare.',
+      careers: 'Veterinary Assistant, Livestock Supervisor, Animal Health Worker, Dairy Farm Manager'
     }
   };
 
@@ -450,6 +457,7 @@ function calculateFee() {
   else if (program === 'mba') baseTuition = 60000;
   else if (program === 'allied-health') baseTuition = 30000;
   else if (program === 'vocational') baseTuition = 17500;
+  else if (program === 'vlda') baseTuition = 75000;
 
   // Domicile Grant
   let grantPercent = 0;
@@ -496,6 +504,7 @@ function openApplyWithFee() {
     else if (calcProg === 'diploma') targetVal = 'Diploma Cyber';
     else if (calcProg === 'trade') targetVal = 'Cert IoT';
     else if (calcProg === 'mba') targetVal = 'MBA Tech';
+    else if (calcProg === 'vlda') targetVal = 'VLDA';
     appProgSelect.value = targetVal;
   }
   
