@@ -110,15 +110,21 @@
   <!-- Header / Navigation -->
   <header class="site-header" id="siteHeader">
     <div class="container header-container">
-      <a href="../../index.html" class="brand-logo">
-        <img src="../../brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
-        <div class="logo-text">
-          <span class="brand-name">GURUKUL VIDYAPEETH</span>
-          <span class="brand-sub">UNIVERSITY • NAMCHI, SIKKIM</span>
-        </div>
-      </a>
+      <div class="header-top-row">
+        <a href="../../index.html" class="brand-logo-large">
+          <img src="../../brand-logo-transparent.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img-large">
+          <div class="logo-text-large">
+            <span class="brand-name-large">GURUKUL VIDHYAPEETH UNIVERSITY</span>
+            <span class="brand-location-large">Namchi, Sikkim</span>
+          </div>
+        </a>
+        <button class="mobile-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
 
-      <nav class="nav-menu" id="navMenu">
+      <div class="header-bottom-row">
+        <nav class="nav-menu" id="navMenu">
         <a href="../../index.html#about" class="nav-link">About & UGC Status</a>
         <a href="../../index.html#academics" class="nav-link active">Programs & Skill India</a>
         <a href="../../campus-facilities/index.html" class="nav-link">Campus & Labs</a>
@@ -126,13 +132,11 @@
         <a href="../../fee-structure-scholarship/index.html" class="nav-link">Fee Estimator</a>
         <a href="../../index.html#contact" class="nav-link">Contact & Location</a>
       </nav>
-
-      <div class="header-cta">
+        <div class="header-cta">
         <button class="btn btn-outline hide-mobile" id="openVerifyBtn"><i class="fa-solid fa-magnifying-glass"></i> Roll Lookup</button>
         <button class="btn btn-primary" id="openApplyBtn"><i class="fa-solid fa-paper-plane"></i> <span class="hide-mobile">Apply 2026-27</span><span class="show-mobile-inline">Apply</span></button>
-        <button class="mobile-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
-          <i class="fa-solid fa-bars"></i>
-        </button>
+        
+      </div>
       </div>
     </div>
   </header>
@@ -142,9 +146,9 @@
   <div class="mobile-drawer" id="mobileDrawer">
     <div class="drawer-header">
       <div class="brand-logo">
-        <img src="../../brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
+        <img src="../../brand-logo-transparent.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
         <div class="logo-text">
-          <span class="brand-name">GURUKUL VIDYAPEETH</span>
+          <span class="brand-name">GURUKUL VIDHYAPEETH</span>
           <span class="brand-sub">UNIVERSITY • SIKKIM</span>
         </div>
       </div>
@@ -196,6 +200,47 @@
       Every healthcare organisation requires professionals who can look after office operations, accounting, marketing, PR, inventory management, HR management, customer satisfaction and many such services. To fulfil these job roles, students are trained through the Healthcare Management programme. After completing this course, a candidate will possess management skills and knowledge to carry out professional responsibilities with efficiency and effectiveness.
     </p>
     
+        </div>
+      </div>
+
+      <!-- B.Voc Features Block -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 3rem; box-shadow: var(--shadow-sm); margin-bottom: 3rem;">
+        <h3 style="font-size: 1.6rem; color: var(--text-main); margin-bottom: 1.5rem;"><i class="fa-solid fa-graduation-cap text-primary"></i> Key Features of B.Voc (Bachelor of Vocation)</h3>
+        <p style="color:var(--text-muted); line-height: 1.7; margin-bottom: 2rem; font-size: 1.05rem;">
+          The Bachelor of Vocation (B.Voc) is a three-year undergraduate degree program focused on practical, industry-ready skill development rather than purely theoretical education. Unlike traditional degrees, B.Voc ensures direct alignment with National Skill Qualification Framework (NSQF) occupational standards.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+          <div style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <h4 style="font-size: 1.15rem; color: var(--primary); margin-bottom: 0.75rem;"><i class="fa-solid fa-chart-pie"></i> Curriculum Split (Theory vs. Practical)</h4>
+            <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
+              The course structure generally includes <strong>40% general education (theory)</strong> and <strong>60% vocational training (practical / on-the-job training)</strong>. This ratio ensures students spend the majority of their studies building real-world expertise and hands-on skills in partner healthcare facilities.
+            </p>
+          </div>
+          <div style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <h4 style="font-size: 1.15rem; color: var(--emerald); margin-bottom: 0.75rem;"><i class="fa-solid fa-right-from-bracket"></i> Multiple Entry and Exit Options</h4>
+            <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0.5rem;">
+              Aligned with national UGC guidelines, students can exit early at different milestone levels with valid qualifications:
+            </p>
+            <ul style="list-style-type: none; padding-left: 0; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem;">
+              <li><i class="fa-solid fa-circle-check text-success"></i> <strong>1 Year:</strong> Exit with a <strong>Diploma</strong></li>
+              <li><i class="fa-solid fa-circle-check text-success"></i> <strong>2 Years:</strong> Exit with an <strong>Advanced Diploma</strong></li>
+              <li><i class="fa-solid fa-circle-check text-success"></i> <strong>3 Years:</strong> Graduate with a full <strong>B.Voc Degree</strong></li>
+            </ul>
+          </div>
+        </div>
+        <div style="margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <div style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <h4 style="font-size: 1.15rem; color: var(--gold); margin-bottom: 0.75rem;"><i class="fa-solid fa-user-check"></i> Eligibility Criteria</h4>
+            <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
+              Students who have completed <strong>10+2 (Higher Secondary)</strong> in any stream, or who hold an <strong>ITI/polytechnic diploma</strong>, are fully eligible to apply for direct admission into our vocational streams.
+            </p>
+          </div>
+          <div style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <h4 style="font-size: 1.15rem; color: var(--cyan); margin-bottom: 0.75rem;"><i class="fa-solid fa-star"></i> Popular Specializations</h4>
+            <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
+              Core industries aligned with B.Voc structures include <strong>Software Development</strong>, <strong>Retail Management</strong>, <strong>Healthcare & Paramedical Operations</strong>, <strong>Hospitality & Catering</strong>, <strong>Digital Marketing</strong>, and <strong>Green Energy</strong> trades.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -448,6 +493,15 @@
                 <td><a href="../dvoc-hospital-management/index.html" class="view-btn"><i class="fa-solid fa-circle-info"></i> View Syllabus &amp; Details</a></td>
               </tr>
         
+              <tr>
+                <td style="font-weight:600;"><a href="../vlda/index.html" style="color:var(--text-main); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-main)'"><i class="fa-solid fa-user-doctor" style="color:var(--primary); font-size:0.9rem;"></i> Veterinary Livestock Development Assistant (VLDA)</a></td>
+                <td>Diploma</td>
+                <td>2 Years (4 Sem)</td>
+                <td>12th Science / Agriculture</td>
+                <td style="font-weight:700; color:var(--text-main);">Rs 1,50,000 /-</td>
+                <td><a href="../vlda/index.html" class="view-btn"><i class="fa-solid fa-circle-info"></i> View Syllabus &amp; Details</a></td>
+              </tr>
+        
             </tbody>
           </table>
         </div>
@@ -581,6 +635,7 @@
                 <option value="Diploma Cyber">Skill India Diploma in Cybersecurity (1 Yr)</option>
                 <option value="Cert IoT">Technician Certificate in IoT Hardware (6 Months)</option>
                 <option value="MBA Tech">MBA in Technology Management (2 Yrs)</option>
+                <option value="VLDA">Veterinary Livestock Development Assistant (VLDA) (2 Yrs)</option>
               </select>
             </div>
             <div class="form-group">

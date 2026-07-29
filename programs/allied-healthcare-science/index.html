@@ -110,15 +110,21 @@
   <!-- Header / Navigation -->
   <header class="site-header" id="siteHeader">
     <div class="container header-container">
-      <a href="../../index.html" class="brand-logo">
-        <img src="../../brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
-        <div class="logo-text">
-          <span class="brand-name">GURUKUL VIDYAPEETH</span>
-          <span class="brand-sub">UNIVERSITY • NAMCHI, SIKKIM</span>
-        </div>
-      </a>
+      <div class="header-top-row">
+        <a href="../../index.html" class="brand-logo-large">
+          <img src="../../brand-logo-transparent.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img-large">
+          <div class="logo-text-large">
+            <span class="brand-name-large">GURUKUL VIDHYAPEETH UNIVERSITY</span>
+            <span class="brand-location-large">Namchi, Sikkim</span>
+          </div>
+        </a>
+        <button class="mobile-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
 
-      <nav class="nav-menu" id="navMenu">
+      <div class="header-bottom-row">
+        <nav class="nav-menu" id="navMenu">
         <a href="../../index.html#about" class="nav-link">About & UGC Status</a>
         <a href="../../index.html#academics" class="nav-link active">Programs & Skill India</a>
         <a href="../../campus-facilities/index.html" class="nav-link">Campus & Labs</a>
@@ -126,13 +132,11 @@
         <a href="../../fee-structure-scholarship/index.html" class="nav-link">Fee Estimator</a>
         <a href="../../index.html#contact" class="nav-link">Contact & Location</a>
       </nav>
-
-      <div class="header-cta">
+        <div class="header-cta">
         <button class="btn btn-outline hide-mobile" id="openVerifyBtn"><i class="fa-solid fa-magnifying-glass"></i> Roll Lookup</button>
         <button class="btn btn-primary" id="openApplyBtn"><i class="fa-solid fa-paper-plane"></i> <span class="hide-mobile">Apply 2026-27</span><span class="show-mobile-inline">Apply</span></button>
-        <button class="mobile-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
-          <i class="fa-solid fa-bars"></i>
-        </button>
+        
+      </div>
       </div>
     </div>
   </header>
@@ -142,9 +146,9 @@
   <div class="mobile-drawer" id="mobileDrawer">
     <div class="drawer-header">
       <div class="brand-logo">
-        <img src="../../brand-logo.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
+        <img src="../../brand-logo-transparent.png" alt="Gurukul Vidyapeeth University Logo" class="brand-logo-img" style="height: 48px; width: auto; object-fit: contain;">
         <div class="logo-text">
-          <span class="brand-name">GURUKUL VIDYAPEETH</span>
+          <span class="brand-name">GURUKUL VIDHYAPEETH</span>
           <span class="brand-sub">UNIVERSITY • SIKKIM</span>
         </div>
       </div>
@@ -458,6 +462,15 @@
               </tr>
         
               <tr>
+                <td style="font-weight:600;"><a href="../vlda/index.html" style="color:var(--text-main); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-main)'"><i class="fa-solid fa-book-medical" style="color:var(--primary); font-size:0.9rem;"></i> Veterinary Livestock Development Assistant (VLDA)</a></td>
+                <td>Diploma</td>
+                <td>2 Years (4 Sem)</td>
+                <td>12th Science / Agriculture</td>
+                <td style="font-weight:700; color:var(--text-main);">Rs 1,50,000 /-</td>
+                <td><a href="../vlda/index.html" class="view-btn"><i class="fa-solid fa-circle-info"></i> View Syllabus &amp; Details</a></td>
+              </tr>
+        
+              <tr>
                 <td style="font-weight:600;"><a href="../diploma-health-sanitary-inspector/index.html" style="color:var(--text-main); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; transition:color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-main)'"><i class="fa-solid fa-book-medical" style="color:var(--primary); font-size:0.9rem;"></i> Diploma in Health & Sanitary Inspector</a></td>
                 <td>Diploma</td>
                 <td>4 Semester</td>
@@ -680,6 +693,7 @@
                 <option value="Diploma Cyber">Skill India Diploma in Cybersecurity (1 Yr)</option>
                 <option value="Cert IoT">Technician Certificate in IoT Hardware (6 Months)</option>
                 <option value="MBA Tech">MBA in Technology Management (2 Yrs)</option>
+                <option value="VLDA">Veterinary Livestock Development Assistant (VLDA) (2 Yrs)</option>
               </select>
             </div>
             <div class="form-group">
