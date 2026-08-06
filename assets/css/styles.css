@@ -433,6 +433,101 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
 }
 
+/* Student Dropdown Styling */
+.nav-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.dropdown-icon {
+  font-size: 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.nav-dropdown:hover .dropdown-icon {
+  transform: rotate(180deg);
+}
+
+.dropdown-content {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(15px);
+  width: 250px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  padding: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-dropdown:hover .dropdown-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(5px);
+}
+
+.dropdown-content a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.dropdown-content a i {
+  color: var(--emerald);
+  font-size: 0.95rem;
+}
+
+.dropdown-content a:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 6px 0;
+}
+
+.dropdown-center-link {
+  justify-content: center !important;
+  font-weight: 600 !important;
+  text-align: center;
+}
+
+.dropdown-center-link:last-of-type {
+  color: var(--primary) !important;
+}
+
+.dropdown-center-link:last-of-type i {
+  color: var(--primary) !important;
+}
+
+.dropdown-center-link:last-of-type:hover {
+  background: rgba(99, 102, 241, 0.1) !important;
+}
+
 .header-cta {
   display: flex;
   align-items: center;
