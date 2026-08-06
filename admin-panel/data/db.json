@@ -1,0 +1,228 @@
+{
+  "students": [
+    {
+      "id": "1786047454443",
+      "name": "RAMESH",
+      "fatherName": "SURESH",
+      "motherName": "GEETA",
+      "dob": "03/03/1992",
+      "rollNo": "739156",
+      "enrollmentNo": "2023974163",
+      "course": "DIPLOMA IN BUSINESS MANAGEMENT",
+      "session": "2024",
+      "photo": "/uploads/photo-1786048835054-442170892.png",
+      "marksheets": {
+        "1st Year": {
+          "dmcNo": "3686",
+          "issueDate": "13-08-2023",
+          "marks": {
+            "DBM 101": 58,
+            "DBM 102": 53,
+            "DBM 103": 55,
+            "DBM 104": 80,
+            "DBM 105": 77,
+            "DBM 106": 51,
+            "DBM 107": 74,
+            "DBM 108": 44,
+            "DBM 109": 69,
+            "DBM 110": 67,
+            "DBM 111": 49,
+            "DBM 112": 79
+          },
+          "isPublished": false
+        },
+        "2nd Year": {
+          "dmcNo": "3687",
+          "issueDate": "11-08-2024",
+          "marks": {
+            "DBM 201": 77,
+            "DBM 202": 64,
+            "DBM 203": 48,
+            "DBM 204": 66,
+            "DBM 205": 62,
+            "DBM 206": 79,
+            "DBM 207": 65,
+            "DBM 208": 77,
+            "DBM 209": 56,
+            "DBM 210": 53,
+            "DBM 211": 52,
+            "DBM 212": 45
+          },
+          "isPublished": false
+        }
+      },
+      "isPublished": true,
+      "createdAt": "2026-08-06T20:17:34.443Z",
+      "publishedDocs": {
+        "idCard": false,
+        "marksheets": {},
+        "admitCards": {},
+        "results": {
+          "1st Year": true,
+          "2nd Year": true
+        }
+      }
+    }
+  ],
+  "courses": [
+    {
+      "name": "DIPLOMA IN BUSINESS MANAGEMENT",
+      "type": "year",
+      "terms": {
+        "1st Year": [
+          {
+            "code": "DBM 101",
+            "name": "PRINCIPLES OF MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 102",
+            "name": "BUSINESS COMMUNICATION & PERSONALITY DEVELOPMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 103",
+            "name": "BUSINESS ECONOMICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 104",
+            "name": "FINANCIAL ACCOUNTING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 105",
+            "name": "MARKETING MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 106",
+            "name": "HUMAN RESOURCE MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 107",
+            "name": "BUSINESS MATHEMATICS & STATISTICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 108",
+            "name": "COMPUTER APPLICATIONS IN BUSINESS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 109",
+            "name": "BUSINESS ENVIRONMENT & ENTREPRENEURSHIP",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 110",
+            "name": "ENVIRONMENTAL STUDIES & BUSINESS ETHICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 111",
+            "name": "PROJECT/ VIVA",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 112",
+            "name": "PRACTICAL",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "2nd Year": [
+          {
+            "code": "DBM 201",
+            "name": "FINANCIAL MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 202",
+            "name": "OPERATIONS & PRODUCTION MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 203",
+            "name": "SALES & DISTRIBUTION MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 204",
+            "name": "CUSTOMER RELATIONSHIP MANAGEMENT (CRM)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 205",
+            "name": "BUSINESS LAW",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 206",
+            "name": "E-COMMERCE & DIGITAL BUSINESS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 207",
+            "name": "SUPPLY CHAIN & LOGISTICS MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 208",
+            "name": "STRATEGIC MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 209",
+            "name": "LEADERSHIP & ORGANIZATIONAL BEHAVIOUR",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 210",
+            "name": "BUSINESS PROJECT & ENTREPRENEURSHIP DEVELOPMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 211",
+            "name": "PROJECT/ VIVA",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "DBM 212",
+            "name": "PRACTICAL",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ]
+      }
+    }
+  ],
+  "settings": {
+    "lastRollNo": 739156,
+    "lastEnrollSuffix": 974163,
+    "lastDmcNo": 3687
+  }
+}
