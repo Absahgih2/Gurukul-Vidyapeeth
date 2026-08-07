@@ -202,26 +202,11 @@ export default function App() {
     }
   };
 
-  // Upload photo to backend
-  const handleCropComplete = async (croppedBase64) => {
-    setCropSrc(null); // Close cropper modal
-    try {
-      const response = await fetch('/api/upload-photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image: croppedBase64,
-          ext: '.jpg'
-        })
-      });
-      const data = await response.json();
-      if (data.photoUrl) {
-        setFormData(prev => ({ ...prev, photo: data.photoUrl }));
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Failed to upload cropped photo');
-    }
+  // Store cropped photo as base64 data URL directly in the database
+  // This avoids ephemeral filesystem issues on Render.com
+  const handleCropComplete = (croppedBase64) => {
+    setCropSrc(null);
+    setFormData(prev => ({ ...prev, photo: croppedBase64 }));
   };
 
   // Form Course Change => reset Term and Marks table
