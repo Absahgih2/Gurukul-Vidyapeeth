@@ -388,10 +388,10 @@ app.post('/api/upload-photo', upload.single('photo'), (req, res) => {
 // Register new student (auto-generates numbers and calculates dates)
 app.post('/api/students', (req, res) => {
   try {
-    const { name, fatherName, motherName, dob, courseName, session, marksheetsData } = req.body;
+    const { name, fatherName, motherName, dob, courseName, session, marksheetsData, email } = req.body;
     
-    if (!name || !fatherName || !motherName || !dob || !courseName || !session) {
-      return res.status(400).json({ error: 'Missing required student details' });
+    if (!name || !fatherName || !motherName || !dob || !courseName || !session || !email) {
+      return res.status(400).json({ error: 'Missing required student details (including Email ID)' });
     }
     
     const db = readDB();
@@ -456,6 +456,7 @@ app.post('/api/students', (req, res) => {
       fatherName,
       motherName,
       dob,
+      email: email.trim().toLowerCase(),
       rollNo,
       enrollmentNo,
       course: courseName,
@@ -481,7 +482,7 @@ app.post('/api/students', (req, res) => {
 app.put('/api/students/:id', (req, res) => {
   try {
     const { id } = req.params;
-    const { name, fatherName, motherName, dob, photo, marksheetsData, isCompleteEdit, courseName, session } = req.body;
+    const { name, fatherName, motherName, dob, photo, marksheetsData, isCompleteEdit, courseName, session, email } = req.body;
     
     const db = readDB();
     const studentIdx = db.students.findIndex(s => s.id === id);
@@ -498,6 +499,7 @@ app.put('/api/students/:id', (req, res) => {
     if (motherName) student.motherName = motherName;
     if (dob) student.dob = dob;
     if (photo !== undefined) student.photo = photo;
+    if (email !== undefined) student.email = email.trim().toLowerCase();
     
     if (isCompleteEdit) {
       // Changing Course/Session recalculates roll/enrollment number prefixes or structural terms
@@ -667,10 +669,10 @@ app.post('/api/students/:id/publish', (req, res) => {
 // Checks published students matching name AND (roll number OR enrollment number)
 app.get('/api/public/student', (req, res) => {
   try {
-    const { name, searchVal } = req.query; // searchVal can be rollNo or enrollmentNo
+    const { email, searchVal } = req.query; // searchVal can be rollNo or enrollmentNo
     
-    if (!name || !searchVal) {
-      return res.status(400).json({ error: 'Name and Roll/Enrollment number are required' });
+    if (!email || !searchVal) {
+      return res.status(400).json({ error: 'Email and Roll/Enrollment number are required' });
     }
     
     const db = readDB();
@@ -678,7 +680,7 @@ app.get('/api/public/student', (req, res) => {
     // Find matching published student
     const student = db.students.find(s => 
       s.isPublished && 
-      s.name.trim().toLowerCase() === name.trim().toLowerCase() && 
+      s.email && s.email.trim().toLowerCase() === email.trim().toLowerCase() && 
       (s.rollNo.trim() === searchVal.trim() || s.enrollmentNo.trim() === searchVal.trim())
     );
     
