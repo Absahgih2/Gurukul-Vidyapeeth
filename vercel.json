@@ -1,8 +1,8 @@
 {
-  "cleanUrls": true,
   "rewrites": [
     { "source": "/admin/assets/:path*", "destination": "/admin-panel/admin-build/assets/:path*" },
     { "source": "/admin", "destination": "/admin-panel/admin-build/index.html" },
+    { "source": "/admin/", "destination": "/admin-panel/admin-build/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/admin-build/index.html" },
     { "source": "/api/:path*", "destination": "https://gurukul-vidyapeeth.onrender.com/api/:path*" }
   ]
