@@ -33,6 +33,8 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+import { MongoClient } from 'mongodb';
+
 // Create data directory if not exists
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) {
@@ -40,6 +42,62 @@ if (!fs.existsSync(dataDir)) {
 }
 
 const dbPath = path.join(dataDir, 'db.json');
+
+// MongoDB cloud database sync configuration
+const MONGODB_URI = process.env.MONGODB_URI || ''; 
+let mongoClient = null;
+let mongoDb = null;
+let isMongoConnected = false;
+
+// Connect to MongoDB Atlas
+async function connectMongo() {
+  if (!MONGODB_URI || MONGODB_URI.includes('<db_username>')) {
+    console.log('MongoDB URI is not configured or contains placeholder. Running in local filesystem database mode.');
+    return;
+  }
+  try {
+    mongoClient = new MongoClient(MONGODB_URI);
+    await mongoClient.connect();
+    mongoDb = mongoClient.db('gurukul');
+    isMongoConnected = true;
+    console.log('Successfully connected to MongoDB Atlas cloud database.');
+    await syncFromMongo();
+  } catch (err) {
+    console.error('Failed to connect to MongoDB Atlas:', err);
+  }
+}
+
+// Sync database from MongoDB Atlas on startup
+async function syncFromMongo() {
+  if (!isMongoConnected) return;
+  try {
+    const col = mongoDb.collection('state');
+    const doc = await col.findOne({ _id: 'main_db' });
+    if (doc) {
+      const { _id, ...cleanData } = doc;
+      fs.writeFileSync(dbPath, JSON.stringify(cleanData, null, 2), 'utf8');
+      console.log('Synced local database file with latest cloud data.');
+    } else {
+      console.log('No cloud database state found. Syncing local data to MongoDB Atlas.');
+      const localData = readDB();
+      await col.insertOne({ _id: 'main_db', ...localData });
+    }
+  } catch (err) {
+    console.error('Error syncing from MongoDB Atlas:', err);
+  }
+}
+
+// Sync database to MongoDB Atlas on writes
+async function syncToMongo(data) {
+  if (!isMongoConnected) return;
+  try {
+    const col = mongoDb.collection('state');
+    await col.replaceOne({ _id: 'main_db' }, { _id: 'main_db', ...data }, { upsert: true });
+    console.log('Backed up database successfully to MongoDB Atlas.');
+  } catch (err) {
+    console.error('Error backing up database to MongoDB Atlas:', err);
+  }
+}
 
 // Helper to read database
 function readDB() {
@@ -54,6 +112,8 @@ function readDB() {
 // Helper to write database
 function writeDB(data) {
   fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
+  // Trigger background cloud backup
+  syncToMongo(data).catch(err => console.error('Background sync to MongoDB Atlas failed:', err));
 }
 
 // Multer storage for student photo uploads and CSV uploads
@@ -637,6 +697,7 @@ app.get('/api/public/student', (req, res) => {
 });
 
 // Start Express Server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Express server running on http://localhost:${PORT}`);
+  await connectMongo();
 });
