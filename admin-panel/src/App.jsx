@@ -48,6 +48,7 @@ export default function App() {
     courseName: '',
     session: '',
     photo: '',
+    email: '',
   });
   const [selectedTerm, setSelectedTerm] = useState(''); // e.g. "1st Semester"
   const [formMarksheets, setFormMarksheets] = useState({}); // { termName: { subjectCode: obtainedMarks } }
@@ -68,7 +69,7 @@ export default function App() {
   const [activeDocTerm, setActiveDocTerm] = useState('');
 
   // Portal Public Search States
-  const [portalName, setPortalName] = useState('');
+  const [portalEmail, setPortalEmail] = useState('');
   const [portalSearchVal, setPortalSearchVal] = useState('');
   const [portalStudent, setPortalStudent] = useState(null);
   const [portalCourse, setPortalCourse] = useState(null);
@@ -152,6 +153,7 @@ export default function App() {
       courseName: courses.length > 0 ? courses[0].name : '',
       session: '',
       photo: '',
+      email: '',
     });
     setSelectedTerm('');
     setFormMarksheets({});
@@ -169,6 +171,7 @@ export default function App() {
       courseName: student.course,
       session: student.session,
       photo: student.photo,
+      email: student.email || '',
     });
     
     // Choose the first marksheet term as selected
@@ -208,7 +211,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image: croppedBase64,
-          ext: '.png'
+          ext: '.jpg'
         })
       });
       const data = await response.json();
@@ -406,13 +409,13 @@ export default function App() {
     setPortalStudent(null);
     setPortalCourse(null);
 
-    if (!portalName || !portalSearchVal) {
-      setPortalError('Both student name and roll/enrollment number are required.');
+    if (!portalEmail || !portalSearchVal) {
+      setPortalError('Both student email and roll/enrollment number are required.');
       return;
     }
 
     try {
-      const res = await fetch(`/api/public/student?name=${encodeURIComponent(portalName)}&searchVal=${encodeURIComponent(portalSearchVal)}`);
+      const res = await fetch(`/api/public/student?email=${encodeURIComponent(portalEmail)}&searchVal=${encodeURIComponent(portalSearchVal)}`);
       const data = await res.json();
       
       if (!res.ok) {
@@ -889,6 +892,18 @@ export default function App() {
                           onChange={(e) => setFormData(prev => ({ ...prev, session: e.target.value.toUpperCase() }))}
                         />
                       </div>
+
+                      <div>
+                        <label className="form-label">Email ID</label>
+                        <input 
+                          type="email" 
+                          required 
+                          placeholder="student@example.com"
+                          className="form-input"
+                          value={formData.email || ''}
+                          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value.toLowerCase() }))}
+                        />
+                      </div>
                     </div>
 
                     {/* Photo upload row */}
@@ -1190,14 +1205,14 @@ export default function App() {
                   
                   <form onSubmit={handlePortalSearch} className="portal-search-form">
                     <div>
-                      <label className="form-label" style={{ color: 'var(--text-secondary)' }}>Student Full Name</label>
+                      <label className="form-label" style={{ color: 'var(--text-secondary)' }}>Email ID</label>
                       <input 
-                        type="text" 
+                        type="email" 
                         required 
-                        placeholder="Enter your name as registered"
+                        placeholder="Enter your registered email ID"
                         className="form-input portal-input"
-                        value={portalName}
-                        onChange={(e) => setPortalName(e.target.value)}
+                        value={portalEmail}
+                        onChange={(e) => setPortalEmail(e.target.value)}
                       />
                     </div>
                     <div>
@@ -1249,6 +1264,7 @@ export default function App() {
                         <span><strong>Roll No:</strong> {portalStudent.rollNo}</span>
                         <span><strong>Enrollment No:</strong> {portalStudent.enrollmentNo}</span>
                         <span><strong>Session:</strong> {portalStudent.session}</span>
+                        <span><strong>Email ID:</strong> {portalStudent.email || '—'}</span>
                       </div>
                     </div>
                   </div>
@@ -1465,7 +1481,7 @@ export default function App() {
               {/* ID Card Checkbox */}
               <div className="glass-panel" style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <strong style={{ fontSize: '14px', color: '#fff' }}>Student ID Card</strong>
+                  <strong style={{ fontSize: '14px', color: 'var(--primary)' }}>Student ID Card</strong>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Valid across all academic sessions</div>
                 </div>
                 <input 
@@ -1541,7 +1557,7 @@ export default function App() {
               </div>
             </div>
             
-            <div style={{ padding: '16px 24px', backgroundColor: '#1f2937', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+            <div style={{ padding: '16px 24px', backgroundColor: 'var(--bg-app)', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button className="btn btn-outline" onClick={() => setPublishingStudent(null)}>Cancel</button>
               <button className="btn btn-primary" onClick={submitPublishSettings}>Confirm & Save Settings</button>
             </div>
