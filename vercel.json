@@ -1,9 +1,9 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/admin/assets/:path*", "destination": "/admin-panel/dist/assets/:path*" },
-    { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
+    { "source": "/admin/assets/:path*", "destination": "/dist/assets/:path*" },
+    { "source": "/admin", "destination": "/dist/index.html" },
+    { "source": "/admin/:path*", "destination": "/dist/index.html" },
     { "source": "/api/:path*", "destination": "https://gurukul-vidyapeeth.onrender.com/api/:path*" }
   ]
 }
