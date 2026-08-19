@@ -2658,7 +2658,7 @@ export default function App() {
                 </div>
                 <div className="center-student-table-wrapper">
                   <table className="center-student-table">
-                    <thead><tr><th>S.No</th><th>Staff</th><th>Student</th><th>Father</th><th>Course</th><th>Note</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>S.No</th><th>Staff</th><th>Student</th><th>Father</th><th>Mother</th><th>Course</th><th>Session</th><th>Address</th><th>University</th><th>Note</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                       {staffAdminStudents.filter(s => {
                         if (staffAdminFilterStaff && s.staffId !== staffAdminFilterStaff) return false;
@@ -2675,10 +2675,20 @@ export default function App() {
                             )}
                           </td>
                           <td>{s.fatherName}</td>
+                          <td>{s.motherName || '—'}</td>
                           <td style={{ fontSize: '12px' }}>{s.course}</td>
+                          <td>{s.session || '—'}</td>
+                          <td style={{ fontSize: '11px', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.address}>{s.address || '—'}</td>
+                          <td style={{ fontSize: '11px', fontWeight: '500' }}>{s.universityBoard || '—'}</td>
                           <td style={{ maxWidth: '180px' }}>
                             {s.staffNote ? (
-                              <span style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: '500', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.staffNote}>{s.staffNote}</span>
+                              <span 
+                                onClick={() => showAlert(s.staffNote, 'Staff Note / Required Documents')} 
+                                style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: '600', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer', textDecoration: 'underline' }} 
+                                title="Click to read full note"
+                              >
+                                {s.staffNote}
+                              </span>
                             ) : <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>—</span>}
                           </td>
                           <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
