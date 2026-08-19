@@ -1737,7 +1737,7 @@ app.post('/api/staff/students', upload.array('documents', 10), (req, res) => {
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const db = readDB();
-    const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, paymentDescription } = req.body;
+    const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, paymentDescription, staffNote } = req.body;
     if (!name || !fatherName || !dob || !course || !session) {
       return res.status(400).json({ error: 'Name, father name, DOB, course and session are required' });
     }
@@ -1767,6 +1767,7 @@ app.post('/api/staff/students', upload.array('documents', 10), (req, res) => {
       photo: photo || '',
       paymentScreenshot,
       paymentDescription: paymentDescription || '',
+      staffNote: staffNote || '',
       documents,
       status: 'pending',
       correctionCount: 0,
@@ -1793,7 +1794,7 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), (req, res) => 
     const studentIdx = (db.staffStudents || []).findIndex(s => s.id === req.params.id && s.staffId === staffId);
     if (studentIdx < 0) return res.status(404).json({ error: 'Student not found' });
     const student = db.staffStudents[studentIdx];
-    const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, correctionNote } = req.body;
+    const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, correctionNote, staffNote } = req.body;
     
     const updatedFields = [];
     if (name && student.name !== name.toUpperCase()) {
@@ -1850,6 +1851,9 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), (req, res) => 
       student.correctionCount = (student.correctionCount || 0) + 1;
       student.correctionNote = correctionNote;
       student.correctionRequestedAt = new Date().toISOString();
+    }
+    if (staffNote !== undefined) {
+      student.staffNote = staffNote;
     }
     if (req.files && req.files.length > 0) {
       req.files.forEach(file => {

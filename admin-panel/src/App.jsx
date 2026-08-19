@@ -136,7 +136,7 @@ export default function App() {
   const [staffStats, setStaffStats] = useState({ total: 0, active: 0, pending: 0 });
   const [staffStudentForm, setStaffStudentForm] = useState({
     name: '', fatherName: '', motherName: '', dob: '', email: '',
-    address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: ''
+    address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: ''
   });
   const [staffStudentPhoto, setStaffStudentPhoto] = useState('');
   const [staffCropSrc, setStaffCropSrc] = useState(null);
@@ -900,7 +900,7 @@ export default function App() {
       const res = await fetch('/api/staff/students', { method: 'POST', headers: { 'x-staff-id': staff.id }, body: fd });
       if (res.ok) {
         confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
-        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '' });
+        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '' });
         setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot('');
         setStaffView('dashboard');
         fetchStaffData();
@@ -919,7 +919,7 @@ export default function App() {
       staffDocuments.forEach(doc => fd.append('documents', doc));
       const res = await fetch(`/api/staff/students/${staffExistingStudent.id}`, { method: 'PUT', headers: { 'x-staff-id': staff.id }, body: fd });
       if (res.ok) {
-        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '' });
+        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '' });
         setStaffStudentPhoto(''); setStaffDocuments([]); setStaffExistingStudent(null);
         setStaffView('dashboard');
         fetchStaffData();
@@ -2231,7 +2231,7 @@ export default function App() {
                 <button className={`sidebar-link ${staffView === 'dashboard' ? 'active' : ''}`} onClick={() => { setStaffView('dashboard'); fetchStaffData(); }}>
                   <Eye size={18} /> Dashboard
                 </button>
-                <button className={`sidebar-link ${staffView === 'add-student' ? 'active' : ''}`} onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
+                <button className={`sidebar-link ${staffView === 'add-student' ? 'active' : ''}`} onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
                   <UserPlus size={18} /> Add Student
                 </button>
                 <button className="sidebar-link" onClick={() => { setStaffAuthenticated(false); setStaffData(null); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -2249,7 +2249,7 @@ export default function App() {
               <div className="tab-content-wrapper">
                 <div className="page-header-row">
                   <h2>Staff Dashboard</h2>
-                  <button className="btn btn-primary" onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
+                  <button className="btn btn-primary" onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
                     <UserPlus size={16} /> Add Student
                   </button>
                 </div>
@@ -2338,6 +2338,10 @@ export default function App() {
                     {staffPaymentScreenshot && <img src={staffPaymentScreenshot} alt="Screenshot" style={{ maxHeight: '80px', marginTop: '8px', borderRadius: '8px' }} />}
                   </div>
                   <div style={{ marginTop: '16px' }}>
+                    <label className="form-label">Note / Required Documents</label>
+                    <textarea className="form-input" rows={3} placeholder="e.g. Please also upload 10th marksheet, Aadhaar card, and migration certificate" value={staffStudentForm.staffNote} onChange={e => setStaffStudentForm(p => ({ ...p, staffNote: e.target.value }))} style={{ resize: 'vertical' }} />
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
                     <label className="form-label">Documents</label>
                     <div className="doc-upload-zone">
                       <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
@@ -2383,6 +2387,10 @@ export default function App() {
                       <input type="file" accept="image/*" onChange={e => { if (e.target.files[0]) { const reader = new FileReader(); reader.onload = ev => setStaffStudentPhoto(ev.target.result); reader.readAsDataURL(e.target.files[0]); } }} />
                     </div>
                     {staffStudentPhoto && <img src={staffStudentPhoto} alt="Preview" style={{ maxHeight: '80px', marginTop: '8px', borderRadius: '8px' }} />}
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <label className="form-label">Note / Required Documents</label>
+                    <textarea className="form-input" rows={3} placeholder="e.g. Please update the address, also need 12th marksheet" value={staffStudentForm.staffNote} onChange={e => setStaffStudentForm(p => ({ ...p, staffNote: e.target.value }))} style={{ resize: 'vertical' }} />
                   </div>
                   <div style={{ marginTop: '16px' }}>
                     <label className="form-label">Upload New Documents (if any)</label>
@@ -2544,6 +2552,26 @@ export default function App() {
                   <div className="stat-item"><div className="stat-value" style={{ color: 'var(--warning)' }}>{staffAdminStats.pending}</div><div className="stat-label">Pending</div></div>
                   <div className="stat-item"><div className="stat-value" style={{ color: 'var(--secondary)' }}>{staffAdminStats.active}</div><div className="stat-label">Active</div></div>
                 </div>
+
+                {/* Correction Notifications */}
+                {staffAdminStudents.filter(s => s.correctionCount > 0 && s.status === 'pending').length > 0 && (
+                  <div className="correction-warning" style={{ marginBottom: '20px' }}>
+                    <p style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>Correction Requests ({staffAdminStudents.filter(s => s.correctionCount > 0 && s.status === 'pending').length})</p>
+                    {staffAdminStudents.filter(s => s.correctionCount > 0 && s.status === 'pending').map(s => (
+                      <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(255, 152, 0, 0.2)' }}>
+                        <div>
+                          <span style={{ fontWeight: '600', fontSize: '13px' }}>{s.name}</span>
+                          <span style={{ fontSize: '12px', color: '#bf360c', marginLeft: '8px' }}>by {s.staffName}</span>
+                          {s.correctionNote && <span style={{ fontSize: '12px', color: '#e65100', marginLeft: '8px' }}>({s.correctionNote})</span>}
+                        </div>
+                        <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }} style={{ color: '#e65100', borderColor: '#e65100' }}>
+                          <UploadCloud size={12} /> Review & Upload
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                   <button className="btn btn-primary" onClick={() => { setStaffAdminView('students'); fetchStaffAdminData(); }}><Eye size={16} /> View All Students</button>
                   <button className="btn btn-outline" onClick={() => { setStaffAdminView('staff-list'); }}><User size={16} /> View Staff</button>
@@ -2589,6 +2617,26 @@ export default function App() {
                   <h2>All Staff Students</h2>
                   <button className="btn btn-outline" onClick={() => setStaffAdminView('dashboard')}><ArrowLeft size={16} /> Back</button>
                 </div>
+
+                {/* Correction Notifications */}
+                {staffAdminStudents.filter(s => s.correctionCount > 0 && s.status === 'pending').length > 0 && (
+                  <div className="correction-warning" style={{ marginBottom: '16px' }}>
+                    <p style={{ fontSize: '14px', fontWeight: '700', marginBottom: '8px' }}>Correction Requests ({staffAdminStudents.filter(s => s.correctionCount > 0 && s.status === 'pending').length})</p>
+                    {staffAdminStudents.filter(s => s.correctionCount > 0 && s.status === 'pending').map(s => (
+                      <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255, 152, 0, 0.2)' }}>
+                        <div>
+                          <span style={{ fontWeight: '600' }}>{s.name}</span>
+                          <span style={{ fontSize: '12px', color: '#bf360c', marginLeft: '8px' }}>— {s.staffName}</span>
+                          {s.correctionNote && <span style={{ fontSize: '12px', color: '#e65100', marginLeft: '8px' }}>({s.correctionNote})</span>}
+                        </div>
+                        <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }} style={{ color: '#e65100', borderColor: '#e65100' }}>
+                          <UploadCloud size={12} /> Review & Upload
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="glass-panel search-filter-bar" style={{ padding: '16px', marginBottom: '24px', display: 'flex', gap: '12px' }}>
                   <div style={{ flex: 1, position: 'relative' }}>
                     <Search style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} size={18} />
@@ -2601,7 +2649,7 @@ export default function App() {
                 </div>
                 <div className="center-student-table-wrapper">
                   <table className="center-student-table">
-                    <thead><tr><th>S.No</th><th>Staff</th><th>Student</th><th>Father</th><th>Mother</th><th>Course</th><th>Session</th><th>Address</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>S.No</th><th>Staff</th><th>Student</th><th>Father</th><th>Course</th><th>Note</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                       {staffAdminStudents.filter(s => {
                         if (staffAdminFilterStaff && s.staffId !== staffAdminFilterStaff) return false;
@@ -2614,14 +2662,16 @@ export default function App() {
                           <td style={{ fontWeight: '600' }}>
                             {s.name}
                             {s.hasNewUpdates && (
-                              <span className="payment-status pending" style={{ marginLeft: '8px', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Updates Pending Review</span>
+                              <span className="payment-status pending" style={{ marginLeft: '8px', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Updates Pending</span>
                             )}
                           </td>
                           <td>{s.fatherName}</td>
-                          <td>{s.motherName || '—'}</td>
                           <td style={{ fontSize: '12px' }}>{s.course}</td>
-                          <td>{s.session || '—'}</td>
-                          <td style={{ fontSize: '11px', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.address}>{s.address || '—'}</td>
+                          <td style={{ maxWidth: '180px' }}>
+                            {s.staffNote ? (
+                              <span style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: '500', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.staffNote}>{s.staffNote}</span>
+                            ) : <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>—</span>}
+                          </td>
                           <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
                           <td>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
@@ -2648,6 +2698,12 @@ export default function App() {
                 {/* Student Info */}
                 <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
                   <p style={{ fontSize: '13px' }}><strong>Staff:</strong> {staffAdminSelectedStudent.staffName} | <strong>Course:</strong> {staffAdminSelectedStudent.course} | <strong>Status:</strong> <span className={`center-status-badge ${staffAdminSelectedStudent.status}`}>{staffAdminSelectedStudent.status}</span></p>
+                  {staffAdminSelectedStudent.staffNote && (
+                    <div style={{ marginTop: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '1px solid #3b82f6', borderRadius: '8px' }}>
+                      <p style={{ fontSize: '12px', fontWeight: '700', color: '#1d4ed8', marginBottom: '4px' }}>Staff Note / Required Documents:</p>
+                      <p style={{ fontSize: '13px', color: '#1e40af', margin: 0 }}>{staffAdminSelectedStudent.staffNote}</p>
+                    </div>
+                  )}
                   {staffAdminSelectedStudent.correctionNote && <p style={{ fontSize: '12px', color: 'var(--warning)', marginTop: '4px' }}>Correction Note: {staffAdminSelectedStudent.correctionNote}</p>}
                   
                   {/* Newly Updated Fields Notification */}
