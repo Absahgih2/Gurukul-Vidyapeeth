@@ -180,7 +180,7 @@ export default function App() {
   };
 
   // ---- STAFF ADMIN STATES ----
-  const [staffAdminView, setStaffAdminView] = useState('login'); // 'login', 'dashboard', 'students', 'manage-student'
+  const [staffAdminView, setStaffAdminView] = useState('login'); // 'login', 'dashboard', 'students', 'manage-student', 'view-documents'
   const [staffAdminAuthenticated, setStaffAdminAuthenticated] = useState(() => sessionStorage.getItem('staffAdminAuthenticated') === 'true');
   const [staffAdminData, setStaffAdminData] = useState(() => {
     const stored = sessionStorage.getItem('staffAdminData');
@@ -2156,8 +2156,100 @@ export default function App() {
                       )}
                     </div>
                   )}
+              </div>
+            )}
+
+            {/* STAFF ADMIN VIEW DOCUMENTS */}
+            {staffAdminAuthenticated && staffAdminView === 'view-documents' && staffAdminSelectedStudent && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2>Documents — {staffAdminSelectedStudent.name}</h2>
+                  <button className="btn btn-outline" onClick={() => { setStaffAdminSelectedStudent(null); setStaffAdminView('students'); }}><ArrowLeft size={16} /> Back</button>
                 </div>
-              )}
+
+                {/* Student Info */}
+                <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '13px' }}><strong>Staff:</strong> {staffAdminSelectedStudent.staffName} | <strong>Course:</strong> {staffAdminSelectedStudent.course} | <strong>Status:</strong> <span className={`center-status-badge ${staffAdminSelectedStudent.status}`}>{staffAdminSelectedStudent.status}</span></p>
+                  {staffAdminSelectedStudent.staffNote && (
+                    <div style={{ marginTop: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '1px solid #3b82f6', borderRadius: '8px' }}>
+                      <p style={{ fontSize: '12px', fontWeight: '700', color: '#1d4ed8', marginBottom: '4px' }}>Staff Note / Required Documents:</p>
+                      <p style={{ fontSize: '13px', color: '#1e40af', margin: 0 }}>{staffAdminSelectedStudent.staffNote}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Staff Submitted Documents */}
+                <div className="glass-panel" style={{ padding: '24px', marginBottom: '16px' }}>
+                  <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Documents Submitted by Staff</h3>
+                  {(!staffAdminSelectedStudent.documents || staffAdminSelectedStudent.documents.length === 0) ? (
+                    <p style={{ color: 'var(--text-muted)' }}>No documents submitted by staff.</p>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      {staffAdminSelectedStudent.documents.map((doc, idx) => (
+                        <a 
+                          key={idx} 
+                          href={doc.path} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-outline btn-sm" 
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Download size={14} /> {doc.originalname || `Document ${idx + 1}`}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Payment Screenshot */}
+                {staffAdminSelectedStudent.paymentScreenshot && (
+                  <div className="glass-panel" style={{ padding: '24px', marginBottom: '16px' }}>
+                    <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Payment Screenshot</h3>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                      <img 
+                        src={staffAdminSelectedStudent.paymentScreenshot} 
+                        alt="Payment Screenshot" 
+                        onClick={() => showAlert(
+                          <div style={{ textAlign: 'center' }}>
+                            <img src={staffAdminSelectedStudent.paymentScreenshot} alt="Payment Screenshot" style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
+                          </div>,
+                          `Payment Screenshot - ${staffAdminSelectedStudent.name}`
+                        )}
+                        style={{ maxHeight: '150px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'zoom-in' }} 
+                      />
+                      <a href={staffAdminSelectedStudent.paymentScreenshot} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Download size={14} /> Download
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Admin Uploaded Documents */}
+                <div className="glass-panel" style={{ padding: '24px' }}>
+                  <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Documents Uploaded by Admin</h3>
+                  {(!staffAdminSelectedStudent.adminDocuments || staffAdminSelectedStudent.adminDocuments.length === 0) ? (
+                    <p style={{ color: 'var(--text-muted)' }}>No documents uploaded by admin yet.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {staffAdminSelectedStudent.adminDocuments.map(doc => (
+                        <div key={doc.id} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                          <div style={{ marginBottom: '8px' }}>
+                            <span style={{ fontWeight: '600', fontSize: '13px' }}>Round {doc.correctionRound}</span>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>{new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
+                            {doc.note && <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>({doc.note})</span>}
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {doc.files.map((f, i) => (
+                              <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm"><Download size={14} /> {f.originalname}</a>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             </section>
           </div>
           )
@@ -2725,6 +2817,7 @@ export default function App() {
                           <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
                           <td>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                              <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('view-documents'); }}><Eye size={12} /> View Docs</button>
                               <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }}><UploadCloud size={12} /> Upload Docs</button>
                               {s.correctionCount > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', fontWeight: '600', alignSelf: 'center' }}>Correction #{s.correctionCount}</span>}
                             </div>
