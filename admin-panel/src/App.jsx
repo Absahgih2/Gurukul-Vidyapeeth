@@ -4,7 +4,7 @@ import {
   Edit3, Trash2, Globe, Sliders, CheckCircle, Eye, 
   Printer, ArrowLeft, User, Image, BookOpen, 
   RefreshCw, X, AlertCircle, Wallet, CreditCard, 
-  FileDown, Building2, Download, Lock, EyeOff
+  FileDown, Building2, Download, Lock, EyeOff, Bell
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -145,6 +145,8 @@ export default function App() {
   const [staffSearch, setStaffSearch] = useState('');
   const [staffLoading, setStaffLoading] = useState(false);
   const [staffSelectedStudentDocs, setStaffSelectedStudentDocs] = useState(null);
+  const [staffNotifications, setStaffNotifications] = useState([]);
+  const [staffNotifOpen, setStaffNotifOpen] = useState(false);
   const [staffPaymentScreenshot, setStaffPaymentScreenshot] = useState('');
   const [customModal, setCustomModal] = useState({
     open: false,
@@ -251,6 +253,7 @@ export default function App() {
       if (sessionStorage.getItem('staffAuthenticated') === 'true') {
         setStaffView('dashboard');
         fetchStaffData();
+        fetchStaffNotifications();
       } else {
         setStaffView('login');
       }
@@ -376,6 +379,18 @@ export default function App() {
       }
     }
   }, [formData.courseName, courses]);
+
+  // Close staff notification dropdown on outside click
+  useEffect(() => {
+    if (!staffNotifOpen) return;
+    const handler = (e) => {
+      if (!e.target.closest('.staff-notif-dropdown') && !e.target.closest('[data-notif-toggle]')) {
+        setStaffNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [staffNotifOpen]);
 
   // Handle Marks input change targeting specific active selectedTerm
   const handleMarkChange = (subCode, val, maxMarks) => {
@@ -857,6 +872,7 @@ export default function App() {
       sessionStorage.setItem('staffData', JSON.stringify(data.staff));
       setStaffView('dashboard');
       fetchStaffData();
+      fetchStaffNotifications();
     } catch (err) { setStaffLoginError('Connection error'); }
   };
 
@@ -888,6 +904,42 @@ export default function App() {
       if (studentsRes.ok) setStaffStudents(await studentsRes.json());
     } catch (err) { console.error(err); }
     setStaffLoading(false);
+  };
+
+  const fetchStaffNotifications = async () => {
+    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    if (!staff) return;
+    try {
+      const res = await fetch('/api/staff/notifications', { headers: { 'x-staff-id': staff.id } });
+      if (res.ok) setStaffNotifications(await res.json());
+    } catch (err) { console.error(err); }
+  };
+
+  const handleStaffMarkNotifRead = async (notifId) => {
+    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    if (!staff) return;
+    try {
+      await fetch(`/api/staff/notifications/${notifId}/read`, { method: 'POST', headers: { 'x-staff-id': staff.id } });
+      setStaffNotifications(prev => prev.map(n => n.id === notifId ? { ...n, read: true } : n));
+    } catch (err) { console.error(err); }
+  };
+
+  const handleStaffMarkAllRead = async () => {
+    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    if (!staff) return;
+    try {
+      await fetch('/api/staff/notifications/read-all', { method: 'POST', headers: { 'x-staff-id': staff.id } });
+      setStaffNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (err) { console.error(err); }
+  };
+
+  const handleStaffDeleteNotif = async (notifId) => {
+    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    if (!staff) return;
+    try {
+      await fetch(`/api/staff/notifications/${notifId}`, { method: 'DELETE', headers: { 'x-staff-id': staff.id } });
+      setStaffNotifications(prev => prev.filter(n => n.id !== notifId));
+    } catch (err) { console.error(err); }
   };
 
   const handleStaffAddStudent = async (e) => {
@@ -2355,12 +2407,50 @@ export default function App() {
             <div className="center-dashboard-wrapper no-print animate-fade-in">
               <aside className="center-sidebar">
                 <div className="sidebar-heading">STAFF NAVIGATOR</div>
-                <button className={`sidebar-link ${staffView === 'dashboard' ? 'active' : ''}`} onClick={() => { setStaffView('dashboard'); fetchStaffData(); }}>
+                <button className={`sidebar-link ${staffView === 'dashboard' ? 'active' : ''}`} onClick={() => { setStaffView('dashboard'); fetchStaffData(); fetchStaffNotifications(); }}>
                   <Eye size={18} /> Dashboard
                 </button>
                 <button className={`sidebar-link ${staffView === 'add-student' ? 'active' : ''}`} onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '', universityBoard: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
                   <UserPlus size={18} /> Add Student
                 </button>
+                <div style={{ position: 'relative', marginTop: '12px' }}>
+                  <button className="sidebar-link" data-notif-toggle onClick={() => setStaffNotifOpen(!staffNotifOpen)} style={{ width: '100%', justifyContent: 'space-between' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Bell size={18} /> Notifications</span>
+                    {staffNotifications.filter(n => !n.read).length > 0 && (
+                      <span style={{ background: 'var(--danger)', color: '#fff', borderRadius: '50%', minWidth: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', padding: '0 5px' }}>
+                        {staffNotifications.filter(n => !n.read).length}
+                      </span>
+                    )}
+                  </button>
+                  {staffNotifOpen && (
+                    <div className="staff-notif-dropdown">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <span style={{ fontWeight: '700', fontSize: '13px' }}>Notifications</span>
+                        {staffNotifications.some(n => !n.read) && (
+                          <button className="link-btn" style={{ fontSize: '11px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer' }} onClick={handleStaffMarkAllRead}>Mark all read</button>
+                        )}
+                      </div>
+                      {staffNotifications.length === 0 ? (
+                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '16px 0' }}>No notifications yet</p>
+                      ) : (
+                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                          {staffNotifications.slice(0, 20).map(n => (
+                            <div key={n.id} className={`staff-notif-item ${n.read ? '' : 'unread'}`} onClick={() => { if (!n.read) handleStaffMarkNotifRead(n.id); }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                                <div style={{ flex: 1 }}>
+                                  <p style={{ fontWeight: '600', fontSize: '12px', margin: 0 }}>{n.title}</p>
+                                  <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '4px 0 0 0', lineHeight: '1.4' }}>{n.message}</p>
+                                  <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>{new Date(n.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                                </div>
+                                <button className="link-btn" onClick={(e) => { e.stopPropagation(); handleStaffDeleteNotif(n.id); }} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0 }}><X size={12} /></button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <button className="sidebar-link" onClick={() => { setStaffAuthenticated(false); setStaffData(null); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <X size={18} /> Sign Out
                 </button>

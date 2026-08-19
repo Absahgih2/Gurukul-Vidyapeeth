@@ -2256,3 +2256,43 @@ h1, h2, h3, h4, h5, h6 {
     height: 48px !important;
   }
 }
+
+/* Staff Notification Dropdown */
+.staff-notif-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.staff-notif-item {
+  padding: 10px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.staff-notif-item:last-child {
+  border-bottom: none;
+}
+
+.staff-notif-item:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+.staff-notif-item.unread {
+  background: rgba(59, 130, 246, 0.06);
+  border-left: 3px solid var(--primary);
+}
+
+.staff-notif-item.unread:hover {
+  background: rgba(59, 130, 246, 0.1);
+}

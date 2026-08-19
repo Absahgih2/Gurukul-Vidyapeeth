@@ -2054,6 +2054,22 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), (
     student.status = 'active';
     student.updatedAt = new Date().toISOString();
     db.staffStudents[studentIdx] = student;
+
+    // Create notification for the respective staff member
+    if (!db.notifications) db.notifications = [];
+    db.notifications.push({
+      id: `notif_${Date.now()}`,
+      staffId: student.staffId,
+      type: 'document_upload',
+      title: 'Document Uploaded by Admin',
+      message: `Admin has uploaded documents for student "${student.name}" (${student.course}).`,
+      studentId: student.id,
+      studentName: student.name,
+      correctionRound,
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+
     writeDB(db);
     res.json({ message: 'Documents uploaded successfully', student });
   } catch (err) {
@@ -2118,6 +2134,69 @@ app.get('/api/staff-admin/dashboard-stats', (req, res) => {
   const pending = (db.staffStudents || []).filter(s => s.status === 'pending').length;
   const active = (db.staffStudents || []).filter(s => s.status === 'active').length;
   res.json({ totalStaff, totalStudents, pending, active });
+});
+
+// ============ NOTIFICATION ENDPOINTS ============
+
+// Staff: Get my notifications
+app.get('/api/staff/notifications', (req, res) => {
+  try {
+    const staffId = req.headers['x-staff-id'];
+    if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+    const db = readDB();
+    const notifications = (db.notifications || [])
+      .filter(n => n.staffId === staffId)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json(notifications);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+// Staff: Mark notification as read
+app.post('/api/staff/notifications/:id/read', (req, res) => {
+  try {
+    const staffId = req.headers['x-staff-id'];
+    if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+    const db = readDB();
+    const notification = (db.notifications || []).find(n => n.id === req.params.id && n.staffId === staffId);
+    if (!notification) return res.status(404).json({ error: 'Notification not found' });
+    notification.read = true;
+    writeDB(db);
+    res.json({ message: 'Marked as read' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+// Staff: Mark all notifications as read
+app.post('/api/staff/notifications/read-all', (req, res) => {
+  try {
+    const staffId = req.headers['x-staff-id'];
+    if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+    const db = readDB();
+    (db.notifications || []).filter(n => n.staffId === staffId && !n.read).forEach(n => { n.read = true; });
+    writeDB(db);
+    res.json({ message: 'All notifications marked as read' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+// Staff: Delete a notification
+app.delete('/api/staff/notifications/:id', (req, res) => {
+  try {
+    const staffId = req.headers['x-staff-id'];
+    if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+    const db = readDB();
+    const idx = (db.notifications || []).findIndex(n => n.id === req.params.id && n.staffId === staffId);
+    if (idx < 0) return res.status(404).json({ error: 'Notification not found' });
+    db.notifications.splice(idx, 1);
+    writeDB(db);
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
 });
 
 // Start Express Server
