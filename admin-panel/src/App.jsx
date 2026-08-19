@@ -2914,6 +2914,29 @@ export default function App() {
                   )}
                 </div>
 
+                {/* Documents Submitted by Staff */}
+                <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
+                  <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Documents Submitted by Staff</h3>
+                  {(!staffAdminSelectedStudent.documents || staffAdminSelectedStudent.documents.length === 0) ? (
+                    <p style={{ color: 'var(--text-muted)' }}>No documents submitted by staff.</p>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      {staffAdminSelectedStudent.documents.map((doc, idx) => (
+                        <a 
+                          key={idx} 
+                          href={doc.path} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-outline btn-sm" 
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Download size={14} /> {doc.originalname || `Document ${idx + 1}`}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Upload Documents */}
                 <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
                   <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Upload Documents</h3>
