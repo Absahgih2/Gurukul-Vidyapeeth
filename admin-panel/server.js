@@ -1643,6 +1643,360 @@ app.get('/api/admin/center-payments', (req, res) => {
   res.json(payments);
 });
 
+// ============================================================
+// STAFF MANAGEMENT APIs
+// ============================================================
+
+// Staff: Register
+app.post('/api/staff/register', async (req, res) => {
+  try {
+    const { name, mobile, password } = req.body;
+    if (!name || !mobile || !password) return res.status(400).json({ error: 'Name, mobile and password are required' });
+    const db = readDB();
+    if (!db.staff) db.staff = [];
+    const existing = db.staff.find(s => s.mobile === mobile.trim());
+    if (existing) return res.status(400).json({ error: 'Mobile number already registered' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newStaff = {
+      id: `staff_${Date.now()}`,
+      name: name.toUpperCase(),
+      mobile: mobile.trim(),
+      password: hashedPassword,
+      isActive: true,
+      createdAt: new Date().toISOString()
+    };
+    db.staff.push(newStaff);
+    writeDB(db);
+    res.json({ message: 'Account created successfully', staff: { id: newStaff.id, name: newStaff.name, mobile: newStaff.mobile } });
+  } catch (err) {
+    console.error('Staff register error:', err);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+// Staff: Login
+app.post('/api/staff/login', async (req, res) => {
+  try {
+    const { mobile, password } = req.body;
+    if (!mobile || !password) return res.status(400).json({ error: 'Mobile and password are required' });
+    const db = readDB();
+    const staff = (db.staff || []).find(s => s.mobile === mobile.trim() && s.isActive);
+    if (!staff) return res.status(401).json({ error: 'Invalid credentials or account inactive' });
+    const isMatch = await bcrypt.compare(password, staff.password);
+    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
+    res.json({ message: 'Login successful', staff: { id: staff.id, name: staff.name, mobile: staff.mobile } });
+  } catch (err) {
+    console.error('Staff login error:', err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Staff: Get profile
+app.get('/api/staff/profile', (req, res) => {
+  const staffId = req.headers['x-staff-id'];
+  if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+  const db = readDB();
+  const staff = (db.staff || []).find(s => s.id === staffId);
+  if (!staff) return res.status(404).json({ error: 'Staff not found' });
+  res.json({ id: staff.id, name: staff.name, mobile: staff.mobile });
+});
+
+// Staff: Get dashboard stats
+app.get('/api/staff/dashboard-stats', (req, res) => {
+  const staffId = req.headers['x-staff-id'];
+  if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+  const db = readDB();
+  const myStudents = (db.staffStudents || []).filter(s => s.staffId === staffId);
+  const total = myStudents.length;
+  const active = myStudents.filter(s => s.status === 'active').length;
+  const pending = myStudents.filter(s => s.status === 'pending').length;
+  res.json({ total, active, pending });
+});
+
+// Staff: Get own students
+app.get('/api/staff/students', (req, res) => {
+  const staffId = req.headers['x-staff-id'];
+  if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+  const db = readDB();
+  let myStudents = (db.staffStudents || []).filter(s => s.staffId === staffId);
+  myStudents.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+  const { search } = req.query;
+  if (search) {
+    const q = search.toLowerCase();
+    myStudents = myStudents.filter(s =>
+      (s.name && s.name.toLowerCase().includes(q)) ||
+      (s.fatherName && s.fatherName.toLowerCase().includes(q))
+    );
+  }
+  res.json(myStudents);
+});
+
+// Staff: Add student with payment screenshot
+app.post('/api/staff/students', upload.array('documents', 10), (req, res) => {
+  const staffId = req.headers['x-staff-id'];
+  if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const db = readDB();
+    const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, paymentDescription } = req.body;
+    if (!name || !fatherName || !dob || !course || !session) {
+      return res.status(400).json({ error: 'Name, father name, DOB, course and session are required' });
+    }
+    const documents = [];
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        documents.push({ filename: file.filename, originalname: file.originalname, path: `/uploads/${file.filename}` });
+      });
+    }
+    // Check for payment screenshot (last file if multiple)
+    let paymentScreenshot = '';
+    if (req.body.paymentScreenshot) {
+      paymentScreenshot = req.body.paymentScreenshot;
+    }
+    const student = {
+      id: `staff_student_${Date.now()}`,
+      staffId,
+      name: name.toUpperCase(),
+      fatherName: fatherName.toUpperCase(),
+      motherName: (motherName || '').toUpperCase(),
+      dob, email: (email || '').trim().toLowerCase(),
+      address: (address || '').toUpperCase(),
+      admissionDate: admissionDate || '',
+      contactNumber: contactNumber || '',
+      course: course.toUpperCase(),
+      session: session.toUpperCase(),
+      photo: photo || '',
+      paymentScreenshot,
+      paymentDescription: paymentDescription || '',
+      documents,
+      status: 'pending',
+      correctionCount: 0,
+      adminDocuments: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    if (!db.staffStudents) db.staffStudents = [];
+    db.staffStudents.push(student);
+    writeDB(db);
+    res.json({ message: 'Student added successfully', student });
+  } catch (err) {
+    console.error('Staff add student error:', err);
+    res.status(500).json({ error: 'Failed to add student' });
+  }
+});
+
+// Staff: Edit student (request correction)
+app.put('/api/staff/students/:id', upload.array('documents', 10), (req, res) => {
+  const staffId = req.headers['x-staff-id'];
+  if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const db = readDB();
+    const studentIdx = (db.staffStudents || []).findIndex(s => s.id === req.params.id && s.staffId === staffId);
+    if (studentIdx < 0) return res.status(404).json({ error: 'Student not found' });
+    const student = db.staffStudents[studentIdx];
+    const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, correctionNote } = req.body;
+    if (name) student.name = name.toUpperCase();
+    if (fatherName) student.fatherName = fatherName.toUpperCase();
+    if (motherName) student.motherName = motherName.toUpperCase();
+    if (dob) student.dob = dob;
+    if (email) student.email = email.trim().toLowerCase();
+    if (address) student.address = address.toUpperCase();
+    if (admissionDate) student.admissionDate = admissionDate;
+    if (contactNumber) student.contactNumber = contactNumber;
+    if (course) student.course = course.toUpperCase();
+    if (session) student.session = session.toUpperCase();
+    if (photo !== undefined) student.photo = photo;
+    if (correctionNote) {
+      student.correctionCount = (student.correctionCount || 0) + 1;
+      student.correctionNote = correctionNote;
+      student.correctionRequestedAt = new Date().toISOString();
+    }
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        student.documents.push({ filename: file.filename, originalname: file.originalname, path: `/uploads/${file.filename}` });
+      });
+    }
+    student.status = 'pending';
+    student.updatedAt = new Date().toISOString();
+    db.staffStudents[studentIdx] = student;
+    writeDB(db);
+    res.json({ message: 'Student updated, correction requested', student });
+  } catch (err) {
+    console.error('Staff edit error:', err);
+    res.status(500).json({ error: 'Failed to update student' });
+  }
+});
+
+// Staff: Delete student
+app.delete('/api/staff/students/:id', (req, res) => {
+  const staffId = req.headers['x-staff-id'];
+  if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+  const db = readDB();
+  const idx = (db.staffStudents || []).findIndex(s => s.id === req.params.id && s.staffId === staffId);
+  if (idx < 0) return res.status(404).json({ error: 'Student not found' });
+  db.staffStudents.splice(idx, 1);
+  writeDB(db);
+  res.json({ message: 'Student deleted' });
+});
+
+// Staff: Get admin-uploaded documents (with correction delay logic)
+app.get('/api/staff/students/:id/documents', (req, res) => {
+  const staffId = req.headers['x-staff-id'];
+  if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
+  const db = readDB();
+  const student = (db.staffStudents || []).find(s => s.id === req.params.id && s.staffId === staffId);
+  if (!student) return res.status(404).json({ error: 'Student not found' });
+  const now = new Date();
+  const docs = (student.adminDocuments || []).map(doc => {
+    if (doc.forceAvailable) return { ...doc, isAvailable: true };
+    const uploadedAt = new Date(doc.uploadedAt);
+    const delayDays = doc.correctionRound || 1;
+    const availableAt = new Date(uploadedAt.getTime() + delayDays * 24 * 60 * 60 * 1000);
+    return { ...doc, isAvailable: now >= availableAt, availableAt: availableAt.toISOString() };
+  });
+  res.json(docs);
+});
+
+// ============================================================
+// STAFF ADMIN APIs
+// ============================================================
+
+// Staff Admin: Login (hardcoded default, or from db)
+app.post('/api/staff-admin/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+    const db = readDB();
+    if (!db.staffAdmin) db.staffAdmin = [];
+    // Create default admin if none exists
+    if (db.staffAdmin.length === 0) {
+      const hashedPw = await bcrypt.hash('admin123', 10);
+      db.staffAdmin.push({ id: 'staffadmin_1', username: 'admin', password: hashedPw, name: 'Staff Admin', createdAt: new Date().toISOString() });
+      writeDB(db);
+    }
+    const admin = db.staffAdmin.find(a => a.username.toLowerCase() === username.trim().toLowerCase());
+    if (!admin) return res.status(401).json({ error: 'Invalid credentials' });
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
+    res.json({ message: 'Login successful', admin: { id: admin.id, name: admin.name, username: admin.username } });
+  } catch (err) {
+    console.error('Staff admin login error:', err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Staff Admin: Get all staff
+app.get('/api/staff-admin/staff', (req, res) => {
+  const db = readDB();
+  const staffList = (db.staff || []).map(s => ({ id: s.id, name: s.name, mobile: s.mobile, isActive: s.isActive, createdAt: s.createdAt }));
+  res.json(staffList);
+});
+
+// Staff Admin: Get all students from all staff
+app.get('/api/staff-admin/students', (req, res) => {
+  const db = readDB();
+  let allStudents = (db.staffStudents || []).sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+  const { search, staffId } = req.query;
+  if (staffId) allStudents = allStudents.filter(s => s.staffId === staffId);
+  if (search) {
+    const q = search.toLowerCase();
+    allStudents = allStudents.filter(s =>
+      (s.name && s.name.toLowerCase().includes(q)) ||
+      (s.fatherName && s.fatherName.toLowerCase().includes(q))
+    );
+  }
+  // Enrich with staff name
+  const enriched = allStudents.map(s => {
+    const staffMember = (db.staff || []).find(st => st.id === s.staffId);
+    return { ...s, staffName: staffMember ? staffMember.name : 'Unknown' };
+  });
+  res.json(enriched);
+});
+
+// Staff Admin: Upload documents for a student
+app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), (req, res) => {
+  try {
+    const db = readDB();
+    const studentIdx = (db.staffStudents || []).findIndex(s => s.id === req.params.id);
+    if (studentIdx < 0) return res.status(404).json({ error: 'Student not found' });
+    const student = db.staffStudents[studentIdx];
+    if (!student.adminDocuments) student.adminDocuments = [];
+    const correctionRound = (student.correctionCount || 0) + 1;
+    const files = [];
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        files.push({ filename: file.filename, originalname: file.originalname, path: `/uploads/${file.filename}` });
+      });
+    }
+    if (req.body.existingPaths) {
+      const paths = JSON.parse(req.body.existingPaths);
+      paths.forEach(p => {
+        const fname = path.basename(p);
+        files.push({ filename: fname, originalname: fname, path: p });
+      });
+    }
+    if (files.length === 0) return res.status(400).json({ error: 'No files provided' });
+    const docEntry = {
+      id: `staffdoc_${Date.now()}`,
+      files,
+      correctionRound,
+      uploadedAt: new Date().toISOString(),
+      forceAvailable: false,
+      note: req.body.note || ''
+    };
+    student.adminDocuments.push(docEntry);
+    student.status = 'active';
+    student.updatedAt = new Date().toISOString();
+    db.staffStudents[studentIdx] = student;
+    writeDB(db);
+    res.json({ message: 'Documents uploaded successfully', student });
+  } catch (err) {
+    console.error('Staff admin upload error:', err);
+    res.status(500).json({ error: 'Failed to upload documents' });
+  }
+});
+
+// Staff Admin: Force make documents available before time
+app.post('/api/staff-admin/students/:studentId/documents/:docId/force-available', (req, res) => {
+  try {
+    const db = readDB();
+    const student = (db.staffStudents || []).find(s => s.id === req.params.studentId);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    const doc = (student.adminDocuments || []).find(d => d.id === req.params.docId);
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+    doc.forceAvailable = true;
+    student.updatedAt = new Date().toISOString();
+    writeDB(db);
+    res.json({ message: 'Document now available for download' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+// Staff Admin: Delete document entry
+app.delete('/api/staff-admin/students/:studentId/documents/:docId', (req, res) => {
+  try {
+    const db = readDB();
+    const student = (db.staffStudents || []).find(s => s.id === req.params.studentId);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    student.adminDocuments = (student.adminDocuments || []).filter(d => d.id !== req.params.docId);
+    student.updatedAt = new Date().toISOString();
+    writeDB(db);
+    res.json({ message: 'Document deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+// Staff Admin: Dashboard stats
+app.get('/api/staff-admin/dashboard-stats', (req, res) => {
+  const db = readDB();
+  const totalStaff = (db.staff || []).length;
+  const totalStudents = (db.staffStudents || []).length;
+  const pending = (db.staffStudents || []).filter(s => s.status === 'pending').length;
+  const active = (db.staffStudents || []).filter(s => s.status === 'active').length;
+  res.json({ totalStaff, totalStudents, pending, active });
+});
+
 // Start Express Server
 app.listen(PORT, async () => {
   console.log(`Express server running on http://localhost:${PORT}`);

@@ -4,7 +4,7 @@ import {
   Edit3, Trash2, Globe, Sliders, CheckCircle, Eye, 
   Printer, ArrowLeft, User, Image, BookOpen, 
   RefreshCw, X, AlertCircle, Wallet, CreditCard, 
-  FileDown, Building2, Download, Lock
+  FileDown, Building2, Download, Lock, EyeOff
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -118,6 +118,54 @@ export default function App() {
   const [adminCenterPayments, setAdminCenterPayments] = useState([]);
   const [adminCenterPaymentsView, setAdminCenterPaymentsView] = useState(null);
 
+  // ---- STAFF STATES ----
+  const [staffView, setStaffView] = useState('login'); // 'login', 'register', 'dashboard', 'add-student', 'edit-student', 'view-documents'
+  const [staffAuthenticated, setStaffAuthenticated] = useState(() => sessionStorage.getItem('staffAuthenticated') === 'true');
+  const [staffData, setStaffData] = useState(() => {
+    const stored = sessionStorage.getItem('staffData');
+    return stored ? JSON.parse(stored) : null;
+  });
+  const [staffLoginMobile, setStaffLoginMobile] = useState('');
+  const [staffLoginPass, setStaffLoginPass] = useState('');
+  const [staffLoginError, setStaffLoginError] = useState('');
+  const [staffRegName, setStaffRegName] = useState('');
+  const [staffRegMobile, setStaffRegMobile] = useState('');
+  const [staffRegPass, setStaffRegPass] = useState('');
+  const [staffRegShowPass, setStaffRegShowPass] = useState(false);
+  const [staffStudents, setStaffStudents] = useState([]);
+  const [staffStats, setStaffStats] = useState({ total: 0, active: 0, pending: 0 });
+  const [staffStudentForm, setStaffStudentForm] = useState({
+    name: '', fatherName: '', motherName: '', dob: '', email: '',
+    address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: ''
+  });
+  const [staffStudentPhoto, setStaffStudentPhoto] = useState('');
+  const [staffCropSrc, setStaffCropSrc] = useState(null);
+  const [staffDocuments, setStaffDocuments] = useState([]);
+  const [staffExistingStudent, setStaffExistingStudent] = useState(null);
+  const [staffSearch, setStaffSearch] = useState('');
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [staffSelectedStudentDocs, setStaffSelectedStudentDocs] = useState(null);
+  const [staffPaymentScreenshot, setStaffPaymentScreenshot] = useState('');
+
+  // ---- STAFF ADMIN STATES ----
+  const [staffAdminView, setStaffAdminView] = useState('login'); // 'login', 'dashboard', 'students', 'manage-student'
+  const [staffAdminAuthenticated, setStaffAdminAuthenticated] = useState(() => sessionStorage.getItem('staffAdminAuthenticated') === 'true');
+  const [staffAdminData, setStaffAdminData] = useState(() => {
+    const stored = sessionStorage.getItem('staffAdminData');
+    return stored ? JSON.parse(stored) : null;
+  });
+  const [staffAdminUsername, setStaffAdminUsername] = useState('');
+  const [staffAdminPass, setStaffAdminPass] = useState('');
+  const [staffAdminLoginError, setStaffAdminLoginError] = useState('');
+  const [staffAdminStats, setStaffAdminStats] = useState({ totalStaff: 0, totalStudents: 0, pending: 0, active: 0 });
+  const [staffAdminStaffList, setStaffAdminStaffList] = useState([]);
+  const [staffAdminStudents, setStaffAdminStudents] = useState([]);
+  const [staffAdminSelectedStudent, setStaffAdminSelectedStudent] = useState(null);
+  const [staffAdminUploadFiles, setStaffAdminUploadFiles] = useState([]);
+  const [staffAdminUploadNote, setStaffAdminUploadNote] = useState('');
+  const [staffAdminSearch, setStaffAdminSearch] = useState('');
+  const [staffAdminFilterStaff, setStaffAdminFilterStaff] = useState('');
+
   // ---- ADMIN CENTER MANAGEMENT STATES ----
   const [adminCenters, setAdminCenters] = useState([]);
   const [adminCenterForm, setAdminCenterForm] = useState({ centerName: '', username: '', password: '', contactPerson: '', email: '', phone: '', address: '' });
@@ -162,6 +210,22 @@ export default function App() {
       setCurrentView('center');
       if (sessionStorage.getItem('centerAuthenticated') === 'true') {
         fetchCenterData();
+      }
+    } else if (viewParam === 'staff-login') {
+      setCurrentView('staff');
+      if (sessionStorage.getItem('staffAuthenticated') === 'true') {
+        setStaffView('dashboard');
+        fetchStaffData();
+      } else {
+        setStaffView('login');
+      }
+    } else if (viewParam === 'staff-admin') {
+      setCurrentView('staff-admin');
+      if (sessionStorage.getItem('staffAdminAuthenticated') === 'true') {
+        setStaffAdminView('dashboard');
+        fetchStaffAdminData();
+      } else {
+        setStaffAdminView('login');
       }
     } else {
       if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
@@ -744,6 +808,187 @@ export default function App() {
     try { await fetch(`/api/admin/centers/${id}`, { method: 'DELETE' }); fetchAdminCenters(); } catch (err) { console.error(err); }
   };
 
+  // ---- STAFF HANDLERS ----
+  const handleStaffLogin = async (e) => {
+    e.preventDefault();
+    setStaffLoginError('');
+    try {
+      const res = await fetch('/api/staff/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: staffLoginMobile.trim(), password: staffLoginPass }) });
+      const data = await res.json();
+      if (!res.ok) { setStaffLoginError(data.error || 'Login failed'); return; }
+      setStaffAuthenticated(true);
+      setStaffData(data.staff);
+      sessionStorage.setItem('staffAuthenticated', 'true');
+      sessionStorage.setItem('staffData', JSON.stringify(data.staff));
+      setStaffView('dashboard');
+      fetchStaffData();
+    } catch (err) { setStaffLoginError('Connection error'); }
+  };
+
+  const handleStaffRegister = async (e) => {
+    e.preventDefault();
+    setStaffLoginError('');
+    try {
+      const res = await fetch('/api/staff/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: staffRegName, mobile: staffRegMobile.trim(), password: staffRegPass }) });
+      const data = await res.json();
+      if (!res.ok) { setStaffLoginError(data.error || 'Registration failed'); return; }
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      alert('Account created! You can now login.');
+      setStaffView('login');
+      setStaffRegName(''); setStaffRegMobile(''); setStaffRegPass('');
+    } catch (err) { setStaffLoginError('Connection error'); }
+  };
+
+  const fetchStaffData = async () => {
+    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    if (!staff) return;
+    setStaffLoading(true);
+    try {
+      const headers = { 'x-staff-id': staff.id };
+      const [statsRes, studentsRes] = await Promise.all([
+        fetch('/api/staff/dashboard-stats', { headers }),
+        fetch('/api/staff/students', { headers })
+      ]);
+      if (statsRes.ok) setStaffStats(await statsRes.json());
+      if (studentsRes.ok) setStaffStudents(await studentsRes.json());
+    } catch (err) { console.error(err); }
+    setStaffLoading(false);
+  };
+
+  const handleStaffAddStudent = async (e) => {
+    e.preventDefault();
+    try {
+      const staff = JSON.parse(sessionStorage.getItem('staffData'));
+      const fd = new FormData();
+      Object.entries(staffStudentForm).forEach(([k, v]) => fd.append(k, v));
+      if (staffStudentPhoto) fd.append('photo', staffStudentPhoto);
+      if (staffPaymentScreenshot) fd.append('paymentScreenshot', staffPaymentScreenshot);
+      staffDocuments.forEach(doc => fd.append('documents', doc));
+      const res = await fetch('/api/staff/students', { method: 'POST', headers: { 'x-staff-id': staff.id }, body: fd });
+      if (res.ok) {
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '' });
+        setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot('');
+        setStaffView('dashboard');
+        fetchStaffData();
+      } else { const err = await res.json(); alert(err.error || 'Failed'); }
+    } catch (err) { alert('Connection error'); }
+  };
+
+  const handleStaffEditStudent = async (e) => {
+    e.preventDefault();
+    try {
+      const staff = JSON.parse(sessionStorage.getItem('staffData'));
+      const fd = new FormData();
+      Object.entries(staffStudentForm).forEach(([k, v]) => fd.append(k, v));
+      fd.append('correctionNote', 'Staff correction request');
+      if (staffStudentPhoto && !staffStudentPhoto.startsWith('/')) fd.append('photo', staffStudentPhoto);
+      staffDocuments.forEach(doc => fd.append('documents', doc));
+      const res = await fetch(`/api/staff/students/${staffExistingStudent.id}`, { method: 'PUT', headers: { 'x-staff-id': staff.id }, body: fd });
+      if (res.ok) {
+        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '' });
+        setStaffStudentPhoto(''); setStaffDocuments([]); setStaffExistingStudent(null);
+        setStaffView('dashboard');
+        fetchStaffData();
+        alert('Correction request submitted!');
+      } else { const err = await res.json(); alert(err.error || 'Failed'); }
+    } catch (err) { alert('Connection error'); }
+  };
+
+  const handleStaffDeleteStudent = async (id) => {
+    if (!confirm('Delete this student?')) return;
+    try {
+      const staff = JSON.parse(sessionStorage.getItem('staffData'));
+      await fetch(`/api/staff/students/${id}`, { method: 'DELETE', headers: { 'x-staff-id': staff.id } });
+      fetchStaffData();
+    } catch (err) { alert('Error'); }
+  };
+
+  const handleStaffViewDocs = async (student) => {
+    try {
+      const staff = JSON.parse(sessionStorage.getItem('staffData'));
+      const res = await fetch(`/api/staff/students/${student.id}/documents`, { headers: { 'x-staff-id': staff.id } });
+      if (res.ok) {
+        const docs = await res.json();
+        setStaffSelectedStudentDocs({ student, documents: docs });
+        setStaffView('view-documents');
+      }
+    } catch (err) { alert('Error loading documents'); }
+  };
+
+  const startStaffEditStudent = (student) => {
+    setStaffExistingStudent(student);
+    setStaffStudentForm({
+      name: student.name, fatherName: student.fatherName, motherName: student.motherName || '',
+      dob: student.dob, email: student.email || '', address: student.address || '',
+      admissionDate: student.admissionDate || '', contactNumber: student.contactNumber || '',
+      course: student.course, session: student.session, paymentDescription: student.paymentDescription || ''
+    });
+    setStaffStudentPhoto(student.photo || '');
+    setStaffDocuments([]);
+    setStaffView('edit-student');
+  };
+
+  // ---- STAFF ADMIN HANDLERS ----
+  const handleStaffAdminLogin = async (e) => {
+    e.preventDefault();
+    setStaffAdminLoginError('');
+    try {
+      const res = await fetch('/api/staff-admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: staffAdminUsername.trim(), password: staffAdminPass }) });
+      const data = await res.json();
+      if (!res.ok) { setStaffAdminLoginError(data.error || 'Login failed'); return; }
+      setStaffAdminAuthenticated(true);
+      setStaffAdminData(data.admin);
+      sessionStorage.setItem('staffAdminAuthenticated', 'true');
+      sessionStorage.setItem('staffAdminData', JSON.stringify(data.admin));
+      setStaffAdminView('dashboard');
+      fetchStaffAdminData();
+    } catch (err) { setStaffAdminLoginError('Connection error'); }
+  };
+
+  const fetchStaffAdminData = async () => {
+    try {
+      const [statsRes, staffRes, studentsRes] = await Promise.all([
+        fetch('/api/staff-admin/dashboard-stats'),
+        fetch('/api/staff-admin/staff'),
+        fetch('/api/staff-admin/students')
+      ]);
+      if (statsRes.ok) setStaffAdminStats(await statsRes.json());
+      if (staffRes.ok) setStaffAdminStaffList(await staffRes.json());
+      if (studentsRes.ok) setStaffAdminStudents(await studentsRes.json());
+    } catch (err) { console.error(err); }
+  };
+
+  const handleStaffAdminUploadDocs = async (studentId) => {
+    try {
+      const fd = new FormData();
+      staffAdminUploadFiles.forEach(f => fd.append('files', f));
+      fd.append('note', staffAdminUploadNote);
+      const res = await fetch(`/api/staff-admin/students/${studentId}/documents`, { method: 'POST', body: fd });
+      if (res.ok) {
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+        setStaffAdminUploadFiles([]); setStaffAdminUploadNote('');
+        fetchStaffAdminData();
+        alert('Documents uploaded successfully!');
+      } else { const err = await res.json(); alert(err.error || 'Failed'); }
+    } catch (err) { alert('Connection error'); }
+  };
+
+  const handleStaffAdminForceAvailable = async (studentId, docId) => {
+    try {
+      await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}/force-available`, { method: 'POST' });
+      fetchStaffAdminData();
+    } catch (err) { alert('Error'); }
+  };
+
+  const handleStaffAdminDeleteDoc = async (studentId, docId) => {
+    if (!confirm('Delete this document?')) return;
+    try {
+      await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}`, { method: 'DELETE' });
+      fetchStaffAdminData();
+    } catch (err) { alert('Error'); }
+  };
+
   const handleAdminWalletTopup = (centerId) => {
     const center = adminCenters.find(c => c.id === centerId);
     setWalletTopupModal({ open: true, centerId, centerName: center ? center.centerName : '', amount: '', description: '' });
@@ -861,6 +1106,18 @@ export default function App() {
             onClick={() => { setCurrentView('center'); if (centerAuthenticated) fetchCenterData(); }}
           >
             <Building2 size={18} /> Center Portal
+          </button>
+          <button 
+            className={`nav-mode-btn ${currentView === 'staff' ? 'active' : ''}`}
+            onClick={() => { setCurrentView('staff'); if (staffAuthenticated) { setStaffView('dashboard'); fetchStaffData(); } else { setStaffView('login'); } }}
+          >
+            <User size={18} /> Staff Portal
+          </button>
+          <button 
+            className={`nav-mode-btn ${currentView === 'staff-admin' ? 'active' : ''}`}
+            onClick={() => { setCurrentView('staff-admin'); if (staffAdminAuthenticated) { setStaffAdminView('dashboard'); fetchStaffAdminData(); } else { setStaffAdminView('login'); } }}
+          >
+            <Lock size={18} /> Staff Admin
           </button>
           <button 
             className={`nav-mode-btn ${currentView === 'portal' ? 'active' : ''}`}
@@ -1739,6 +1996,487 @@ export default function App() {
             </section>
           </div>
           )
+        )}
+
+        {/* -------------------------------------------------------------
+           3. STAFF PORTAL
+           ------------------------------------------------------------- */}
+        {currentView === 'staff' && (
+          <div className="center-dashboard-wrapper no-print animate-fade-in">
+            <header className="center-top-bar">
+              <div className="center-brand">
+                <img src="/brand-logo-transparent.png" alt="Logo" className="center-logo-img" />
+                <h1>GURUKUL VIDHYAPEETH UNIVERSITY</h1>
+                <span>Staff Portal</span>
+              </div>
+              {staffAuthenticated && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Welcome, {staffData?.name}</span>
+                  <button className="btn btn-outline btn-sm" onClick={() => { setStaffAuthenticated(false); setStaffData(null); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }}>Logout</button>
+                </div>
+              )}
+            </header>
+
+            {/* STAFF LOGIN */}
+            {!staffAuthenticated && staffView === 'login' && (
+              <div className="login-page">
+                <div className="login-card glass-panel animate-fade-in">
+                  <img src="/brand-logo-transparent.png" alt="Logo" className="login-logo" />
+                  <h2>Staff Login</h2>
+                  <p className="login-subtitle">Access your staff dashboard</p>
+                  {staffLoginError && <div className="error-banner"><AlertCircle size={16} /> {staffLoginError}</div>}
+                  <form onSubmit={handleStaffLogin}>
+                    <div className="form-group">
+                      <label className="form-label">Mobile Number</label>
+                      <input type="tel" className="form-input" placeholder="Enter mobile number" value={staffLoginMobile} onChange={e => setStaffLoginMobile(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Password</label>
+                      <input type="password" className="form-input" placeholder="Enter password" value={staffLoginPass} onChange={e => setStaffLoginPass(e.target.value)} required />
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-full">Login</button>
+                  </form>
+                  <p className="login-footer-text">Don't have an account? <button className="link-btn" onClick={() => { setStaffView('register'); setStaffLoginError(''); }}>Create Account</button></p>
+                </div>
+              </div>
+            )}
+
+            {/* STAFF REGISTER */}
+            {!staffAuthenticated && staffView === 'register' && (
+              <div className="login-page">
+                <div className="login-card glass-panel animate-fade-in">
+                  <img src="/brand-logo-transparent.png" alt="Logo" className="login-logo" />
+                  <h2>Create Staff Account</h2>
+                  <p className="login-subtitle">Register to get started</p>
+                  {staffLoginError && <div className="error-banner"><AlertCircle size={16} /> {staffLoginError}</div>}
+                  <form onSubmit={handleStaffRegister}>
+                    <div className="form-group">
+                      <label className="form-label">Full Name</label>
+                      <input type="text" className="form-input" placeholder="Enter your full name" value={staffRegName} onChange={e => setStaffRegName(e.target.value.toUpperCase())} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Mobile Number</label>
+                      <input type="tel" className="form-input" placeholder="Enter mobile number" value={staffRegMobile} onChange={e => setStaffRegMobile(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Password</label>
+                      <div style={{ position: 'relative' }}>
+                        <input type={staffRegShowPass ? 'text' : 'password'} className="form-input" style={{ paddingRight: '40px' }} placeholder="Set password" value={staffRegPass} onChange={e => setStaffRegPass(e.target.value)} required />
+                        <button type="button" onClick={() => setStaffRegShowPass(!staffRegShowPass)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                          {staffRegShowPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-full">Create Account</button>
+                  </form>
+                  <p className="login-footer-text">Already have an account? <button className="link-btn" onClick={() => { setStaffView('login'); setStaffLoginError(''); }}>Login</button></p>
+                </div>
+              </div>
+            )}
+
+            {/* STAFF DASHBOARD */}
+            {staffAuthenticated && staffView === 'dashboard' && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2>Staff Dashboard</h2>
+                  <button className="btn btn-primary" onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
+                    <UserPlus size={16} /> Add Student
+                  </button>
+                </div>
+                <div className="glass-panel stats-row" style={{ display: 'flex', gap: '16px', marginBottom: '24px', padding: '16px' }}>
+                  <div className="stat-item"><div className="stat-value">{staffStats.total}</div><div className="stat-label">Total Students</div></div>
+                  <div className="stat-item"><div className="stat-value" style={{ color: 'var(--secondary)' }}>{staffStats.active}</div><div className="stat-label">Active</div></div>
+                  <div className="stat-item"><div className="stat-value" style={{ color: 'var(--warning)' }}>{staffStats.pending}</div><div className="stat-label">Pending</div></div>
+                </div>
+                <div className="glass-panel search-filter-bar" style={{ padding: '16px', marginBottom: '24px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <Search style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} size={18} />
+                    <input type="text" placeholder="Search students..." className="form-input" style={{ paddingLeft: '40px' }} value={staffSearch} onChange={e => setStaffSearch(e.target.value)} />
+                  </div>
+                </div>
+                <div className="center-student-table-wrapper">
+                  <table className="center-student-table">
+                    <thead><tr><th>S.No</th><th>Name</th><th>Father Name</th><th>Course</th><th>Session</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {staffStudents.filter(s => !staffSearch || s.name.toLowerCase().includes(staffSearch.toLowerCase()) || s.fatherName.toLowerCase().includes(staffSearch.toLowerCase())).map((s, idx) => (
+                        <tr key={s.id}>
+                          <td>{idx + 1}</td>
+                          <td style={{ fontWeight: '600' }}>{s.name}</td>
+                          <td>{s.fatherName}</td>
+                          <td style={{ fontSize: '12px' }}>{s.course}</td>
+                          <td>{s.session}</td>
+                          <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                              <button className="center-action-btn" onClick={() => handleStaffViewDocs(s)}><Eye size={12} /> Docs</button>
+                              <button className="center-action-btn" onClick={() => startStaffEditStudent(s)}><Edit3 size={12} /> Update</button>
+                              <button className="center-action-btn" onClick={() => handleStaffDeleteStudent(s.id)} style={{ color: 'var(--danger)' }}><Trash2 size={12} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* STAFF ADD STUDENT */}
+            {staffAuthenticated && staffView === 'add-student' && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2>Add New Student</h2>
+                  <button className="btn btn-outline" onClick={() => setStaffView('dashboard')}><ArrowLeft size={16} /> Back</button>
+                </div>
+                <form onSubmit={handleStaffAddStudent} className="glass-panel" style={{ padding: '24px' }}>
+                  <div className="form-row-grid">
+                    <div><label className="form-label">Student Name *</label><input type="text" className="form-input" required value={staffStudentForm.name} onChange={e => setStaffStudentForm(p => ({ ...p, name: e.target.value.toUpperCase() }))} /></div>
+                    <div><label className="form-label">Father Name *</label><input type="text" className="form-input" required value={staffStudentForm.fatherName} onChange={e => setStaffStudentForm(p => ({ ...p, fatherName: e.target.value.toUpperCase() }))} /></div>
+                    <div><label className="form-label">Mother Name</label><input type="text" className="form-input" value={staffStudentForm.motherName} onChange={e => setStaffStudentForm(p => ({ ...p, motherName: e.target.value.toUpperCase() }))} /></div>
+                  </div>
+                  <div className="form-row-grid">
+                    <div><label className="form-label">Date of Birth *</label><input type="date" className="form-input" required value={staffStudentForm.dob} onChange={e => setStaffStudentForm(p => ({ ...p, dob: e.target.value }))} /></div>
+                    <div><label className="form-label">Email</label><input type="email" className="form-input" value={staffStudentForm.email} onChange={e => setStaffStudentForm(p => ({ ...p, email: e.target.value }))} /></div>
+                    <div><label className="form-label">Contact Number</label><input type="text" className="form-input" value={staffStudentForm.contactNumber} onChange={e => setStaffStudentForm(p => ({ ...p, contactNumber: e.target.value }))} /></div>
+                  </div>
+                  <div className="form-row-grid">
+                    <div><label className="form-label">Course *</label><input type="text" className="form-input" required value={staffStudentForm.course} onChange={e => setStaffStudentForm(p => ({ ...p, course: e.target.value.toUpperCase() }))} /></div>
+                    <div><label className="form-label">Session *</label><input type="text" className="form-input" required value={staffStudentForm.session} onChange={e => setStaffStudentForm(p => ({ ...p, session: e.target.value.toUpperCase() }))} /></div>
+                    <div><label className="form-label">Admission Date</label><input type="date" className="form-input" value={staffStudentForm.admissionDate} onChange={e => setStaffStudentForm(p => ({ ...p, admissionDate: e.target.value }))} /></div>
+                  </div>
+                  <div><label className="form-label">Address</label><input type="text" className="form-input" value={staffStudentForm.address} onChange={e => setStaffStudentForm(p => ({ ...p, address: e.target.value.toUpperCase() }))} /></div>
+                  <div style={{ marginTop: '16px' }}>
+                    <label className="form-label">Student Photo</label>
+                    <div className="doc-upload-zone">
+                      <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
+                      <span>Click to upload photo</span>
+                      <input type="file" accept="image/*" onChange={e => { if (e.target.files[0]) { const reader = new FileReader(); reader.onload = ev => setStaffStudentPhoto(ev.target.result); reader.readAsDataURL(e.target.files[0]); } }} />
+                    </div>
+                    {staffStudentPhoto && <img src={staffStudentPhoto} alt="Preview" style={{ maxHeight: '80px', marginTop: '8px', borderRadius: '8px' }} />}
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <label className="form-label">Payment Description</label>
+                    <input type="text" className="form-input" placeholder="e.g. 1st Semester Fee" value={staffStudentForm.paymentDescription} onChange={e => setStaffStudentForm(p => ({ ...p, paymentDescription: e.target.value }))} />
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <label className="form-label">Payment Screenshot</label>
+                    <div className="doc-upload-zone">
+                      <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
+                      <span>Click to upload payment screenshot</span>
+                      <input type="file" accept="image/*" onChange={e => { if (e.target.files[0]) { const reader = new FileReader(); reader.onload = ev => { setStaffPaymentScreenshot(ev.target.result); }; reader.readAsDataURL(e.target.files[0]); } }} />
+                    </div>
+                    {staffPaymentScreenshot && <img src={staffPaymentScreenshot} alt="Screenshot" style={{ maxHeight: '80px', marginTop: '8px', borderRadius: '8px' }} />}
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <label className="form-label">Documents</label>
+                    <div className="doc-upload-zone">
+                      <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
+                      <span>Click to upload documents</span>
+                      <input type="file" multiple onChange={e => setStaffDocuments(Array.from(e.target.files))} />
+                    </div>
+                    {staffDocuments.length > 0 && <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{staffDocuments.length} file(s) selected</p>}
+                  </div>
+                  <div style={{ marginTop: '20px', display: 'flex', gap: '8px' }}>
+                    <button type="submit" className="btn btn-primary">Submit Student</button>
+                    <button type="button" className="btn btn-outline" onClick={() => setStaffView('dashboard')}>Cancel</button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* STAFF EDIT STUDENT */}
+            {staffAuthenticated && staffView === 'edit-student' && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2>Request Correction — {staffExistingStudent?.name}</h2>
+                  <button className="btn btn-outline" onClick={() => { setStaffExistingStudent(null); setStaffView('dashboard'); }}><ArrowLeft size={16} /> Back</button>
+                </div>
+                <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px', background: 'linear-gradient(135deg, #fff3e0 0%, #fff8e1 100%)', border: '1px solid #ff9800' }}>
+                  <p style={{ fontSize: '13px', color: '#e65100', fontWeight: '600' }}>Correction #{(staffExistingStudent?.correctionCount || 0) + 1} — After admin re-uploads, document will be available after {(staffExistingStudent?.correctionCount || 0) + 1} day(s).</p>
+                </div>
+                <form onSubmit={handleStaffEditStudent} className="glass-panel" style={{ padding: '24px' }}>
+                  <div className="form-row-grid">
+                    <div><label className="form-label">Student Name *</label><input type="text" className="form-input" required value={staffStudentForm.name} onChange={e => setStaffStudentForm(p => ({ ...p, name: e.target.value.toUpperCase() }))} /></div>
+                    <div><label className="form-label">Father Name *</label><input type="text" className="form-input" required value={staffStudentForm.fatherName} onChange={e => setStaffStudentForm(p => ({ ...p, fatherName: e.target.value.toUpperCase() }))} /></div>
+                    <div><label className="form-label">Mother Name</label><input type="text" className="form-input" value={staffStudentForm.motherName} onChange={e => setStaffStudentForm(p => ({ ...p, motherName: e.target.value.toUpperCase() }))} /></div>
+                  </div>
+                  <div className="form-row-grid">
+                    <div><label className="form-label">Date of Birth *</label><input type="date" className="form-input" required value={staffStudentForm.dob} onChange={e => setStaffStudentForm(p => ({ ...p, dob: e.target.value }))} /></div>
+                    <div><label className="form-label">Course *</label><input type="text" className="form-input" required value={staffStudentForm.course} onChange={e => setStaffStudentForm(p => ({ ...p, course: e.target.value.toUpperCase() }))} /></div>
+                    <div><label className="form-label">Session *</label><input type="text" className="form-input" required value={staffStudentForm.session} onChange={e => setStaffStudentForm(p => ({ ...p, session: e.target.value.toUpperCase() }))} /></div>
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <label className="form-label">Upload New Documents (if any)</label>
+                    <div className="doc-upload-zone">
+                      <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
+                      <span>Click to upload new documents</span>
+                      <input type="file" multiple onChange={e => setStaffDocuments(Array.from(e.target.files))} />
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '20px', display: 'flex', gap: '8px' }}>
+                    <button type="submit" className="btn btn-primary">Submit Correction Request</button>
+                    <button type="button" className="btn btn-outline" onClick={() => { setStaffExistingStudent(null); setStaffView('dashboard'); }}>Cancel</button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* STAFF VIEW DOCUMENTS */}
+            {staffAuthenticated && staffView === 'view-documents' && staffSelectedStudentDocs && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2>Documents — {staffSelectedStudentDocs.student.name}</h2>
+                  <button className="btn btn-outline" onClick={() => { setStaffSelectedStudentDocs(null); setStaffView('dashboard'); }}><ArrowLeft size={16} /> Back</button>
+                </div>
+                {staffSelectedStudentDocs.documents.length === 0 ? (
+                  <div className="empty-state glass-panel"><FileText size={48} style={{ color: 'var(--text-muted)' }} /><p>No documents uploaded by admin yet.</p></div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {staffSelectedStudentDocs.documents.map(doc => (
+                      <div key={doc.id} className="glass-panel" style={{ padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <div>
+                            <span style={{ fontWeight: '700', fontSize: '14px' }}>Correction Round {doc.correctionRound}</span>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>Uploaded: {new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
+                          </div>
+                          {doc.isAvailable ? (
+                            <span className="payment-status completed">Available</span>
+                          ) : (
+                            <span className="payment-status pending">Available after {new Date(doc.availableAt).toLocaleDateString('en-IN')}</span>
+                          )}
+                        </div>
+                        {doc.note && <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Note: {doc.note}</p>}
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {doc.files.map((f, i) => (
+                            doc.isAvailable ? (
+                              <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm"><Download size={14} /> {f.originalname}</a>
+                            ) : (
+                              <span key={i} className="btn btn-outline btn-sm" style={{ opacity: 0.5, cursor: 'not-allowed' }}><Lock size={14} /> {f.originalname}</span>
+                            )
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* -------------------------------------------------------------
+           4. STAFF ADMIN PORTAL
+           ------------------------------------------------------------- */}
+        {currentView === 'staff-admin' && (
+          <div className="center-dashboard-wrapper no-print animate-fade-in">
+            <header className="center-top-bar">
+              <div className="center-brand">
+                <img src="/brand-logo-transparent.png" alt="Logo" className="center-logo-img" />
+                <h1>GURUKUL VIDHYAPEETH UNIVERSITY</h1>
+                <span>Staff Admin Panel</span>
+              </div>
+              {staffAdminAuthenticated && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{staffAdminData?.name}</span>
+                  <button className="btn btn-outline btn-sm" onClick={() => { setStaffAdminAuthenticated(false); setStaffAdminData(null); sessionStorage.removeItem('staffAdminAuthenticated'); sessionStorage.removeItem('staffAdminData'); setStaffAdminView('login'); }}>Logout</button>
+                </div>
+              )}
+            </header>
+
+            {/* STAFF ADMIN LOGIN */}
+            {!staffAdminAuthenticated && staffAdminView === 'login' && (
+              <div className="login-page">
+                <div className="login-card glass-panel animate-fade-in">
+                  <img src="/brand-logo-transparent.png" alt="Logo" className="login-logo" />
+                  <h2>Staff Admin Login</h2>
+                  <p className="login-subtitle">Manage staff and documents</p>
+                  {staffAdminLoginError && <div className="error-banner"><AlertCircle size={16} /> {staffAdminLoginError}</div>}
+                  <form onSubmit={handleStaffAdminLogin}>
+                    <div className="form-group">
+                      <label className="form-label">Username</label>
+                      <input type="text" className="form-input" placeholder="Enter username" value={staffAdminUsername} onChange={e => setStaffAdminUsername(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Password</label>
+                      <input type="password" className="form-input" placeholder="Enter password" value={staffAdminPass} onChange={e => setStaffAdminPass(e.target.value)} required />
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-full">Login</button>
+                  </form>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '16px', textAlign: 'center' }}>Default: admin / admin123</p>
+                </div>
+              </div>
+            )}
+
+            {/* STAFF ADMIN DASHBOARD */}
+            {staffAdminAuthenticated && staffAdminView === 'dashboard' && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2>Staff Admin Dashboard</h2>
+                </div>
+                <div className="glass-panel stats-row" style={{ display: 'flex', gap: '16px', marginBottom: '24px', padding: '16px' }}>
+                  <div className="stat-item"><div className="stat-value">{staffAdminStats.totalStaff}</div><div className="stat-label">Total Staff</div></div>
+                  <div className="stat-item"><div className="stat-value">{staffAdminStats.totalStudents}</div><div className="stat-label">Total Students</div></div>
+                  <div className="stat-item"><div className="stat-value" style={{ color: 'var(--warning)' }}>{staffAdminStats.pending}</div><div className="stat-label">Pending</div></div>
+                  <div className="stat-item"><div className="stat-value" style={{ color: 'var(--secondary)' }}>{staffAdminStats.active}</div><div className="stat-label">Active</div></div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                  <button className="btn btn-primary" onClick={() => { setStaffAdminView('students'); fetchStaffAdminData(); }}><Eye size={16} /> View All Students</button>
+                  <button className="btn btn-outline" onClick={() => { setStaffAdminView('staff-list'); }}><User size={16} /> View Staff</button>
+                </div>
+              </div>
+            )}
+
+            {/* STAFF ADMIN STAFF LIST */}
+            {staffAdminAuthenticated && staffAdminView === 'staff-list' && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2>All Staff ({staffAdminStaffList.length})</h2>
+                  <button className="btn btn-outline" onClick={() => setStaffAdminView('dashboard')}><ArrowLeft size={16} /> Back</button>
+                </div>
+                <div className="center-student-table-wrapper">
+                  <table className="center-student-table">
+                    <thead><tr><th>S.No</th><th>Name</th><th>Mobile</th><th>Status</th><th>Joined</th></tr></thead>
+                    <tbody>
+                      {staffAdminStaffList.map((s, idx) => (
+                        <tr key={s.id}>
+                          <td>{idx + 1}</td>
+                          <td style={{ fontWeight: '600' }}>{s.name}</td>
+                          <td>{s.mobile}</td>
+                          <td><span className={`center-status-badge ${s.isActive ? 'active' : 'inactive'}`}>{s.isActive ? 'Active' : 'Inactive'}</span></td>
+                          <td>{new Date(s.createdAt).toLocaleDateString('en-IN')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* STAFF ADMIN ALL STUDENTS */}
+            {staffAdminAuthenticated && staffAdminView === 'students' && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2>All Staff Students</h2>
+                  <button className="btn btn-outline" onClick={() => setStaffAdminView('dashboard')}><ArrowLeft size={16} /> Back</button>
+                </div>
+                <div className="glass-panel search-filter-bar" style={{ padding: '16px', marginBottom: '24px', display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    <Search style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} size={18} />
+                    <input type="text" placeholder="Search students..." className="form-input" style={{ paddingLeft: '40px' }} value={staffAdminSearch} onChange={e => setStaffAdminSearch(e.target.value)} />
+                  </div>
+                  <select className="form-input" style={{ width: '200px' }} value={staffAdminFilterStaff} onChange={e => setStaffAdminFilterStaff(e.target.value)}>
+                    <option value="">All Staff</option>
+                    {staffAdminStaffList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div className="center-student-table-wrapper">
+                  <table className="center-student-table">
+                    <thead><tr><th>S.No</th><th>Staff</th><th>Student</th><th>Father</th><th>Course</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {staffAdminStudents.filter(s => {
+                        if (staffAdminFilterStaff && s.staffId !== staffAdminFilterStaff) return false;
+                        if (staffAdminSearch) { const q = staffAdminSearch.toLowerCase(); return s.name.toLowerCase().includes(q) || s.fatherName.toLowerCase().includes(q); }
+                        return true;
+                      }).map((s, idx) => (
+                        <tr key={s.id}>
+                          <td>{idx + 1}</td>
+                          <td style={{ fontSize: '12px' }}>{s.staffName}</td>
+                          <td style={{ fontWeight: '600' }}>{s.name}</td>
+                          <td>{s.fatherName}</td>
+                          <td style={{ fontSize: '12px' }}>{s.course}</td>
+                          <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                              <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }}><UploadCloud size={12} /> Upload Docs</button>
+                              {s.correctionCount > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', fontWeight: '600', alignSelf: 'center' }}>Correction #{s.correctionCount}</span>}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* STAFF ADMIN MANAGE STUDENT (Upload Docs) */}
+            {staffAdminAuthenticated && staffAdminView === 'manage-student' && staffAdminSelectedStudent && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2>Manage — {staffAdminSelectedStudent.name}</h2>
+                  <button className="btn btn-outline" onClick={() => { setStaffAdminSelectedStudent(null); setStaffAdminView('students'); }}><ArrowLeft size={16} /> Back</button>
+                </div>
+
+                {/* Student Info */}
+                <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '13px' }}><strong>Staff:</strong> {staffAdminSelectedStudent.staffName} | <strong>Course:</strong> {staffAdminSelectedStudent.course} | <strong>Status:</strong> <span className={`center-status-badge ${staffAdminSelectedStudent.status}`}>{staffAdminSelectedStudent.status}</span></p>
+                  {staffAdminSelectedStudent.correctionNote && <p style={{ fontSize: '12px', color: 'var(--warning)', marginTop: '4px' }}>Correction Note: {staffAdminSelectedStudent.correctionNote}</p>}
+                </div>
+
+                {/* Upload Documents */}
+                <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
+                  <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Upload Documents</h3>
+                  <div style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Note (optional)</label>
+                    <input type="text" className="form-input" placeholder="e.g. Updated marksheet" value={staffAdminUploadNote} onChange={e => setStaffAdminUploadNote(e.target.value)} />
+                  </div>
+                  <div className="doc-upload-zone" style={{ marginBottom: '12px' }}>
+                    <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
+                    <span>Click to upload multiple documents</span>
+                    <input type="file" multiple onChange={e => setStaffAdminUploadFiles(Array.from(e.target.files))} />
+                  </div>
+                  {staffAdminUploadFiles.length > 0 && <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>{staffAdminUploadFiles.length} file(s) selected</p>}
+                  <button className="btn btn-primary" onClick={() => handleStaffAdminUploadDocs(staffAdminSelectedStudent.id)} disabled={staffAdminUploadFiles.length === 0}>
+                    <UploadCloud size={16} /> Upload {staffAdminUploadFiles.length} File(s)
+                  </button>
+                </div>
+
+                {/* Existing Documents */}
+                <div className="glass-panel" style={{ padding: '24px' }}>
+                  <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Uploaded Documents</h3>
+                  {(!staffAdminSelectedStudent.adminDocuments || staffAdminSelectedStudent.adminDocuments.length === 0) ? (
+                    <p style={{ color: 'var(--text-muted)' }}>No documents uploaded yet.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {staffAdminSelectedStudent.adminDocuments.map(doc => {
+                        const now = new Date();
+                        const uploadedAt = new Date(doc.uploadedAt);
+                        const delayDays = doc.correctionRound || 1;
+                        const availableAt = new Date(uploadedAt.getTime() + delayDays * 24 * 60 * 60 * 1000);
+                        const isAvailable = doc.forceAvailable || now >= availableAt;
+                        return (
+                          <div key={doc.id} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                              <div>
+                                <span style={{ fontWeight: '600' }}>Round {doc.correctionRound}</span>
+                                <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>{new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
+                                {doc.note && <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>({doc.note})</span>}
+                              </div>
+                              <div style={{ display: 'flex', gap: '6px' }}>
+                                {!isAvailable && (
+                                  <button className="center-action-btn" onClick={() => handleStaffAdminForceAvailable(staffAdminSelectedStudent.id, doc.id)} style={{ color: 'var(--secondary)', borderColor: 'var(--secondary)' }}>
+                                    <Eye size={12} /> Make Available Now
+                                  </button>
+                                )}
+                                <button className="center-action-btn" onClick={() => handleStaffAdminDeleteDoc(staffAdminSelectedStudent.id, doc.id)} style={{ color: 'var(--danger)' }}>
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              {doc.files.map((f, i) => (
+                                <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm"><Download size={14} /> {f.originalname}</a>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {/* -------------------------------------------------------------
