@@ -146,6 +146,38 @@ export default function App() {
   const [staffLoading, setStaffLoading] = useState(false);
   const [staffSelectedStudentDocs, setStaffSelectedStudentDocs] = useState(null);
   const [staffPaymentScreenshot, setStaffPaymentScreenshot] = useState('');
+  const [customModal, setCustomModal] = useState({
+    open: false,
+    type: 'alert',
+    title: '',
+    message: '',
+    onConfirm: null,
+    onCancel: null
+  });
+
+  const showAlert = (message, title = 'Notification') => {
+    setCustomModal({
+      open: true,
+      type: 'alert',
+      title,
+      message,
+      onConfirm: () => setCustomModal(prev => ({ ...prev, open: false }))
+    });
+  };
+
+  const showConfirm = (message, onConfirm, title = 'Confirmation Required') => {
+    setCustomModal({
+      open: true,
+      type: 'confirm',
+      title,
+      message,
+      onConfirm: () => {
+        setCustomModal(prev => ({ ...prev, open: false }));
+        if (onConfirm) onConfirm();
+      },
+      onCancel: () => setCustomModal(prev => ({ ...prev, open: false }))
+    });
+  };
 
   // ---- STAFF ADMIN STATES ----
   const [staffAdminView, setStaffAdminView] = useState('login'); // 'login', 'dashboard', 'students', 'manage-student'
@@ -163,6 +195,7 @@ export default function App() {
   const [staffAdminSelectedStudent, setStaffAdminSelectedStudent] = useState(null);
   const [staffAdminUploadFiles, setStaffAdminUploadFiles] = useState([]);
   const [staffAdminUploadNote, setStaffAdminUploadNote] = useState('');
+  const [staffAdminUploadProgress, setStaffAdminUploadProgress] = useState(null);
   const [staffAdminSearch, setStaffAdminSearch] = useState('');
   const [staffAdminFilterStaff, setStaffAdminFilterStaff] = useState('');
 
@@ -955,40 +988,137 @@ export default function App() {
       ]);
       if (statsRes.ok) setStaffAdminStats(await statsRes.json());
       if (staffRes.ok) setStaffAdminStaffList(await staffRes.json());
-      if (studentsRes.ok) setStaffAdminStudents(await studentsRes.json());
+      if (studentsRes.ok) {
+        const studentsList = await studentsRes.json();
+        setStaffAdminStudents(studentsList);
+        return studentsList;
+      }
     } catch (err) { console.error(err); }
   };
 
-  const handleStaffAdminUploadDocs = async (studentId) => {
+  const handleStaffAdminUploadDocs = (studentId) => {
+    if (staffAdminUploadFiles.length === 0) return;
     try {
       const fd = new FormData();
       staffAdminUploadFiles.forEach(f => fd.append('files', f));
       fd.append('note', staffAdminUploadNote);
-      const res = await fetch(`/api/staff-admin/students/${studentId}/documents`, { method: 'POST', body: fd });
-      if (res.ok) {
-        confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
-        setStaffAdminUploadFiles([]); setStaffAdminUploadNote('');
-        fetchStaffAdminData();
-        alert('Documents uploaded successfully!');
-      } else { const err = await res.json(); alert(err.error || 'Failed'); }
-    } catch (err) { alert('Connection error'); }
+
+      setStaffAdminUploadProgress(0);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `/api/staff-admin/students/${studentId}/documents`);
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          setStaffAdminUploadProgress(percent);
+        }
+      });
+
+      xhr.onload = () => {
+        setStaffAdminUploadProgress(null);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+          setStaffAdminUploadFiles([]);
+          setStaffAdminUploadNote('');
+          fetchStaffAdminData().then((updatedList) => {
+            if (updatedList) {
+              const updatedStudent = updatedList.find(s => s.id === studentId);
+              if (updatedStudent) {
+                setStaffAdminSelectedStudent(updatedStudent);
+              }
+            }
+          });
+          alert('Documents uploaded successfully!');
+        } else {
+          try {
+            const err = JSON.parse(xhr.responseText);
+            alert(err.error || 'Failed');
+          } catch {
+            alert('Failed');
+          }
+        }
+      };
+
+      xhr.onerror = () => {
+        setStaffAdminUploadProgress(null);
+        alert('Connection error');
+      };
+
+      xhr.send(fd);
+    } catch (err) {
+      setStaffAdminUploadProgress(null);
+      alert('Connection error');
+    }
   };
 
   const handleStaffAdminForceAvailable = async (studentId, docId) => {
     try {
-      await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}/force-available`, { method: 'POST' });
-      fetchStaffAdminData();
+      const res = await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}/force-available`, { method: 'POST' });
+      if (res.ok) {
+        fetchStaffAdminData().then((updatedList) => {
+          if (updatedList) {
+            const updatedStudent = updatedList.find(s => s.id === studentId);
+            if (updatedStudent) {
+              setStaffAdminSelectedStudent(updatedStudent);
+            }
+          }
+        });
+      }
     } catch (err) { alert('Error'); }
   };
 
   const handleStaffAdminDeleteDoc = async (studentId, docId) => {
     if (!confirm('Delete this document?')) return;
     try {
-      await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}`, { method: 'DELETE' });
-      fetchStaffAdminData();
+      const res = await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchStaffAdminData().then((updatedList) => {
+          if (updatedList) {
+            const updatedStudent = updatedList.find(s => s.id === studentId);
+            if (updatedStudent) {
+              setStaffAdminSelectedStudent(updatedStudent);
+            }
+          }
+        });
+      }
     } catch (err) { alert('Error'); }
   };
 
+  const handleStaffAdminDismissUpdates = async (studentId) => {
+    try {
+      const res = await fetch(`/api/staff-admin/students/${studentId}/dismiss-updates`, { method: 'POST' });
+      if (res.ok) {
+        fetchStaffAdminData().then((updatedList) => {
+          if (updatedList) {
+            const updatedStudent = updatedList.find(s => s.id === studentId);
+            if (updatedStudent) {
+              setStaffAdminSelectedStudent(updatedStudent);
+            }
+          }
+        });
+      } else { alert('Error updating record'); }
+    } catch (err) { alert('Connection error'); }
+  };
+
+  const handleStaffAdminDeleteStaff = (staffId) => {
+    showConfirm('Are you sure you want to delete this staff member?', async () => {
+      try {
+        const res = await fetch(`/api/staff-admin/staff/${staffId}`, { method: 'DELETE' });
+        if (res.ok) {
+          fetchStaffAdminData();
+          showAlert('Staff member deleted successfully');
+        } else {
+          let errMsg = 'Failed to delete staff member';
+          try {
+            const err = await res.json();
+            errMsg = err.error || errMsg;
+          } catch {}
+          showAlert(errMsg);
+        }
+      } catch (err) { showAlert('Connection error'); }
+    });
+  };
   const handleAdminWalletTopup = (centerId) => {
     const center = adminCenters.find(c => c.id === centerId);
     setWalletTopupModal({ open: true, centerId, centerName: center ? center.centerName : '', amount: '', description: '' });
@@ -2002,77 +2132,117 @@ export default function App() {
            3. STAFF PORTAL
            ------------------------------------------------------------- */}
         {currentView === 'staff' && (
-          <div className="center-dashboard-wrapper no-print animate-fade-in">
-            <header className="center-top-bar">
-              <div className="center-brand">
-                <img src="/brand-logo-transparent.png" alt="Logo" className="center-logo-img" />
-                <h1>GURUKUL VIDHYAPEETH UNIVERSITY</h1>
-                <span>Staff Portal</span>
-              </div>
-              {staffAuthenticated && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Welcome, {staffData?.name}</span>
-                  <button className="btn btn-outline btn-sm" onClick={() => { setStaffAuthenticated(false); setStaffData(null); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }}>Logout</button>
-                </div>
-              )}
-            </header>
-
-            {/* STAFF LOGIN */}
-            {!staffAuthenticated && staffView === 'login' && (
-              <div className="login-page">
-                <div className="login-card glass-panel animate-fade-in">
-                  <img src="/brand-logo-transparent.png" alt="Logo" className="login-logo" />
-                  <h2>Staff Login</h2>
-                  <p className="login-subtitle">Access your staff dashboard</p>
-                  {staffLoginError && <div className="error-banner"><AlertCircle size={16} /> {staffLoginError}</div>}
-                  <form onSubmit={handleStaffLogin}>
-                    <div className="form-group">
-                      <label className="form-label">Mobile Number</label>
-                      <input type="tel" className="form-input" placeholder="Enter mobile number" value={staffLoginMobile} onChange={e => setStaffLoginMobile(e.target.value)} required />
+          !staffAuthenticated ? (
+            /* STAFF LOGIN */
+            staffView === 'login' ? (
+              <div className="admin-login-wrapper no-print" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '100%', minHeight: 'calc(100vh - 120px)', padding: '20px'
+              }}>
+                <div className="glass-panel animate-fade-in" style={{
+                  width: '100%', maxWidth: '420px', padding: '35px', display: 'flex',
+                  flexDirection: 'column', gap: '24px', boxShadow: 'var(--shadow-glow)',
+                  border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-card)'
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <img src="/brand-logo-transparent.png" alt="GVU Logo" style={{ height: '60px', margin: '0 auto 15px auto', display: 'block', objectFit: 'contain' }} />
+                    <h2 style={{ fontSize: '1.6rem', color: 'var(--text-main)', fontWeight: '700', fontFamily: 'var(--font-heading)' }}>Staff Login</h2>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '4px' }}>Access your staff dashboard</p>
+                  </div>
+                  {staffLoginError && (
+                    <div style={{ color: 'var(--danger)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(220, 38, 38, 0.1)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
+                      <AlertCircle size={16} /><span>{staffLoginError}</span>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Password</label>
-                      <input type="password" className="form-input" placeholder="Enter password" value={staffLoginPass} onChange={e => setStaffLoginPass(e.target.value)} required />
+                  )}
+                  <form onSubmit={handleStaffLogin} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>MOBILE NUMBER</label>
+                      <input type="tel" required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter mobile number" value={staffLoginMobile} onChange={e => setStaffLoginMobile(e.target.value)} />
                     </div>
-                    <button type="submit" className="btn btn-primary btn-full">Login</button>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>PASSWORD</label>
+                      <input type="password" required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter password" value={staffLoginPass} onChange={e => setStaffLoginPass(e.target.value)} />
+                    </div>
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '8px', padding: '12px' }}>
+                      <Lock size={16} /> Staff Login
+                    </button>
                   </form>
-                  <p className="login-footer-text">Don't have an account? <button className="link-btn" onClick={() => { setStaffView('register'); setStaffLoginError(''); }}>Create Account</button></p>
+                  <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                    Don't have an account? <button className="link-btn" style={{ color: 'var(--primary)', fontWeight: '600', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { setStaffView('register'); setStaffLoginError(''); }}>Create Account</button>
+                  </p>
                 </div>
               </div>
-            )}
-
-            {/* STAFF REGISTER */}
-            {!staffAuthenticated && staffView === 'register' && (
-              <div className="login-page">
-                <div className="login-card glass-panel animate-fade-in">
-                  <img src="/brand-logo-transparent.png" alt="Logo" className="login-logo" />
-                  <h2>Create Staff Account</h2>
-                  <p className="login-subtitle">Register to get started</p>
-                  {staffLoginError && <div className="error-banner"><AlertCircle size={16} /> {staffLoginError}</div>}
-                  <form onSubmit={handleStaffRegister}>
-                    <div className="form-group">
-                      <label className="form-label">Full Name</label>
-                      <input type="text" className="form-input" placeholder="Enter your full name" value={staffRegName} onChange={e => setStaffRegName(e.target.value.toUpperCase())} required />
+            ) : (
+              /* STAFF REGISTER */
+              staffView === 'register' && (
+                <div className="admin-login-wrapper no-print" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '100%', minHeight: 'calc(100vh - 120px)', padding: '20px'
+              }}>
+                <div className="glass-panel animate-fade-in" style={{
+                  width: '100%', maxWidth: '420px', padding: '35px', display: 'flex',
+                  flexDirection: 'column', gap: '24px', boxShadow: 'var(--shadow-glow)',
+                  border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-card)'
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <img src="/brand-logo-transparent.png" alt="GVU Logo" style={{ height: '60px', margin: '0 auto 15px auto', display: 'block', objectFit: 'contain' }} />
+                    <h2 style={{ fontSize: '1.6rem', color: 'var(--text-main)', fontWeight: '700', fontFamily: 'var(--font-heading)' }}>Create Staff Account</h2>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '4px' }}>Register to get started</p>
+                  </div>
+                  {staffLoginError && (
+                    <div style={{ color: 'var(--danger)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(220, 38, 38, 0.1)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
+                      <AlertCircle size={16} /><span>{staffLoginError}</span>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Mobile Number</label>
-                      <input type="tel" className="form-input" placeholder="Enter mobile number" value={staffRegMobile} onChange={e => setStaffRegMobile(e.target.value)} required />
+                  )}
+                  <form onSubmit={handleStaffRegister} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>FULL NAME</label>
+                      <input type="text" required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter your full name" value={staffRegName} onChange={e => setStaffRegName(e.target.value.toUpperCase())} />
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Password</label>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>MOBILE NUMBER</label>
+                      <input type="tel" required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter mobile number" value={staffRegMobile} onChange={e => setStaffRegMobile(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>PASSWORD</label>
                       <div style={{ position: 'relative' }}>
-                        <input type={staffRegShowPass ? 'text' : 'password'} className="form-input" style={{ paddingRight: '40px' }} placeholder="Set password" value={staffRegPass} onChange={e => setStaffRegPass(e.target.value)} required />
+                        <input type={staffRegShowPass ? 'text' : 'password'} required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', paddingRight: '40px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Set password" value={staffRegPass} onChange={e => setStaffRegPass(e.target.value)} />
                         <button type="button" onClick={() => setStaffRegShowPass(!staffRegShowPass)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
                           {staffRegShowPass ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
                     </div>
-                    <button type="submit" className="btn btn-primary btn-full">Create Account</button>
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '8px', padding: '12px' }}>
+                      <UserPlus size={16} /> Create Account
+                    </button>
                   </form>
-                  <p className="login-footer-text">Already have an account? <button className="link-btn" onClick={() => { setStaffView('login'); setStaffLoginError(''); }}>Login</button></p>
+                  <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                    Already have an account? <button className="link-btn" style={{ color: 'var(--primary)', fontWeight: '600', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { setStaffView('login'); setStaffLoginError(''); }}>Login</button>
+                  </p>
                 </div>
               </div>
-            )}
+            ))
+          ) : (
+            <div className="center-dashboard-wrapper no-print animate-fade-in">
+              <aside className="center-sidebar">
+                <div className="sidebar-heading">STAFF NAVIGATOR</div>
+                <button className={`sidebar-link ${staffView === 'dashboard' ? 'active' : ''}`} onClick={() => { setStaffView('dashboard'); fetchStaffData(); }}>
+                  <Eye size={18} /> Dashboard
+                </button>
+                <button className={`sidebar-link ${staffView === 'add-student' ? 'active' : ''}`} onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
+                  <UserPlus size={18} /> Add Student
+                </button>
+                <button className="sidebar-link" onClick={() => { setStaffAuthenticated(false); setStaffData(null); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <X size={18} /> Sign Out
+                </button>
+                <div className="sidebar-footer-info">
+                  <span>{staffData?.name}</span>
+                </div>
+              </aside>
+
+              <section className="admin-content-panel">
 
             {/* STAFF DASHBOARD */}
             {staffAuthenticated && staffView === 'dashboard' && (
@@ -2205,6 +2375,15 @@ export default function App() {
                     <div><label className="form-label">Course *</label><input type="text" className="form-input" required value={staffStudentForm.course} onChange={e => setStaffStudentForm(p => ({ ...p, course: e.target.value.toUpperCase() }))} /></div>
                     <div><label className="form-label">Session *</label><input type="text" className="form-input" required value={staffStudentForm.session} onChange={e => setStaffStudentForm(p => ({ ...p, session: e.target.value.toUpperCase() }))} /></div>
                   </div>
+                  <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+                    <label className="form-label">Student Photo</label>
+                    <div className="doc-upload-zone">
+                      <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
+                      <span>Click to upload photo</span>
+                      <input type="file" accept="image/*" onChange={e => { if (e.target.files[0]) { const reader = new FileReader(); reader.onload = ev => setStaffStudentPhoto(ev.target.result); reader.readAsDataURL(e.target.files[0]); } }} />
+                    </div>
+                    {staffStudentPhoto && <img src={staffStudentPhoto} alt="Preview" style={{ maxHeight: '80px', marginTop: '8px', borderRadius: '8px' }} />}
+                  </div>
                   <div style={{ marginTop: '16px' }}>
                     <label className="form-label">Upload New Documents (if any)</label>
                     <div className="doc-upload-zone">
@@ -2228,84 +2407,130 @@ export default function App() {
                   <h2>Documents — {staffSelectedStudentDocs.student.name}</h2>
                   <button className="btn btn-outline" onClick={() => { setStaffSelectedStudentDocs(null); setStaffView('dashboard'); }}><ArrowLeft size={16} /> Back</button>
                 </div>
-                {staffSelectedStudentDocs.documents.length === 0 ? (
-                  <div className="empty-state glass-panel"><FileText size={48} style={{ color: 'var(--text-muted)' }} /><p>No documents uploaded by admin yet.</p></div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {staffSelectedStudentDocs.documents.map(doc => (
-                      <div key={doc.id} className="glass-panel" style={{ padding: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                          <div>
-                            <span style={{ fontWeight: '700', fontSize: '14px' }}>Correction Round {doc.correctionRound}</span>
-                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>Uploaded: {new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
-                          </div>
-                          {doc.isAvailable ? (
-                            <span className="payment-status completed">Available</span>
-                          ) : (
-                            <span className="payment-status pending">Available after {new Date(doc.availableAt).toLocaleDateString('en-IN')}</span>
-                          )}
-                        </div>
-                        {doc.note && <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Note: {doc.note}</p>}
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          {doc.files.map((f, i) => (
-                            doc.isAvailable ? (
-                              <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm"><Download size={14} /> {f.originalname}</a>
+
+                {/* Submitted Documents section */}
+                <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '16px', color: 'var(--text-main)' }}>Submitted Student Documents</h3>
+                  {(!staffSelectedStudentDocs.student.documents || staffSelectedStudentDocs.student.documents.length === 0) ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No documents uploaded during registration.</p>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {staffSelectedStudentDocs.student.documents.map((f, i) => (
+                        <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+                          <Download size={14} /> {f.originalname}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Admin Corrected Documents section */}
+                <div className="glass-panel" style={{ padding: '24px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '16px', color: 'var(--text-main)' }}>Admin Corrected Documents</h3>
+                  {staffSelectedStudentDocs.documents.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No documents uploaded by admin yet.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {staffSelectedStudentDocs.documents.map(doc => (
+                        <div key={doc.id} style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <div>
+                              <span style={{ fontWeight: '700', fontSize: '14px' }}>Correction Round {doc.correctionRound}</span>
+                              <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>Uploaded: {new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
+                            </div>
+                            {doc.isAvailable ? (
+                              <span className="payment-status completed">Available</span>
                             ) : (
-                              <span key={i} className="btn btn-outline btn-sm" style={{ opacity: 0.5, cursor: 'not-allowed' }}><Lock size={14} /> {f.originalname}</span>
-                            )
-                          ))}
+                              <span className="payment-status pending">Available after {new Date(doc.availableAt).toLocaleDateString('en-IN')}</span>
+                            )}
+                          </div>
+                          {doc.note && <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Note: {doc.note}</p>}
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {doc.files.map((f, i) => (
+                              doc.isAvailable ? (
+                                <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm"><Download size={14} /> {f.originalname}</a>
+                              ) : (
+                                <span key={i} className="btn btn-outline btn-sm" style={{ opacity: 0.5, cursor: 'not-allowed' }}><Lock size={14} /> {f.originalname}</span>
+                              )
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
+            </section>
           </div>
+          )
         )}
 
         {/* -------------------------------------------------------------
            4. STAFF ADMIN PORTAL
            ------------------------------------------------------------- */}
         {currentView === 'staff-admin' && (
-          <div className="center-dashboard-wrapper no-print animate-fade-in">
-            <header className="center-top-bar">
-              <div className="center-brand">
-                <img src="/brand-logo-transparent.png" alt="Logo" className="center-logo-img" />
-                <h1>GURUKUL VIDHYAPEETH UNIVERSITY</h1>
-                <span>Staff Admin Panel</span>
-              </div>
-              {staffAdminAuthenticated && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{staffAdminData?.name}</span>
-                  <button className="btn btn-outline btn-sm" onClick={() => { setStaffAdminAuthenticated(false); setStaffAdminData(null); sessionStorage.removeItem('staffAdminAuthenticated'); sessionStorage.removeItem('staffAdminData'); setStaffAdminView('login'); }}>Logout</button>
-                </div>
-              )}
-            </header>
-
-            {/* STAFF ADMIN LOGIN */}
-            {!staffAdminAuthenticated && staffAdminView === 'login' && (
-              <div className="login-page">
-                <div className="login-card glass-panel animate-fade-in">
-                  <img src="/brand-logo-transparent.png" alt="Logo" className="login-logo" />
-                  <h2>Staff Admin Login</h2>
-                  <p className="login-subtitle">Manage staff and documents</p>
-                  {staffAdminLoginError && <div className="error-banner"><AlertCircle size={16} /> {staffAdminLoginError}</div>}
-                  <form onSubmit={handleStaffAdminLogin}>
-                    <div className="form-group">
-                      <label className="form-label">Username</label>
-                      <input type="text" className="form-input" placeholder="Enter username" value={staffAdminUsername} onChange={e => setStaffAdminUsername(e.target.value)} required />
+          !staffAdminAuthenticated ? (
+            /* STAFF ADMIN LOGIN */
+            staffAdminView === 'login' && (
+              <div className="admin-login-wrapper no-print" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '100%', minHeight: 'calc(100vh - 120px)', padding: '20px'
+              }}>
+                <div className="glass-panel animate-fade-in" style={{
+                  width: '100%', maxWidth: '420px', padding: '35px', display: 'flex',
+                  flexDirection: 'column', gap: '24px', boxShadow: 'var(--shadow-glow)',
+                  border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-card)'
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <img src="/brand-logo-transparent.png" alt="GVU Logo" style={{ height: '60px', margin: '0 auto 15px auto', display: 'block', objectFit: 'contain' }} />
+                    <h2 style={{ fontSize: '1.6rem', color: 'var(--text-main)', fontWeight: '700', fontFamily: 'var(--font-heading)' }}>Staff Admin Login</h2>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '4px' }}>Manage staff and documents</p>
+                  </div>
+                  {staffAdminLoginError && (
+                    <div style={{ color: 'var(--danger)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(220, 38, 38, 0.1)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
+                      <AlertCircle size={16} /><span>{staffAdminLoginError}</span>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Password</label>
-                      <input type="password" className="form-input" placeholder="Enter password" value={staffAdminPass} onChange={e => setStaffAdminPass(e.target.value)} required />
+                  )}
+                  <form onSubmit={handleStaffAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>USERNAME</label>
+                      <input type="text" required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter username" value={staffAdminUsername} onChange={e => setStaffAdminUsername(e.target.value)} />
                     </div>
-                    <button type="submit" className="btn btn-primary btn-full">Login</button>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>PASSWORD</label>
+                      <input type="password" required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter password" value={staffAdminPass} onChange={e => setStaffAdminPass(e.target.value)} />
+                    </div>
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '8px', padding: '12px' }}>
+                      <Lock size={16} /> Staff Admin Login
+                    </button>
                   </form>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '16px', textAlign: 'center' }}>Default: admin / admin123</p>
                 </div>
               </div>
-            )}
+            )
+          ) : (
+            <div className="center-dashboard-wrapper no-print animate-fade-in">
+              <aside className="center-sidebar">
+                <div className="sidebar-heading">STAFF ADMIN</div>
+                <button className={`sidebar-link ${staffAdminView === 'dashboard' ? 'active' : ''}`} onClick={() => setStaffAdminView('dashboard')}>
+                  <Eye size={18} /> Dashboard
+                </button>
+                <button className={`sidebar-link ${staffAdminView === 'students' ? 'active' : ''}`} onClick={() => { setStaffAdminView('students'); fetchStaffAdminData(); }}>
+                  <UserPlus size={18} /> All Students
+                </button>
+                <button className={`sidebar-link ${staffAdminView === 'staff-list' ? 'active' : ''}`} onClick={() => setStaffAdminView('staff-list')}>
+                  <Building2 size={18} /> Staff List
+                </button>
+                <button className="sidebar-link" onClick={() => { setStaffAdminAuthenticated(false); setStaffAdminData(null); sessionStorage.removeItem('staffAdminAuthenticated'); sessionStorage.removeItem('staffAdminData'); setStaffAdminView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <X size={18} /> Sign Out
+                </button>
+                <div className="sidebar-footer-info">
+                  <span>{staffAdminData?.name}</span>
+                </div>
+              </aside>
+
+              <section className="admin-content-panel">
 
             {/* STAFF ADMIN DASHBOARD */}
             {staffAdminAuthenticated && staffAdminView === 'dashboard' && (
@@ -2335,7 +2560,7 @@ export default function App() {
                 </div>
                 <div className="center-student-table-wrapper">
                   <table className="center-student-table">
-                    <thead><tr><th>S.No</th><th>Name</th><th>Mobile</th><th>Status</th><th>Joined</th></tr></thead>
+                    <thead><tr><th>S.No</th><th>Name</th><th>Mobile</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
                     <tbody>
                       {staffAdminStaffList.map((s, idx) => (
                         <tr key={s.id}>
@@ -2344,6 +2569,11 @@ export default function App() {
                           <td>{s.mobile}</td>
                           <td><span className={`center-status-badge ${s.isActive ? 'active' : 'inactive'}`}>{s.isActive ? 'Active' : 'Inactive'}</span></td>
                           <td>{new Date(s.createdAt).toLocaleDateString('en-IN')}</td>
+                          <td>
+                            <button className="center-action-btn" onClick={() => handleStaffAdminDeleteStaff(s.id)} style={{ color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+                              <Trash2 size={12} /> Delete
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -2371,7 +2601,7 @@ export default function App() {
                 </div>
                 <div className="center-student-table-wrapper">
                   <table className="center-student-table">
-                    <thead><tr><th>S.No</th><th>Staff</th><th>Student</th><th>Father</th><th>Course</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>S.No</th><th>Staff</th><th>Student</th><th>Father</th><th>Mother</th><th>Course</th><th>Session</th><th>Address</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                       {staffAdminStudents.filter(s => {
                         if (staffAdminFilterStaff && s.staffId !== staffAdminFilterStaff) return false;
@@ -2381,9 +2611,17 @@ export default function App() {
                         <tr key={s.id}>
                           <td>{idx + 1}</td>
                           <td style={{ fontSize: '12px' }}>{s.staffName}</td>
-                          <td style={{ fontWeight: '600' }}>{s.name}</td>
+                          <td style={{ fontWeight: '600' }}>
+                            {s.name}
+                            {s.hasNewUpdates && (
+                              <span className="payment-status pending" style={{ marginLeft: '8px', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Updates Pending Review</span>
+                            )}
+                          </td>
                           <td>{s.fatherName}</td>
+                          <td>{s.motherName || '—'}</td>
                           <td style={{ fontSize: '12px' }}>{s.course}</td>
+                          <td>{s.session || '—'}</td>
+                          <td style={{ fontSize: '11px', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={s.address}>{s.address || '—'}</td>
                           <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
                           <td>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
@@ -2411,6 +2649,21 @@ export default function App() {
                 <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
                   <p style={{ fontSize: '13px' }}><strong>Staff:</strong> {staffAdminSelectedStudent.staffName} | <strong>Course:</strong> {staffAdminSelectedStudent.course} | <strong>Status:</strong> <span className={`center-status-badge ${staffAdminSelectedStudent.status}`}>{staffAdminSelectedStudent.status}</span></p>
                   {staffAdminSelectedStudent.correctionNote && <p style={{ fontSize: '12px', color: 'var(--warning)', marginTop: '4px' }}>Correction Note: {staffAdminSelectedStudent.correctionNote}</p>}
+                  
+                  {/* Newly Updated Fields Notification */}
+                  {staffAdminSelectedStudent.hasNewUpdates && staffAdminSelectedStudent.updatedFieldsLog && staffAdminSelectedStudent.updatedFieldsLog.length > 0 && (
+                    <div style={{ marginTop: '12px', padding: '12px', border: '1px solid var(--warning)', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.05)' }}>
+                      <p style={{ fontWeight: '700', fontSize: '13px', color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                        <AlertCircle size={16} /> Staff Recently Updated Following Fields:
+                      </p>
+                      <ul style={{ paddingLeft: '20px', margin: '0 0 12px 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        {staffAdminSelectedStudent.updatedFieldsLog.map((f, i) => <li key={i}>{f}</li>)}
+                      </ul>
+                      <button className="btn btn-outline btn-sm" onClick={() => handleStaffAdminDismissUpdates(staffAdminSelectedStudent.id)}>
+                        Mark Updates as Reviewed
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Upload Documents */}
@@ -2418,16 +2671,29 @@ export default function App() {
                   <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Upload Documents</h3>
                   <div style={{ marginBottom: '12px' }}>
                     <label className="form-label">Note (optional)</label>
-                    <input type="text" className="form-input" placeholder="e.g. Updated marksheet" value={staffAdminUploadNote} onChange={e => setStaffAdminUploadNote(e.target.value)} />
+                    <input type="text" className="form-input" placeholder="e.g. Updated marksheet" value={staffAdminUploadNote} onChange={e => setStaffAdminUploadNote(e.target.value)} disabled={staffAdminUploadProgress !== null} />
                   </div>
-                  <div className="doc-upload-zone" style={{ marginBottom: '12px' }}>
+                  <div className="doc-upload-zone" style={{ marginBottom: '12px', opacity: staffAdminUploadProgress !== null ? 0.6 : 1, pointerEvents: staffAdminUploadProgress !== null ? 'none' : 'auto' }}>
                     <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
                     <span>Click to upload multiple documents</span>
-                    <input type="file" multiple onChange={e => setStaffAdminUploadFiles(Array.from(e.target.files))} />
+                    <input type="file" multiple onChange={e => setStaffAdminUploadFiles(Array.from(e.target.files))} disabled={staffAdminUploadProgress !== null} />
                   </div>
                   {staffAdminUploadFiles.length > 0 && <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>{staffAdminUploadFiles.length} file(s) selected</p>}
-                  <button className="btn btn-primary" onClick={() => handleStaffAdminUploadDocs(staffAdminSelectedStudent.id)} disabled={staffAdminUploadFiles.length === 0}>
-                    <UploadCloud size={16} /> Upload {staffAdminUploadFiles.length} File(s)
+                  
+                  {staffAdminUploadProgress !== null && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px', fontWeight: '600' }}>
+                        <span style={{ color: 'var(--primary)' }}>Uploading documents...</span>
+                        <span>{staffAdminUploadProgress}%</span>
+                      </div>
+                      <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: `${staffAdminUploadProgress}%`, height: '100%', background: 'var(--secondary)', transition: 'width 0.1s ease' }}></div>
+                      </div>
+                    </div>
+                  )}
+
+                  <button className="btn btn-primary" onClick={() => handleStaffAdminUploadDocs(staffAdminSelectedStudent.id)} disabled={staffAdminUploadFiles.length === 0 || staffAdminUploadProgress !== null}>
+                    <UploadCloud size={16} /> {staffAdminUploadProgress !== null ? 'Uploading...' : `Upload ${staffAdminUploadFiles.length} File(s)`}
                   </button>
                 </div>
 
@@ -2476,7 +2742,9 @@ export default function App() {
                 </div>
               </div>
             )}
+            </section>
           </div>
+          )
         )}
 
         {/* -------------------------------------------------------------
@@ -3516,6 +3784,44 @@ export default function App() {
       {centerView === 'acknowledgement' && centerAckStudent && (
         <div className="print-only-container">
           <AcknowledgementTemplate student={centerAckStudent} center={centerData} />
+        </div>
+      )}
+      {/* CUSTOM PREMIUM MODAL */}
+      {customModal.open && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div className="glass-panel" style={{
+            width: '400px',
+            padding: '24px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            textAlign: 'center'
+          }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '12px', color: 'var(--text-main)' }}>{customModal.title}</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>{customModal.message}</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              {customModal.type === 'confirm' && (
+                <button className="btn btn-outline" onClick={customModal.onCancel} style={{ minWidth: '100px' }}>
+                  Cancel
+                </button>
+              )}
+              <button className="btn btn-primary" onClick={customModal.onConfirm} style={{ minWidth: '100px' }}>
+                {customModal.type === 'confirm' ? 'Confirm' : 'OK'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

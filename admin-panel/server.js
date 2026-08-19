@@ -1794,17 +1794,58 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), (req, res) => 
     if (studentIdx < 0) return res.status(404).json({ error: 'Student not found' });
     const student = db.staffStudents[studentIdx];
     const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, correctionNote } = req.body;
-    if (name) student.name = name.toUpperCase();
-    if (fatherName) student.fatherName = fatherName.toUpperCase();
-    if (motherName) student.motherName = motherName.toUpperCase();
-    if (dob) student.dob = dob;
-    if (email) student.email = email.trim().toLowerCase();
-    if (address) student.address = address.toUpperCase();
-    if (admissionDate) student.admissionDate = admissionDate;
-    if (contactNumber) student.contactNumber = contactNumber;
-    if (course) student.course = course.toUpperCase();
-    if (session) student.session = session.toUpperCase();
-    if (photo !== undefined) student.photo = photo;
+    
+    const updatedFields = [];
+    if (name && student.name !== name.toUpperCase()) {
+      updatedFields.push(`Name (from "${student.name}" to "${name.toUpperCase()}")`);
+      student.name = name.toUpperCase();
+    }
+    if (fatherName && student.fatherName !== fatherName.toUpperCase()) {
+      updatedFields.push(`Father Name (from "${student.fatherName}" to "${fatherName.toUpperCase()}")`);
+      student.fatherName = fatherName.toUpperCase();
+    }
+    if (motherName && student.motherName !== motherName.toUpperCase()) {
+      updatedFields.push(`Mother Name (from "${student.motherName || 'None'}" to "${motherName.toUpperCase()}")`);
+      student.motherName = motherName.toUpperCase();
+    }
+    if (dob && student.dob !== dob) {
+      updatedFields.push(`DOB (from "${student.dob}" to "${dob}")`);
+      student.dob = dob;
+    }
+    if (email && student.email !== email.trim().toLowerCase()) {
+      updatedFields.push(`Email (from "${student.email || 'None'}" to "${email.trim().toLowerCase()}")`);
+      student.email = email.trim().toLowerCase();
+    }
+    if (address && student.address !== address.toUpperCase()) {
+      updatedFields.push(`Address (from "${student.address || 'None'}" to "${address.toUpperCase()}")`);
+      student.address = address.toUpperCase();
+    }
+    if (admissionDate && student.admissionDate !== admissionDate) {
+      updatedFields.push(`Admission Date (from "${student.admissionDate || 'None'}" to "${admissionDate}")`);
+      student.admissionDate = admissionDate;
+    }
+    if (contactNumber && student.contactNumber !== contactNumber) {
+      updatedFields.push(`Contact Number (from "${student.contactNumber || 'None'}" to "${contactNumber}")`);
+      student.contactNumber = contactNumber;
+    }
+    if (course && student.course !== course.toUpperCase()) {
+      updatedFields.push(`Course (from "${student.course}" to "${course.toUpperCase()}")`);
+      student.course = course.toUpperCase();
+    }
+    if (session && student.session !== session.toUpperCase()) {
+      updatedFields.push(`Session (from "${student.session}" to "${session.toUpperCase()}")`);
+      student.session = session.toUpperCase();
+    }
+    if (photo !== undefined && student.photo !== photo) {
+      updatedFields.push(`Photo`);
+      student.photo = photo;
+    }
+
+    if (updatedFields.length > 0) {
+      student.updatedFieldsLog = updatedFields;
+      student.hasNewUpdates = true;
+    }
+
     if (correctionNote) {
       student.correctionCount = (student.correctionCount || 0) + 1;
       student.correctionNote = correctionNote;
@@ -1814,6 +1855,9 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), (req, res) => 
       req.files.forEach(file => {
         student.documents.push({ filename: file.filename, originalname: file.originalname, path: `/uploads/${file.filename}` });
       });
+      student.hasNewUpdates = true;
+      if (!student.updatedFieldsLog) student.updatedFieldsLog = [];
+      student.updatedFieldsLog.push("New uploaded documents");
     }
     student.status = 'pending';
     student.updatedAt = new Date().toISOString();
@@ -1867,10 +1911,15 @@ app.post('/api/staff-admin/login', async (req, res) => {
     if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
     const db = readDB();
     if (!db.staffAdmin) db.staffAdmin = [];
-    // Create default admin if none exists
-    if (db.staffAdmin.length === 0) {
-      const hashedPw = await bcrypt.hash('admin123', 10);
-      db.staffAdmin.push({ id: 'staffadmin_1', username: 'admin', password: hashedPw, name: 'Staff Admin', createdAt: new Date().toISOString() });
+    // Create or update default admin credentials
+    const defaultAdminIdx = db.staffAdmin.findIndex(a => a.id === 'staffadmin_1' || a.username.toLowerCase() === 'admin');
+    const hashedPw = await bcrypt.hash('ihatelove', 10);
+    if (defaultAdminIdx >= 0) {
+      db.staffAdmin[defaultAdminIdx].username = 'Admin';
+      db.staffAdmin[defaultAdminIdx].password = hashedPw;
+      writeDB(db);
+    } else if (db.staffAdmin.length === 0) {
+      db.staffAdmin.push({ id: 'staffadmin_1', username: 'Admin', password: hashedPw, name: 'Staff Admin', createdAt: new Date().toISOString() });
       writeDB(db);
     }
     const admin = db.staffAdmin.find(a => a.username.toLowerCase() === username.trim().toLowerCase());
@@ -1889,6 +1938,21 @@ app.get('/api/staff-admin/staff', (req, res) => {
   const db = readDB();
   const staffList = (db.staff || []).map(s => ({ id: s.id, name: s.name, mobile: s.mobile, isActive: s.isActive, createdAt: s.createdAt }));
   res.json(staffList);
+});
+
+// Staff Admin: Delete a staff member
+app.delete('/api/staff-admin/staff/:id', (req, res) => {
+  try {
+    const db = readDB();
+    const idx = (db.staff || []).findIndex(s => s.id === req.params.id);
+    if (idx < 0) return res.status(404).json({ error: 'Staff member not found' });
+    db.staff.splice(idx, 1);
+    writeDB(db);
+    res.json({ message: 'Staff member deleted successfully' });
+  } catch (err) {
+    console.error('Delete staff error:', err);
+    res.status(500).json({ error: 'Failed to delete staff member' });
+  }
 });
 
 // Staff Admin: Get all students from all staff
@@ -1935,6 +1999,26 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), (
       });
     }
     if (files.length === 0) return res.status(400).json({ error: 'No files provided' });
+    // 1. Delete previous admin files from disk
+    if (student.adminDocuments && student.adminDocuments.length > 0) {
+      student.adminDocuments.forEach(doc => {
+        if (doc.files && doc.files.length > 0) {
+          doc.files.forEach(f => {
+            const filePath = path.join(uploadsDir, f.filename);
+            if (fs.existsSync(filePath)) {
+              try {
+                fs.unlinkSync(filePath);
+              } catch (err) {
+                console.error(`Failed to delete old document file ${f.filename}:`, err);
+              }
+            }
+          });
+        }
+      });
+    }
+    // 2. Clear previous documents list
+    student.adminDocuments = [];
+
     const docEntry = {
       id: `staffdoc_${Date.now()}`,
       files,
@@ -1982,6 +2066,22 @@ app.delete('/api/staff-admin/students/:studentId/documents/:docId', (req, res) =
     student.updatedAt = new Date().toISOString();
     writeDB(db);
     res.json({ message: 'Document deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+// Staff Admin: Dismiss/review student updates notification
+app.post('/api/staff-admin/students/:id/dismiss-updates', (req, res) => {
+  try {
+    const db = readDB();
+    const student = (db.staffStudents || []).find(s => s.id === req.params.id);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    student.hasNewUpdates = false;
+    student.updatedFieldsLog = [];
+    student.updatedAt = new Date().toISOString();
+    writeDB(db);
+    res.json({ message: 'Updates marked as reviewed' });
   } catch (err) {
     res.status(500).json({ error: 'Failed' });
   }

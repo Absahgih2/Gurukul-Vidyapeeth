@@ -402,15 +402,21 @@ h1, h2, h3, h4, h5, h6 {
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 1.75rem;
+  gap: 1.5rem;
 }
 
 .nav-link {
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 500;
   color: var(--text-muted);
   position: relative;
   padding: 0.25rem 0;
+  white-space: nowrap !important;
+}
+
+.nav-link-portal {
+  color: var(--emerald) !important;
+  font-weight: 600 !important;
 }
 
 .nav-link:hover, .nav-link.active {
@@ -528,10 +534,12 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(99, 102, 241, 0.1) !important;
 }
 
-.header-cta {
+.header-top-cta {
   display: flex;
   align-items: center;
   gap: 0.8rem;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .mobile-toggle {
@@ -1668,7 +1676,7 @@ h1, h2, h3, h4, h5, h6 {
   
   .header-container { height: 64px; }
   .brand-logo { gap: 0.5rem; }
-  .header-cta .btn { padding: 0.5rem 1.05rem; font-size: 0.85rem; }
+  .header-top-cta .btn { padding: 0.5rem 1.05rem; font-size: 0.85rem; }
   
   .hero-section { padding: 3rem 0 4rem; }
   .hero-title { font-size: 2.2rem; }
@@ -1957,11 +1965,27 @@ h1, h2, h3, h4, h5, h6 {
   padding: 12px 0 !important;
 }
 
+.header-bottom-row-wrapper {
+  width: 100%;
+  border-top: 1px solid var(--border-color);
+}
+
+.header-bottom-row-fluid {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start !important;
+  width: 96% !important;
+  max-width: none !important;
+  margin: 0 auto;
+  padding: 10px 24px;
+}
+
 .header-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  padding-left: 120px; /* Shift branding towards the right further */
 }
 
 .brand-logo-large {
@@ -2022,34 +2046,56 @@ h1, h2, h3, h4, h5, h6 {
 .header-bottom-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start !important;
   width: 100%;
   border-top: 1px solid var(--border-color);
   margin-top: 12px;
   padding-top: 10px;
-  flex-wrap: nowrap !important; /* Single line layout */
+  padding-left: 0 !important;
 }
 
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 1.25rem !important; /* Spacing adjusted to fit in single line */
-  flex-wrap: nowrap !important; /* Single line layout */
+  justify-content: flex-start !important;
+  gap: 1.5rem;
+  flex-wrap: nowrap;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
 }
 
 .nav-link {
-  white-space: nowrap !important; /* Single line link text */
+  white-space: nowrap !important;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  position: relative;
+  padding: 0.25rem 0;
 }
 
-.header-cta {
+.nav-link:hover, .nav-link.active {
+  color: var(--text-main);
+}
+
+.nav-link-portal {
+  color: var(--emerald) !important;
+  font-weight: 600 !important;
+}
+
+.nav-link-portal:hover {
+  color: var(--emerald-dark) !important;
+}
+
+.header-top-cta {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  flex-wrap: nowrap !important; /* Single line layout */
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
-.header-cta .btn {
-  white-space: nowrap !important; /* Single line button text */
+.header-top-cta .btn {
+  white-space: nowrap !important;
 }
 
 /* Make sure mobile hamburger toggle displays inside the top row */
@@ -2068,12 +2114,13 @@ h1, h2, h3, h4, h5, h6 {
     padding: 8px 0 !important;
   }
   
-  .header-bottom-row {
-    display: none !important; /* Hide navigation and CTA row on mobile */
+  .header-bottom-row-wrapper {
+    display: none !important; /* Hide navigation wrapper on mobile */
   }
 
   .header-top-row {
     gap: 12px;
+    padding-left: 0 !important;
   }
 
   .header-top-row .mobile-toggle {
@@ -2116,6 +2163,10 @@ h1, h2, h3, h4, h5, h6 {
   .brand-location-large {
     font-size: 0.72rem !important;
     margin-top: 1px !important;
+  }
+
+  .header-top-cta {
+    display: none !important;
   }
 }
 
