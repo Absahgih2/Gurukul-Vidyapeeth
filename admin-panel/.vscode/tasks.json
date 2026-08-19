@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Vite Dev Server",
+      "type": "shell",
+      "command": "npm run client",
+      "problemMatcher": [],
+      "isBackground": true,
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": false
+      }
+    }
+  ]
+}
