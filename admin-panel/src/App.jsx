@@ -136,7 +136,7 @@ export default function App() {
   const [staffStats, setStaffStats] = useState({ total: 0, active: 0, pending: 0 });
   const [staffStudentForm, setStaffStudentForm] = useState({
     name: '', fatherName: '', motherName: '', dob: '', email: '',
-    address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: ''
+    address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '', universityBoard: ''
   });
   const [staffStudentPhoto, setStaffStudentPhoto] = useState('');
   const [staffCropSrc, setStaffCropSrc] = useState(null);
@@ -900,7 +900,7 @@ export default function App() {
       const res = await fetch('/api/staff/students', { method: 'POST', headers: { 'x-staff-id': staff.id }, body: fd });
       if (res.ok) {
         confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
-        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '' });
+        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '', universityBoard: '' });
         setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot('');
         setStaffView('dashboard');
         fetchStaffData();
@@ -919,7 +919,7 @@ export default function App() {
       staffDocuments.forEach(doc => fd.append('documents', doc));
       const res = await fetch(`/api/staff/students/${staffExistingStudent.id}`, { method: 'PUT', headers: { 'x-staff-id': staff.id }, body: fd });
       if (res.ok) {
-        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '' });
+        setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '', universityBoard: '' });
         setStaffStudentPhoto(''); setStaffDocuments([]); setStaffExistingStudent(null);
         setStaffView('dashboard');
         fetchStaffData();
@@ -955,7 +955,8 @@ export default function App() {
       name: student.name, fatherName: student.fatherName, motherName: student.motherName || '',
       dob: student.dob, email: student.email || '', address: student.address || '',
       admissionDate: student.admissionDate || '', contactNumber: student.contactNumber || '',
-      course: student.course, session: student.session, paymentDescription: student.paymentDescription || ''
+      course: student.course, session: student.session, paymentDescription: student.paymentDescription || '',
+      staffNote: student.staffNote || '', universityBoard: student.universityBoard || ''
     });
     setStaffStudentPhoto(student.photo || '');
     setStaffDocuments([]);
@@ -2237,7 +2238,7 @@ export default function App() {
                 <button className={`sidebar-link ${staffView === 'dashboard' ? 'active' : ''}`} onClick={() => { setStaffView('dashboard'); fetchStaffData(); }}>
                   <Eye size={18} /> Dashboard
                 </button>
-                <button className={`sidebar-link ${staffView === 'add-student' ? 'active' : ''}`} onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
+                <button className={`sidebar-link ${staffView === 'add-student' ? 'active' : ''}`} onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '', universityBoard: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
                   <UserPlus size={18} /> Add Student
                 </button>
                 <button className="sidebar-link" onClick={() => { setStaffAuthenticated(false); setStaffData(null); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -2255,7 +2256,7 @@ export default function App() {
               <div className="tab-content-wrapper">
                 <div className="page-header-row">
                   <h2>Staff Dashboard</h2>
-                  <button className="btn btn-primary" onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
+                  <button className="btn btn-primary" onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '', universityBoard: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
                     <UserPlus size={16} /> Add Student
                   </button>
                 </div>
@@ -2321,6 +2322,7 @@ export default function App() {
                     <div><label className="form-label">Admission Date</label><input type="date" className="form-input" value={staffStudentForm.admissionDate} onChange={e => setStaffStudentForm(p => ({ ...p, admissionDate: e.target.value }))} /></div>
                   </div>
                   <div><label className="form-label">Address</label><input type="text" className="form-input" value={staffStudentForm.address} onChange={e => setStaffStudentForm(p => ({ ...p, address: e.target.value.toUpperCase() }))} /></div>
+                  <div style={{ marginTop: '12px' }}><label className="form-label">University / Board Name</label><input type="text" className="form-input" placeholder="e.g. UNIVERSITY OF DELHI, CBSE, ISC" value={staffStudentForm.universityBoard} onChange={e => setStaffStudentForm(p => ({ ...p, universityBoard: e.target.value.toUpperCase() }))} /></div>
                   <div style={{ marginTop: '16px' }}>
                     <label className="form-label">Student Photo</label>
                     <div className="doc-upload-zone">
@@ -2385,6 +2387,7 @@ export default function App() {
                     <div><label className="form-label">Course *</label><input type="text" className="form-input" required value={staffStudentForm.course} onChange={e => setStaffStudentForm(p => ({ ...p, course: e.target.value.toUpperCase() }))} /></div>
                     <div><label className="form-label">Session *</label><input type="text" className="form-input" required value={staffStudentForm.session} onChange={e => setStaffStudentForm(p => ({ ...p, session: e.target.value.toUpperCase() }))} /></div>
                   </div>
+                  <div style={{ marginTop: '12px' }}><label className="form-label">University / Board Name</label><input type="text" className="form-input" placeholder="e.g. UNIVERSITY OF DELHI, CBSE, ISC" value={staffStudentForm.universityBoard} onChange={e => setStaffStudentForm(p => ({ ...p, universityBoard: e.target.value.toUpperCase() }))} /></div>
                   <div style={{ marginTop: '16px', marginBottom: '16px' }}>
                     <label className="form-label">Student Photo</label>
                     <div className="doc-upload-zone">
