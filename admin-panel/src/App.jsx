@@ -968,8 +968,14 @@ export default function App() {
     setStaffAdminLoginError('');
     try {
       const res = await fetch('/api/staff-admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: staffAdminUsername.trim(), password: staffAdminPass }) });
-      const data = await res.json();
-      if (!res.ok) { setStaffAdminLoginError(data.error || 'Login failed'); return; }
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (jsonErr) {}
+      if (!res.ok) { 
+        setStaffAdminLoginError(data.error || `Login failed (Status: ${res.status}). Make sure you restarted your Node server!`); 
+        return; 
+      }
       setStaffAdminAuthenticated(true);
       setStaffAdminData(data.admin);
       sessionStorage.setItem('staffAdminAuthenticated', 'true');
