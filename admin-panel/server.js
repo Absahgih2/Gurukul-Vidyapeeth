@@ -1963,6 +1963,21 @@ app.delete('/api/staff-admin/staff/:id', (req, res) => {
   }
 });
 
+// Staff Admin: Delete a student's payment screenshot
+app.delete('/api/staff-admin/students/:id/payment-screenshot', (req, res) => {
+  try {
+    const db = readDB();
+    const student = (db.staffStudents || []).find(s => s.id === req.params.id);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    student.paymentScreenshot = '';
+    writeDB(db);
+    res.json({ message: 'Payment screenshot deleted successfully' });
+  } catch (err) {
+    console.error('Delete payment screenshot error:', err);
+    res.status(500).json({ error: 'Failed to delete payment screenshot' });
+  }
+});
+
 // Staff Admin: Get all students from all staff
 app.get('/api/staff-admin/students', (req, res) => {
   const db = readDB();

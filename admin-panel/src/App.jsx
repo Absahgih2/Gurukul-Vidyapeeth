@@ -198,6 +198,8 @@ export default function App() {
   const [staffAdminUploadProgress, setStaffAdminUploadProgress] = useState(null);
   const [staffAdminSearch, setStaffAdminSearch] = useState('');
   const [staffAdminFilterStaff, setStaffAdminFilterStaff] = useState('');
+  const [staffAdminPaymentSearch, setStaffAdminPaymentSearch] = useState('');
+  const [staffAdminPaymentFilterUniv, setStaffAdminPaymentFilterUniv] = useState('');
 
   // ---- ADMIN CENTER MANAGEMENT STATES ----
   const [adminCenters, setAdminCenters] = useState([]);
@@ -1117,6 +1119,32 @@ export default function App() {
           showAlert('Staff member deleted successfully');
         } else {
           let errMsg = 'Failed to delete staff member';
+          try {
+            const err = await res.json();
+            errMsg = err.error || errMsg;
+          } catch {}
+          showAlert(errMsg);
+        }
+      } catch (err) { showAlert('Connection error'); }
+    });
+  };
+
+  const handleStaffAdminDeletePaymentScreenshot = (studentId) => {
+    showConfirm('Are you sure you want to delete this payment screenshot? This action cannot be undone.', async () => {
+      try {
+        const res = await fetch(`/api/staff-admin/students/${studentId}/payment-screenshot`, { method: 'DELETE' });
+        if (res.ok) {
+          fetchStaffAdminData().then((updatedList) => {
+            if (updatedList && staffAdminSelectedStudent && staffAdminSelectedStudent.id === studentId) {
+              const updatedStudent = updatedList.find(s => s.id === studentId);
+              if (updatedStudent) {
+                setStaffAdminSelectedStudent(updatedStudent);
+              }
+            }
+          });
+          showAlert('Payment screenshot deleted successfully');
+        } else {
+          let errMsg = 'Failed to delete payment screenshot';
           try {
             const err = await res.json();
             errMsg = err.error || errMsg;
@@ -2709,59 +2737,131 @@ export default function App() {
               </div>
             )}
             {/* STAFF ADMIN PAYMENTS VIEW */}
-            {staffAdminAuthenticated && staffAdminView === 'payments' && (
-              <div className="tab-content-wrapper animate-fade-in">
-                <div className="page-header-row">
-                  <h2>Student Fee Payments</h2>
-                  <button className="btn btn-outline" onClick={() => setStaffAdminView('dashboard')}><ArrowLeft size={16} /> Back</button>
-                </div>
-                <div className="glass-panel" style={{ padding: '24px' }}>
-                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>Log of all payment screenshots uploaded by staff members during student registration.</p>
-                  
-                  {staffAdminStudents.filter(s => s.paymentScreenshot).length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                      <CreditCard size={48} style={{ marginBottom: '12px', opacity: 0.5 }} />
-                      <p>No payment screenshots uploaded yet.</p>
+            {staffAdminAuthenticated && staffAdminView === 'payments' && (() => {
+              const uniqueUniversities = Array.from(
+                new Set(
+                  staffAdminStudents
+                    .map(s => s.universityBoard)
+                    .filter(u => u && u.trim() !== '')
+                )
+              ).sort();
+
+              const filteredPayments = staffAdminStudents
+                .filter(s => s.paymentScreenshot)
+                .filter(student => {
+                  if (staffAdminPaymentSearch) {
+                    const q = staffAdminPaymentSearch.toLowerCase();
+                    if (!student.name.toLowerCase().includes(q)) return false;
+                  }
+                  if (staffAdminPaymentFilterUniv) {
+                    if (student.universityBoard !== staffAdminPaymentFilterUniv) return false;
+                  }
+                  return true;
+                });
+
+              return (
+                <div className="tab-content-wrapper animate-fade-in">
+                  <div className="page-header-row">
+                    <h2>Student Fee Payments</h2>
+                    <button className="btn btn-outline" onClick={() => setStaffAdminView('dashboard')}><ArrowLeft size={16} /> Back</button>
+                  </div>
+                  <div className="glass-panel" style={{ padding: '24px' }}>
+                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>Log of all payment screenshots uploaded by staff members during student registration.</p>
+                    
+                    {/* Search & Filter Controls */}
+                    <div className="glass-panel search-filter-bar" style={{ padding: '16px', marginBottom: '24px', display: 'flex', gap: '12px' }}>
+                      <div style={{ flex: 1, position: 'relative' }}>
+                        <Search style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} size={18} />
+                        <input 
+                          type="text" 
+                          placeholder="Search student name..." 
+                          className="form-input" 
+                          style={{ paddingLeft: '40px' }} 
+                          value={staffAdminPaymentSearch} 
+                          onChange={e => setStaffAdminPaymentSearch(e.target.value)} 
+                        />
+                      </div>
+                      <select 
+                        className="form-input" 
+                        style={{ width: '240px' }} 
+                        value={staffAdminPaymentFilterUniv} 
+                        onChange={e => setStaffAdminPaymentFilterUniv(e.target.value)}
+                      >
+                        <option value="">All Universities / Boards</option>
+                        {uniqueUniversities.map(univ => (
+                          <option key={univ} value={univ}>{univ}</option>
+                        ))}
+                      </select>
                     </div>
-                  ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-                      {staffAdminStudents.filter(s => s.paymentScreenshot).map(student => (
-                        <div key={student.id} className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-card)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div>
-                              <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>{student.name}</h4>
-                              <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Staff: {student.staffName}</span>
+
+                    {filteredPayments.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                        <CreditCard size={48} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                        <p>No matching payment screenshots found.</p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                        {filteredPayments.map(student => (
+                          <div key={student.id} className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-card)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <div>
+                                <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>{student.name}</h4>
+                                <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Staff: {student.staffName}</span>
+                              </div>
+                              <span className={`center-status-badge ${student.status}`} style={{ fontSize: '10px' }}>{student.status}</span>
                             </div>
-                            <span className={`center-status-badge ${student.status}`} style={{ fontSize: '10px' }}>{student.status}</span>
+                            
+                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px' }}>
+                              <div><strong>Course:</strong> {student.course}</div>
+                              {student.universityBoard && <div><strong>University:</strong> {student.universityBoard}</div>}
+                              {student.paymentDescription && <div style={{ marginTop: '4px' }}><strong>Description:</strong> {student.paymentDescription}</div>}
+                            </div>
+                            
+                            <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: '8px', minHeight: '160px', overflow: 'hidden', border: '1px solid var(--border-color)', position: 'relative' }}>
+                              <img 
+                                src={student.paymentScreenshot} 
+                                alt="Payment Screenshot" 
+                                onClick={() => showAlert(
+                                  <div style={{ textAlign: 'center' }}>
+                                    <img src={student.paymentScreenshot} alt="Payment Screenshot" style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
+                                    {student.paymentDescription && <p style={{ marginTop: '12px', fontSize: '14px', color: 'var(--text-main)' }}>{student.paymentDescription}</p>}
+                                  </div>,
+                                  `Payment Screenshot - ${student.name}`
+                                )}
+                                style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain', cursor: 'zoom-in', transition: 'transform 0.2s' }} 
+                                title="Click to expand"
+                              />
+                              <button 
+                                onClick={() => handleStaffAdminDeletePaymentScreenshot(student.id)} 
+                                style={{
+                                  position: 'absolute',
+                                  top: '8px',
+                                  right: '8px',
+                                  background: 'rgba(239, 68, 68, 0.9)',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  padding: '6px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  cursor: 'pointer',
+                                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                  transition: 'background 0.2s'
+                                }}
+                                title="Delete Payment Screenshot"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
                           </div>
-                          
-                          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px' }}>
-                            <div><strong>Course:</strong> {student.course}</div>
-                            {student.paymentDescription && <div style={{ marginTop: '4px' }}><strong>Description:</strong> {student.paymentDescription}</div>}
-                          </div>
-                          
-                          <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: '8px', minHeight: '160px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-                            <img 
-                              src={student.paymentScreenshot} 
-                              alt="Payment Screenshot" 
-                              onClick={() => showAlert(
-                                <div style={{ textAlign: 'center' }}>
-                                  <img src={student.paymentScreenshot} alt="Payment Screenshot" style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
-                                  {student.paymentDescription && <p style={{ marginTop: '12px', fontSize: '14px', color: 'var(--text-main)' }}>{student.paymentDescription}</p>}
-                                </div>,
-                                `Payment Screenshot - ${student.name}`
-                              )}
-                              style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain', cursor: 'zoom-in', transition: 'transform 0.2s' }} 
-                              title="Click to expand"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* STAFF ADMIN MANAGE STUDENT (Upload Docs) */}
             {staffAdminAuthenticated && staffAdminView === 'manage-student' && staffAdminSelectedStudent && (
