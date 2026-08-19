@@ -2539,6 +2539,9 @@ export default function App() {
                 <button className={`sidebar-link ${staffAdminView === 'staff-list' ? 'active' : ''}`} onClick={() => setStaffAdminView('staff-list')}>
                   <Building2 size={18} /> Staff List
                 </button>
+                <button className={`sidebar-link ${staffAdminView === 'payments' ? 'active' : ''}`} onClick={() => { setStaffAdminView('payments'); fetchStaffAdminData(); }}>
+                  <CreditCard size={18} /> Payments
+                </button>
                 <button className="sidebar-link" onClick={() => { setStaffAdminAuthenticated(false); setStaffAdminData(null); sessionStorage.removeItem('staffAdminAuthenticated'); sessionStorage.removeItem('staffAdminData'); setStaffAdminView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <X size={18} /> Sign Out
                 </button>
@@ -2705,6 +2708,60 @@ export default function App() {
                 </div>
               </div>
             )}
+            {/* STAFF ADMIN PAYMENTS VIEW */}
+            {staffAdminAuthenticated && staffAdminView === 'payments' && (
+              <div className="tab-content-wrapper animate-fade-in">
+                <div className="page-header-row">
+                  <h2>Student Fee Payments</h2>
+                  <button className="btn btn-outline" onClick={() => setStaffAdminView('dashboard')}><ArrowLeft size={16} /> Back</button>
+                </div>
+                <div className="glass-panel" style={{ padding: '24px' }}>
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>Log of all payment screenshots uploaded by staff members during student registration.</p>
+                  
+                  {staffAdminStudents.filter(s => s.paymentScreenshot).length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      <CreditCard size={48} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                      <p>No payment screenshots uploaded yet.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                      {staffAdminStudents.filter(s => s.paymentScreenshot).map(student => (
+                        <div key={student.id} className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-card)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                              <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>{student.name}</h4>
+                              <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Staff: {student.staffName}</span>
+                            </div>
+                            <span className={`center-status-badge ${student.status}`} style={{ fontSize: '10px' }}>{student.status}</span>
+                          </div>
+                          
+                          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px' }}>
+                            <div><strong>Course:</strong> {student.course}</div>
+                            {student.paymentDescription && <div style={{ marginTop: '4px' }}><strong>Description:</strong> {student.paymentDescription}</div>}
+                          </div>
+                          
+                          <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: '8px', minHeight: '160px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                            <img 
+                              src={student.paymentScreenshot} 
+                              alt="Payment Screenshot" 
+                              onClick={() => showAlert(
+                                <div style={{ textAlign: 'center' }}>
+                                  <img src={student.paymentScreenshot} alt="Payment Screenshot" style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
+                                  {student.paymentDescription && <p style={{ marginTop: '12px', fontSize: '14px', color: 'var(--text-main)' }}>{student.paymentDescription}</p>}
+                                </div>,
+                                `Payment Screenshot - ${student.name}`
+                              )}
+                              style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain', cursor: 'zoom-in', transition: 'transform 0.2s' }} 
+                              title="Click to expand"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* STAFF ADMIN MANAGE STUDENT (Upload Docs) */}
             {staffAdminAuthenticated && staffAdminView === 'manage-student' && staffAdminSelectedStudent && (
@@ -2724,6 +2781,22 @@ export default function App() {
                     </div>
                   )}
                   {staffAdminSelectedStudent.correctionNote && <p style={{ fontSize: '12px', color: 'var(--warning)', marginTop: '4px' }}>Correction Note: {staffAdminSelectedStudent.correctionNote}</p>}
+                  {staffAdminSelectedStudent.paymentScreenshot && (
+                    <div style={{ marginTop: '12px' }}>
+                      <p style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '4px' }}>Payment Screenshot:</p>
+                      <img 
+                        src={staffAdminSelectedStudent.paymentScreenshot} 
+                        alt="Payment Screenshot" 
+                        onClick={() => showAlert(
+                          <div style={{ textAlign: 'center' }}>
+                            <img src={staffAdminSelectedStudent.paymentScreenshot} alt="Payment Screenshot" style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
+                          </div>,
+                          `Payment Screenshot - ${staffAdminSelectedStudent.name}`
+                        )}
+                        style={{ maxHeight: '120px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'zoom-in' }} 
+                      />
+                    </div>
+                  )}
                   
                   {/* Newly Updated Fields Notification */}
                   {staffAdminSelectedStudent.hasNewUpdates && staffAdminSelectedStudent.updatedFieldsLog && staffAdminSelectedStudent.updatedFieldsLog.length > 0 && (
@@ -3878,14 +3951,15 @@ export default function App() {
           animation: 'fadeIn 0.2s ease-out'
         }}>
           <div className="glass-panel" style={{
-            width: '400px',
+            width: '90%',
+            maxWidth: typeof customModal.message !== 'string' ? '600px' : '400px',
             padding: '24px',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
             textAlign: 'center'
           }}>
             <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '12px', color: 'var(--text-main)' }}>{customModal.title}</h3>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>{customModal.message}</p>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>{customModal.message}</div>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               {customModal.type === 'confirm' && (
                 <button className="btn btn-outline" onClick={customModal.onCancel} style={{ minWidth: '100px' }}>
