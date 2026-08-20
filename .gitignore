@@ -8,3 +8,4 @@ db.json
 *.csv
 admin-panel/*.jpg
 admin-panel/*.png
+admin-panel/credentials/

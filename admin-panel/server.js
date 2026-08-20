@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
+import { getOrCreateSubfolder, uploadFileToDrive, deleteFilesFromDrive, ROOT_FOLDER_ID } from './utils/googleDrive.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -535,21 +536,25 @@ function calculateIssueDate(session, termType, termName, termIndex, totalTerms) 
 }
 
 // Upload cropped photo (raw base64 or file upload)
-app.post('/api/upload-photo', upload.single('photo'), (req, res) => {
+app.post('/api/upload-photo', upload.single('photo'), async (req, res) => {
   try {
+    const photosFolderId = await getOrCreateSubfolder('photos', ROOT_FOLDER_ID);
+
     if (req.body.image) {
-      // Base64 upload
       const base64Data = req.body.image.replace(/^data:image\/\w+;base64,/, "");
       const ext = req.body.ext || '.png';
       const filename = `photo-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
-      const filePath = path.join(uploadsDir, filename);
-      
-      fs.writeFileSync(filePath, base64Data, { encoding: 'base64' });
-      return res.json({ photoUrl: `/uploads/${filename}` });
+      const tmpPath = path.join(uploadsDir, filename);
+      fs.writeFileSync(tmpPath, base64Data, { encoding: 'base64' });
+      const driveFile = await uploadFileToDrive(tmpPath, filename, photosFolderId);
+      try { fs.unlinkSync(tmpPath); } catch (e) {}
+      return res.json({ photoUrl: driveFile.viewUrl });
     }
     
     if (req.file) {
-      return res.json({ photoUrl: `/uploads/${req.file.filename}` });
+      const driveFile = await uploadFileToDrive(req.file.path, req.file.originalname, photosFolderId);
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.json({ photoUrl: driveFile.viewUrl });
     }
     
     res.status(400).json({ error: 'No image data provided' });
@@ -1023,7 +1028,7 @@ app.get('/api/center/students', (req, res) => {
 });
 
 // Center: Add new student
-app.post('/api/center/students', upload.array('documents', 10), (req, res) => {
+app.post('/api/center/students', upload.array('documents', 10), async (req, res) => {
   const centerId = req.headers['x-center-id'];
   if (!centerId) return res.status(401).json({ error: 'Unauthorized' });
   
@@ -1038,12 +1043,16 @@ app.post('/api/center/students', upload.array('documents', 10), (req, res) => {
       return res.status(400).json({ error: 'All mandatory fields are required' });
     }
     
-    // Handle uploaded documents
+    const centerFolderId = await getOrCreateSubfolder(center.centerName || centerId, ROOT_FOLDER_ID);
+    const studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, centerFolderId);
+
     const documents = [];
     if (req.files) {
-      req.files.forEach(file => {
-        documents.push({ filename: file.filename, originalname: file.originalname, path: `/uploads/${file.filename}` });
-      });
+      for (const file of req.files) {
+        const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
+        documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+        try { fs.unlinkSync(file.path); } catch (e) {}
+      }
     }
     
     const newStudent = {
@@ -1062,6 +1071,7 @@ app.post('/api/center/students', upload.array('documents', 10), (req, res) => {
       session: session.toUpperCase(),
       photo: photo || '',
       documents,
+      driveFolderId: studentFolderId,
       status: 'pending',
       processed: false,
       createdAt: new Date().toISOString(),
@@ -1080,7 +1090,7 @@ app.post('/api/center/students', upload.array('documents', 10), (req, res) => {
 });
 
 // Center: Edit student
-app.put('/api/center/students/:id', upload.array('documents', 10), (req, res) => {
+app.put('/api/center/students/:id', upload.array('documents', 10), async (req, res) => {
   const centerId = req.headers['x-center-id'];
   if (!centerId) return res.status(401).json({ error: 'Unauthorized' });
   
@@ -1105,11 +1115,19 @@ app.put('/api/center/students/:id', upload.array('documents', 10), (req, res) =>
     if (session) student.session = session.toUpperCase();
     if (photo !== undefined) student.photo = photo;
     
-    // Handle new uploaded documents
     if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        student.documents.push({ filename: file.filename, originalname: file.originalname, path: `/uploads/${file.filename}` });
-      });
+      let folderId = student.driveFolderId;
+      if (!folderId) {
+        const center = (db.centers || []).find(c => c.id === centerId);
+        const centerFolderId = await getOrCreateSubfolder(center ? center.centerName : centerId, ROOT_FOLDER_ID);
+        folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, centerFolderId);
+        student.driveFolderId = folderId;
+      }
+      for (const file of req.files) {
+        const driveFile = await uploadFileToDrive(file.path, file.originalname, folderId);
+        student.documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+        try { fs.unlinkSync(file.path); } catch (e) {}
+      }
     }
     
     student.updatedAt = new Date().toISOString();
@@ -1224,7 +1242,7 @@ app.post('/api/center/wallet/pay', (req, res) => {
 });
 
 // Center: Upload payment screenshot
-app.post('/api/center/payments/upload', upload.single('screenshot'), (req, res) => {
+app.post('/api/center/payments/upload', upload.single('screenshot'), async (req, res) => {
   const centerId = req.headers['x-center-id'];
   if (!centerId) return res.status(401).json({ error: 'Unauthorized' });
   
@@ -1233,13 +1251,22 @@ app.post('/api/center/payments/upload', upload.single('screenshot'), (req, res) 
     if (!amount || parseFloat(amount) <= 0) return res.status(400).json({ error: 'Valid amount is required' });
     
     const db = readDB();
+    const center = (db.centers || []).find(c => c.id === centerId);
+    let screenshotUrl = '';
+    if (req.file) {
+      const paymentsFolderId = await getOrCreateSubfolder('payments', ROOT_FOLDER_ID);
+      const centerPayFolderId = await getOrCreateSubfolder(center ? center.centerName : centerId, paymentsFolderId);
+      const driveFile = await uploadFileToDrive(req.file.path, req.file.originalname, centerPayFolderId);
+      screenshotUrl = driveFile.viewUrl;
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+    }
     const payment = {
       id: `pay_${Date.now()}`,
       centerId,
       amount: parseFloat(amount),
       type: 'wallet_topup_request',
       description: description || 'Wallet top-up request',
-      screenshot: req.file ? `/uploads/${req.file.filename}` : '',
+      screenshot: screenshotUrl,
       status: 'pending',
       createdAt: new Date().toISOString()
     };
@@ -1732,22 +1759,28 @@ app.get('/api/staff/students', (req, res) => {
 });
 
 // Staff: Add student with payment screenshot
-app.post('/api/staff/students', upload.array('documents', 10), (req, res) => {
+app.post('/api/staff/students', upload.array('documents', 10), async (req, res) => {
   const staffId = req.headers['x-staff-id'];
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const db = readDB();
+    const staff = (db.staff || []).find(s => s.id === staffId);
     const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, paymentDescription, staffNote, universityBoard } = req.body;
     if (!name || !fatherName || !dob || !course || !session) {
       return res.status(400).json({ error: 'Name, father name, DOB, course and session are required' });
     }
+
+    const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
+    const studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, staffFolderId);
+
     const documents = [];
     if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        documents.push({ filename: file.filename, originalname: file.originalname, path: `/uploads/${file.filename}` });
-      });
+      for (const file of req.files) {
+        const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
+        documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+        try { fs.unlinkSync(file.path); } catch (e) {}
+      }
     }
-    // Check for payment screenshot (last file if multiple)
     let paymentScreenshot = '';
     if (req.body.paymentScreenshot) {
       paymentScreenshot = req.body.paymentScreenshot;
@@ -1770,6 +1803,7 @@ app.post('/api/staff/students', upload.array('documents', 10), (req, res) => {
       staffNote: staffNote || '',
       universityBoard: universityBoard || '',
       documents,
+      driveFolderId: studentFolderId,
       status: 'pending',
       correctionCount: 0,
       adminDocuments: [],
@@ -1787,7 +1821,7 @@ app.post('/api/staff/students', upload.array('documents', 10), (req, res) => {
 });
 
 // Staff: Edit student (request correction)
-app.put('/api/staff/students/:id', upload.array('documents', 10), (req, res) => {
+app.put('/api/staff/students/:id', upload.array('documents', 10), async (req, res) => {
   const staffId = req.headers['x-staff-id'];
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   try {
@@ -1860,9 +1894,18 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), (req, res) => 
       student.universityBoard = universityBoard;
     }
     if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        student.documents.push({ filename: file.filename, originalname: file.originalname, path: `/uploads/${file.filename}` });
-      });
+      let folderId = student.driveFolderId;
+      if (!folderId) {
+        const staff = (db.staff || []).find(s => s.id === staffId);
+        const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
+        folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
+        student.driveFolderId = folderId;
+      }
+      for (const file of req.files) {
+        const driveFile = await uploadFileToDrive(file.path, file.originalname, folderId);
+        student.documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+        try { fs.unlinkSync(file.path); } catch (e) {}
+      }
       student.hasNewUpdates = true;
       if (!student.updatedFieldsLog) student.updatedFieldsLog = [];
       student.updatedFieldsLog.push("New uploaded documents");
@@ -2000,7 +2043,7 @@ app.get('/api/staff-admin/students', (req, res) => {
 });
 
 // Staff Admin: Upload documents for a student
-app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), (req, res) => {
+app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), async (req, res) => {
   try {
     const db = readDB();
     const studentIdx = (db.staffStudents || []).findIndex(s => s.id === req.params.id);
@@ -2008,39 +2051,41 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), (
     const student = db.staffStudents[studentIdx];
     if (!student.adminDocuments) student.adminDocuments = [];
     const correctionRound = (student.correctionCount || 0) + 1;
-    const files = [];
-    if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        files.push({ filename: file.filename, originalname: file.originalname, path: `/uploads/${file.filename}` });
-      });
-    }
-    if (req.body.existingPaths) {
-      const paths = JSON.parse(req.body.existingPaths);
-      paths.forEach(p => {
-        const fname = path.basename(p);
-        files.push({ filename: fname, originalname: fname, path: p });
-      });
-    }
-    if (files.length === 0) return res.status(400).json({ error: 'No files provided' });
-    // 1. Delete previous admin files from disk
+
+    // 1. Delete previous admin files from Google Drive
     if (student.adminDocuments && student.adminDocuments.length > 0) {
+      const oldFileIds = [];
       student.adminDocuments.forEach(doc => {
         if (doc.files && doc.files.length > 0) {
           doc.files.forEach(f => {
-            const filePath = path.join(uploadsDir, f.filename);
-            if (fs.existsSync(filePath)) {
-              try {
-                fs.unlinkSync(filePath);
-              } catch (err) {
-                console.error(`Failed to delete old document file ${f.filename}:`, err);
-              }
-            }
+            if (f.driveFileId) oldFileIds.push(f.driveFileId);
           });
         }
       });
+      if (oldFileIds.length > 0) await deleteFilesFromDrive(oldFileIds);
     }
     // 2. Clear previous documents list
     student.adminDocuments = [];
+
+    // 3. Upload new files to Google Drive
+    let folderId = student.driveFolderId;
+    if (!folderId) {
+      const staff = (db.staff || []).find(s => s.id === student.staffId);
+      const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : student.staffId, ROOT_FOLDER_ID);
+      folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
+      student.driveFolderId = folderId;
+    }
+    const adminDocsFolderId = await getOrCreateSubfolder('admin-docs', folderId);
+
+    const files = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const driveFile = await uploadFileToDrive(file.path, file.originalname, adminDocsFolderId);
+        files.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+        try { fs.unlinkSync(file.path); } catch (e) {}
+      }
+    }
+    if (files.length === 0) return res.status(400).json({ error: 'No files provided' });
 
     const docEntry = {
       id: `staffdoc_${Date.now()}`,
@@ -2096,11 +2141,16 @@ app.post('/api/staff-admin/students/:studentId/documents/:docId/force-available'
 });
 
 // Staff Admin: Delete document entry
-app.delete('/api/staff-admin/students/:studentId/documents/:docId', (req, res) => {
+app.delete('/api/staff-admin/students/:studentId/documents/:docId', async (req, res) => {
   try {
     const db = readDB();
     const student = (db.staffStudents || []).find(s => s.id === req.params.studentId);
     if (!student) return res.status(404).json({ error: 'Student not found' });
+    const docToDelete = (student.adminDocuments || []).find(d => d.id === req.params.docId);
+    if (docToDelete && docToDelete.files) {
+      const fileIds = docToDelete.files.filter(f => f.driveFileId).map(f => f.driveFileId);
+      if (fileIds.length > 0) await deleteFilesFromDrive(fileIds);
+    }
     student.adminDocuments = (student.adminDocuments || []).filter(d => d.id !== req.params.docId);
     student.updatedAt = new Date().toISOString();
     writeDB(db);
