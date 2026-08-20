@@ -110,7 +110,7 @@ function readDB() {
     const data = fs.readFileSync(dbPath, 'utf8');
     return JSON.parse(data);
   } catch (err) {
-    return { students: [], courses: [], centers: [], centerStudents: [], centerPayments: [], walletTransactions: [], settings: { lastRollNo: null, lastEnrollSuffix: null, lastDmcNo: null } };
+    return { students: [], courses: [], centers: [], centerStudents: [], centerPayments: [], walletTransactions: [], staff: [], staffStudents: [], staffPayments: [], settings: { lastRollNo: null, lastEnrollSuffix: null, lastDmcNo: null } };
   }
 }
 
@@ -1046,15 +1046,25 @@ app.post('/api/center/students', upload.array('documents', 10), async (req, res)
       return res.status(400).json({ error: 'All mandatory fields are required' });
     }
     
-    const centerFolderId = await getOrCreateSubfolder(center.centerName || centerId, ROOT_FOLDER_ID);
-    const studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, centerFolderId);
-
+    let centerFolderId = '';
+    let studentFolderId = '';
     const documents = [];
-    if (req.files) {
-      for (const file of req.files) {
-        const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
-        documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
-        try { fs.unlinkSync(file.path); } catch (e) {}
+    try {
+      centerFolderId = await getOrCreateSubfolder(center.centerName || centerId, ROOT_FOLDER_ID);
+      studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, centerFolderId);
+      if (req.files) {
+        for (const file of req.files) {
+          const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
+          documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+          try { fs.unlinkSync(file.path); } catch (e) {}
+        }
+      }
+    } catch (driveErr) {
+      console.error('Google Drive upload failed (student will still be saved):', driveErr.message);
+      if (req.files) {
+        for (const file of req.files) {
+          try { fs.unlinkSync(file.path); } catch (e) {}
+        }
       }
     }
     
@@ -1773,15 +1783,25 @@ app.post('/api/staff/students', upload.array('documents', 10), async (req, res) 
       return res.status(400).json({ error: 'Name, father name, DOB, course and session are required' });
     }
 
-    const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
-    const studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, staffFolderId);
-
+    let staffFolderId = '';
+    let studentFolderId = '';
     const documents = [];
-    if (req.files && req.files.length > 0) {
-      for (const file of req.files) {
-        const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
-        documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
-        try { fs.unlinkSync(file.path); } catch (e) {}
+    try {
+      staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
+      studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, staffFolderId);
+      if (req.files && req.files.length > 0) {
+        for (const file of req.files) {
+          const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
+          documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+          try { fs.unlinkSync(file.path); } catch (e) {}
+        }
+      }
+    } catch (driveErr) {
+      console.error('Google Drive upload failed (student will still be saved):', driveErr.message);
+      if (req.files) {
+        for (const file of req.files) {
+          try { fs.unlinkSync(file.path); } catch (e) {}
+        }
       }
     }
     let paymentScreenshot = '';
@@ -1897,21 +1917,30 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), async (req, re
       student.universityBoard = universityBoard;
     }
     if (req.files && req.files.length > 0) {
-      let folderId = student.driveFolderId;
-      if (!folderId) {
-        const staff = (db.staff || []).find(s => s.id === staffId);
-        const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
-        folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
-        student.driveFolderId = folderId;
+      try {
+        let folderId = student.driveFolderId;
+        if (!folderId) {
+          const staff = (db.staff || []).find(s => s.id === staffId);
+          const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
+          folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
+          student.driveFolderId = folderId;
+        }
+        for (const file of req.files) {
+          const driveFile = await uploadFileToDrive(file.path, file.originalname, folderId);
+          student.documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+          try { fs.unlinkSync(file.path); } catch (e) {}
+        }
+        student.hasNewUpdates = true;
+        if (!student.updatedFieldsLog) student.updatedFieldsLog = [];
+        student.updatedFieldsLog.push("New uploaded documents");
+      } catch (driveErr) {
+        console.error('Google Drive upload failed during edit (student update will still be saved):', driveErr.message);
+        if (req.files) {
+          for (const file of req.files) {
+            try { fs.unlinkSync(file.path); } catch (e) {}
+          }
+        }
       }
-      for (const file of req.files) {
-        const driveFile = await uploadFileToDrive(file.path, file.originalname, folderId);
-        student.documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
-        try { fs.unlinkSync(file.path); } catch (e) {}
-      }
-      student.hasNewUpdates = true;
-      if (!student.updatedFieldsLog) student.updatedFieldsLog = [];
-      student.updatedFieldsLog.push("New uploaded documents");
     }
     student.status = 'pending';
     student.updatedAt = new Date().toISOString();
