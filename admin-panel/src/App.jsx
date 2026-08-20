@@ -2256,15 +2256,54 @@ export default function App() {
                   <button className="btn btn-outline" onClick={() => { setStaffAdminSelectedStudent(null); setStaffAdminView('students'); }}><ArrowLeft size={16} /> Back</button>
                 </div>
 
-                {/* Student Info */}
-                <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
-                  <p style={{ fontSize: '13px' }}><strong>Staff:</strong> {staffAdminSelectedStudent.staffName} | <strong>Course:</strong> {staffAdminSelectedStudent.course} | <strong>Status:</strong> <span className={`center-status-badge ${staffAdminSelectedStudent.status}`}>{staffAdminSelectedStudent.status}</span></p>
-                  {staffAdminSelectedStudent.staffNote && (
-                    <div style={{ marginTop: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '1px solid #3b82f6', borderRadius: '8px' }}>
-                      <p style={{ fontSize: '12px', fontWeight: '700', color: '#1d4ed8', marginBottom: '4px' }}>Staff Note / Required Documents:</p>
-                      <p style={{ fontSize: '13px', color: '#1e40af', margin: 0 }}>{staffAdminSelectedStudent.staffNote}</p>
+                {/* Full Student Details */}
+                <div className="glass-panel" style={{ padding: '24px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    {staffAdminSelectedStudent.photo && (
+                      <div style={{ flexShrink: 0 }}>
+                        <img 
+                          src={staffAdminSelectedStudent.photo} 
+                          alt={staffAdminSelectedStudent.name} 
+                          onClick={() => showAlert(
+                            <div style={{ textAlign: 'center' }}>
+                              <img src={staffAdminSelectedStudent.photo} alt={staffAdminSelectedStudent.name} style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
+                            </div>,
+                            `Photo - ${staffAdminSelectedStudent.name}`
+                          )}
+                          style={{ width: '120px', height: '150px', objectFit: 'cover', borderRadius: '10px', border: '2px solid var(--primary)', cursor: 'zoom-in' }} 
+                        />
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: '280px' }}>
+                      <h3 style={{ margin: '0 0 12px 0', fontSize: '18px' }}>{staffAdminSelectedStudent.name}</h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '8px 20px', fontSize: '13px' }}>
+                        <p><strong>Staff:</strong> {staffAdminSelectedStudent.staffName}</p>
+                        <p><strong>Father's Name:</strong> {staffAdminSelectedStudent.fatherName || '—'}</p>
+                        <p><strong>Mother's Name:</strong> {staffAdminSelectedStudent.motherName || '—'}</p>
+                        <p><strong>DOB:</strong> {staffAdminSelectedStudent.dob || '—'}</p>
+                        <p><strong>Email:</strong> {staffAdminSelectedStudent.email || '—'}</p>
+                        <p><strong>Contact:</strong> {staffAdminSelectedStudent.contactNumber || '—'}</p>
+                        <p><strong>Address:</strong> {staffAdminSelectedStudent.address || '—'}</p>
+                        <p><strong>Course:</strong> {staffAdminSelectedStudent.course}</p>
+                        <p><strong>Session:</strong> {staffAdminSelectedStudent.session || '—'}</p>
+                        <p><strong>University/Board:</strong> {staffAdminSelectedStudent.universityBoard || '—'}</p>
+                        <p><strong>Admission Date:</strong> {staffAdminSelectedStudent.admissionDate || '—'}</p>
+                        <p><strong>Status:</strong> <span className={`center-status-badge ${staffAdminSelectedStudent.status}`}>{staffAdminSelectedStudent.status}</span></p>
+                      </div>
+                      {staffAdminSelectedStudent.paymentDescription && (
+                        <div style={{ marginTop: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', border: '1px solid #fb923c', borderRadius: '8px' }}>
+                          <p style={{ fontSize: '12px', fontWeight: '700', color: '#c2410c', marginBottom: '4px' }}>Payment Description:</p>
+                          <p style={{ fontSize: '13px', color: '#9a3412', margin: 0 }}>{staffAdminSelectedStudent.paymentDescription}</p>
+                        </div>
+                      )}
+                      {staffAdminSelectedStudent.staffNote && (
+                        <div style={{ marginTop: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '1px solid #3b82f6', borderRadius: '8px' }}>
+                          <p style={{ fontSize: '12px', fontWeight: '700', color: '#1d4ed8', marginBottom: '4px' }}>Staff Note / Required Documents:</p>
+                          <p style={{ fontSize: '13px', color: '#1e40af', margin: 0 }}>{staffAdminSelectedStudent.staffNote}</p>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Staff Submitted Documents */}
@@ -2944,7 +2983,7 @@ export default function App() {
                           <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
                           <td>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                              <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('view-documents'); }}><Eye size={12} /> View Docs</button>
+                              <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('view-documents'); }}><Eye size={12} /> View All</button>
                               <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }}><UploadCloud size={12} /> Upload Docs</button>
                               {s.correctionCount > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', fontWeight: '600', alignSelf: 'center' }}>Correction #{s.correctionCount}</span>}
                             </div>
