@@ -6,20 +6,82 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function getConfig() {
+  return {
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+  };
+}
+
+function getRedirectUri() {
+  return process.env.RENDER_EXTERNAL_URL
+    ? `${process.env.RENDER_EXTERNAL_URL}/api/auth/google/callback`
+    : 'http://localhost:5000/api/auth/google/callback';
+}
 const ROOT_FOLDER_ID = '101NKmietQmzHAH10A4nHlfhsOdxUtdKA';
 
+const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
+
+let oauth2Client = null;
 let driveClient = null;
 
-async function getDriveClient() {
-  if (driveClient) return driveClient;
-  const credsPath = path.join(__dirname, '..', 'credentials', 'service-account.json');
-  const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
-  const auth = new google.auth.GoogleAuth({
-    credentials: creds,
-    scopes: ['https://www.googleapis.com/auth/drive'],
+function getOAuth2Client() {
+  const config = getConfig();
+  if (!oauth2Client) {
+    oauth2Client = new google.auth.OAuth2(
+      config.clientId,
+      config.clientSecret,
+      getRedirectUri()
+    );
+  }
+  return oauth2Client;
+}
+
+function getAuthUrl() {
+  const client = getOAuth2Client();
+  return client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+    prompt: 'consent',
   });
-  driveClient = google.drive({ version: 'v3', auth });
-  return driveClient;
+}
+
+async function setTokens(tokens, dbReadFn, dbWriteFn) {
+  const client = getOAuth2Client();
+  client.setCredentials(tokens);
+  if (tokens.refresh_token) {
+    const db = dbReadFn();
+    if (!db.googleAuth) db.googleAuth = {};
+    db.googleAuth.tokens = tokens;
+    dbWriteFn(db);
+  }
+  client.on('tokens', (newTokens) => {
+    const db = dbReadFn();
+    if (!db.googleAuth) db.googleAuth = {};
+    db.googleAuth.tokens = { ...db.googleAuth.tokens, ...newTokens };
+    dbWriteFn(db);
+  });
+  driveClient = google.drive({ version: 'v3', auth: client });
+}
+
+async function loadTokensFromDB(dbReadFn, dbWriteFn) {
+  const db = dbReadFn();
+  if (db.googleAuth && db.googleAuth.tokens) {
+    await setTokens(db.googleAuth.tokens, dbReadFn, dbWriteFn);
+    return true;
+  }
+  return false;
+}
+
+async function exchangeCode(code, dbReadFn, dbWriteFn) {
+  const client = getOAuth2Client();
+  const { tokens } = await client.getToken(code);
+  await setTokens(tokens, dbReadFn, dbWriteFn);
+  return tokens;
+}
+
+function isAuthenticated() {
+  return driveClient !== null;
 }
 
 const folderCache = {};
@@ -29,7 +91,8 @@ async function getOrCreateSubfolder(name, parentId) {
   if (folderCache[cacheKey]) return folderCache[cacheKey];
 
   const drive = await getDriveClient();
-  const q = `name='${name.replace(/'/g, "\\'")}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`;
+  const escapedName = name.replace(/'/g, "\\'");
+  const q = `name='${escapedName}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`;
   const res = await drive.files.list({ q, fields: 'files(id, name)', spaces: 'drive' });
 
   if (res.data.files.length > 0) {
@@ -43,6 +106,11 @@ async function getOrCreateSubfolder(name, parentId) {
   });
   folderCache[cacheKey] = folder.data.id;
   return folder.data.id;
+}
+
+async function getDriveClient() {
+  if (driveClient) return driveClient;
+  throw new Error('Google Drive not authenticated. Please connect Google Drive from admin settings.');
 }
 
 async function uploadFileToDrive(filePath, fileName, parentId) {
@@ -106,5 +174,12 @@ export {
   uploadFileToDrive,
   deleteFileFromDrive,
   deleteFilesFromDrive,
+  getAuthUrl,
+  getRedirectUri,
+  exchangeCode,
+  loadTokensFromDB,
+  setTokens,
+  isAuthenticated,
+  getConfig,
   ROOT_FOLDER_ID,
 };

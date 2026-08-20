@@ -36,6 +36,7 @@ export default function App() {
 
   // Admin Tab: 'dashboard', 'add-student', 'courses'
   const [adminTab, setAdminTab] = useState('dashboard');
+  const [googleDriveConnected, setGoogleDriveConnected] = useState(false);
   
   // Dashboard Search & Filters
   const [searchCourse, setSearchCourse] = useState('');
@@ -222,6 +223,7 @@ export default function App() {
       setAdminUsername('');
       setAdminPassword('');
       fetchData();
+      checkGoogleDriveStatus();
     } else {
       setAuthError('Invalid administrator credentials.');
     }
@@ -230,6 +232,30 @@ export default function App() {
   const handleAdminLogout = () => {
     setIsAdminAuthenticated(false);
     sessionStorage.removeItem('isAdminAuthenticated');
+  };
+
+  const checkGoogleDriveStatus = async () => {
+    try {
+      const res = await fetch('/api/auth/google/status');
+      const data = await res.json();
+      setGoogleDriveConnected(data.authenticated);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleGoogleDriveConnect = async () => {
+    try {
+      const res = await fetch('/api/auth/google/login');
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch (err) { alert('Failed to start Google Drive authentication'); }
+  };
+
+  const handleGoogleDriveDisconnect = async () => {
+    if (!confirm('Disconnect Google Drive? Files already uploaded will remain in your Drive.')) return;
+    try {
+      await fetch('/api/auth/google/disconnect', { method: 'POST' });
+      setGoogleDriveConnected(false);
+    } catch (err) { alert('Failed to disconnect'); }
   };
 
   // Load database on mount and check URL params
@@ -268,6 +294,7 @@ export default function App() {
     } else {
       if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
         fetchData();
+        checkGoogleDriveStatus();
       }
     }
   }, []);
@@ -1450,6 +1477,16 @@ export default function App() {
                 >
                   <Building2 size={18} /> Center Admissions
                 </button>
+
+                {googleDriveConnected ? (
+                  <button className="sidebar-link" onClick={handleGoogleDriveDisconnect} style={{ color: 'var(--secondary)', marginTop: '12px' }}>
+                    <CheckCircle size={18} /> Google Drive Connected
+                  </button>
+                ) : (
+                  <button className="sidebar-link" onClick={handleGoogleDriveConnect} style={{ color: 'var(--warning)', marginTop: '12px' }}>
+                    <UploadCloud size={18} /> Connect Google Drive
+                  </button>
+                )}
                 
                 <button 
                   className="sidebar-link"

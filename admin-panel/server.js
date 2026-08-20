@@ -4,11 +4,14 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
-import { getOrCreateSubfolder, uploadFileToDrive, deleteFilesFromDrive, ROOT_FOLDER_ID } from './utils/googleDrive.js';
+import { getOrCreateSubfolder, uploadFileToDrive, deleteFilesFromDrive, ROOT_FOLDER_ID, getAuthUrl, exchangeCode, loadTokensFromDB, isAuthenticated, getConfig } from './utils/googleDrive.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -2249,8 +2252,49 @@ app.delete('/api/staff/notifications/:id', (req, res) => {
   }
 });
 
+// ============ GOOGLE DRIVE OAUTH2 ENDPOINTS ============
+
+// Get Google Drive auth status
+app.get('/api/auth/google/status', (req, res) => {
+  res.json({ authenticated: isAuthenticated(), clientId: getConfig().clientId });
+});
+
+// Start Google OAuth2 flow
+app.get('/api/auth/google/login', (req, res) => {
+  const url = getAuthUrl();
+  res.json({ url });
+});
+
+// OAuth2 callback
+app.get('/api/auth/google/callback', async (req, res) => {
+  const { code } = req.query;
+  if (!code) return res.status(400).send('No authorization code provided');
+  try {
+    await exchangeCode(code, readDB, writeDB);
+    res.redirect('/admin/');
+  } catch (err) {
+    console.error('Google OAuth callback error:', err.message);
+    res.status(500).send('Authentication failed: ' + err.message);
+  }
+});
+
+// Disconnect Google Drive
+app.post('/api/auth/google/disconnect', (req, res) => {
+  const db = readDB();
+  db.googleAuth = {};
+  writeDB(db);
+  res.json({ message: 'Google Drive disconnected' });
+});
+
 // Start Express Server
 app.listen(PORT, async () => {
   console.log(`Express server running on http://localhost:${PORT}`);
   await connectMongo();
+  // Load Google Drive tokens from DB on startup
+  const loaded = await loadTokensFromDB(readDB, writeDB);
+  if (loaded) {
+    console.log('Google Drive authenticated from saved tokens');
+  } else {
+    console.log('Google Drive not authenticated. Connect from admin panel.');
+  }
 });

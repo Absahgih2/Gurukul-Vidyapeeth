@@ -3,6 +3,7 @@ admin-panel/admin-build/
 uploads/
 db.json
 .env
+admin-panel/.env
 *.log
 *.cdr
 *.csv
