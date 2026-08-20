@@ -2983,7 +2983,7 @@ export default function App() {
                           <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
                           <td>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                              <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('view-documents'); }}><Eye size={12} /> View All</button>
+                              <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }}><Eye size={12} /> View All</button>
                               <button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }}><UploadCloud size={12} /> Upload Docs</button>
                               {s.correctionCount > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', fontWeight: '600', alignSelf: 'center' }}>Correction #{s.correctionCount}</span>}
                             </div>
@@ -3130,33 +3130,86 @@ export default function App() {
                   <button className="btn btn-outline" onClick={() => { setStaffAdminSelectedStudent(null); setStaffAdminView('students'); }}><ArrowLeft size={16} /> Back</button>
                 </div>
 
-                {/* Student Info */}
-                <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
-                  <p style={{ fontSize: '13px' }}><strong>Staff:</strong> {staffAdminSelectedStudent.staffName} | <strong>Course:</strong> {staffAdminSelectedStudent.course} | <strong>Status:</strong> <span className={`center-status-badge ${staffAdminSelectedStudent.status}`}>{staffAdminSelectedStudent.status}</span></p>
-                  {staffAdminSelectedStudent.staffNote && (
-                    <div style={{ marginTop: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '1px solid #3b82f6', borderRadius: '8px' }}>
-                      <p style={{ fontSize: '12px', fontWeight: '700', color: '#1d4ed8', marginBottom: '4px' }}>Staff Note / Required Documents:</p>
-                      <p style={{ fontSize: '13px', color: '#1e40af', margin: 0 }}>{staffAdminSelectedStudent.staffNote}</p>
+                {/* Student Full Details */}
+                <div className="glass-panel" style={{ padding: '24px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    {staffAdminSelectedStudent.photo && (
+                      <div style={{ flexShrink: 0, textAlign: 'center' }}>
+                        <img 
+                          src={staffAdminSelectedStudent.photo} 
+                          alt={staffAdminSelectedStudent.name} 
+                          onClick={() => showAlert(
+                            <div style={{ textAlign: 'center' }}>
+                              <img src={staffAdminSelectedStudent.photo} alt={staffAdminSelectedStudent.name} style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
+                            </div>,
+                            `Photo - ${staffAdminSelectedStudent.name}`
+                          )}
+                          style={{ width: '120px', height: '150px', objectFit: 'cover', borderRadius: '10px', border: '2px solid var(--primary)', cursor: 'zoom-in' }} 
+                        />
+                        <a href={staffAdminSelectedStudent.photo} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ marginTop: '6px', fontSize: '11px' }}><Download size={12} /> Photo</a>
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: '280px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                        <h3 style={{ margin: 0, fontSize: '18px' }}>{staffAdminSelectedStudent.name}</h3>
+                        <span className={`center-status-badge ${staffAdminSelectedStudent.status}`}>{staffAdminSelectedStudent.status}</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '6px 20px', fontSize: '13px' }}>
+                        <p><strong>Staff:</strong> {staffAdminSelectedStudent.staffName}</p>
+                        <p><strong>Father's Name:</strong> {staffAdminSelectedStudent.fatherName || '—'}</p>
+                        <p><strong>Mother's Name:</strong> {staffAdminSelectedStudent.motherName || '—'}</p>
+                        <p><strong>DOB:</strong> {staffAdminSelectedStudent.dob || '—'}</p>
+                        <p><strong>Email:</strong> {staffAdminSelectedStudent.email || '—'}</p>
+                        <p><strong>Contact:</strong> {staffAdminSelectedStudent.contactNumber || '—'}</p>
+                        <p><strong>Address:</strong> {staffAdminSelectedStudent.address || '—'}</p>
+                        <p><strong>Course:</strong> {staffAdminSelectedStudent.course}</p>
+                        <p><strong>Session:</strong> {staffAdminSelectedStudent.session || '—'}</p>
+                        <p><strong>University/Board:</strong> {staffAdminSelectedStudent.universityBoard || '—'}</p>
+                        <p><strong>Admission Date:</strong> {staffAdminSelectedStudent.admissionDate || '—'}</p>
+                      </div>
+                      {staffAdminSelectedStudent.paymentDescription && (
+                        <div style={{ marginTop: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', border: '1px solid #fb923c', borderRadius: '8px' }}>
+                          <p style={{ fontSize: '12px', fontWeight: '700', color: '#c2410c', marginBottom: '4px' }}>Payment Description:</p>
+                          <p style={{ fontSize: '13px', color: '#9a3412', margin: 0 }}>{staffAdminSelectedStudent.paymentDescription}</p>
+                        </div>
+                      )}
+                      {staffAdminSelectedStudent.staffNote && (
+                        <div style={{ marginTop: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '1px solid #3b82f6', borderRadius: '8px' }}>
+                          <p style={{ fontSize: '12px', fontWeight: '700', color: '#1d4ed8', marginBottom: '4px' }}>Staff Note / Required Documents:</p>
+                          <p style={{ fontSize: '13px', color: '#1e40af', margin: 0 }}>{staffAdminSelectedStudent.staffNote}</p>
+                        </div>
+                      )}
+                      {staffAdminSelectedStudent.correctionNote && (
+                        <div style={{ marginTop: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', border: '1px solid #f59e0b', borderRadius: '8px' }}>
+                          <p style={{ fontSize: '12px', fontWeight: '700', color: '#b45309', marginBottom: '4px' }}>Correction Note:</p>
+                          <p style={{ fontSize: '13px', color: '#92400e', margin: 0 }}>{staffAdminSelectedStudent.correctionNote}</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {staffAdminSelectedStudent.correctionNote && <p style={{ fontSize: '12px', color: 'var(--warning)', marginTop: '4px' }}>Correction Note: {staffAdminSelectedStudent.correctionNote}</p>}
+                  </div>
+
                   {staffAdminSelectedStudent.paymentScreenshot && (
-                    <div style={{ marginTop: '12px' }}>
-                      <p style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '4px' }}>Payment Screenshot:</p>
-                      <img 
-                        src={staffAdminSelectedStudent.paymentScreenshot} 
-                        alt="Payment Screenshot" 
-                        onClick={() => showAlert(
-                          <div style={{ textAlign: 'center' }}>
-                            <img src={staffAdminSelectedStudent.paymentScreenshot} alt="Payment Screenshot" style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
-                          </div>,
-                          `Payment Screenshot - ${staffAdminSelectedStudent.name}`
-                        )}
-                        style={{ maxHeight: '120px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'zoom-in' }} 
-                      />
+                    <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+                      <p style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>Payment Screenshot:</p>
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                        <img 
+                          src={staffAdminSelectedStudent.paymentScreenshot} 
+                          alt="Payment Screenshot" 
+                          onClick={() => showAlert(
+                            <div style={{ textAlign: 'center' }}>
+                              <img src={staffAdminSelectedStudent.paymentScreenshot} alt="Payment Screenshot" style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
+                            </div>,
+                            `Payment Screenshot - ${staffAdminSelectedStudent.name}`
+                          )}
+                          style={{ maxHeight: '120px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'zoom-in' }} 
+                        />
+                        <a href={staffAdminSelectedStudent.paymentScreenshot} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Download size={14} /> Download
+                        </a>
+                      </div>
                     </div>
                   )}
-                  
+
                   {/* Newly Updated Fields Notification */}
                   {staffAdminSelectedStudent.hasNewUpdates && staffAdminSelectedStudent.updatedFieldsLog && staffAdminSelectedStudent.updatedFieldsLog.length > 0 && (
                     <div style={{ marginTop: '12px', padding: '12px', border: '1px solid var(--warning)', borderRadius: '6px', background: 'rgba(245, 158, 11, 0.05)' }}>
