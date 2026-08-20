@@ -4,6 +4,9 @@
   "description": "Desktop app and website portal for Gurukul Vidyapeeth University marksheet and document management.",
   "main": "server.js",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "server": "node server.js",
     "client": "vite",

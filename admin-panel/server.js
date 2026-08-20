@@ -2316,14 +2316,21 @@ app.post('/api/auth/google/disconnect', (req, res) => {
 });
 
 // Start Express Server
-app.listen(PORT, async () => {
-  console.log(`Express server running on http://localhost:${PORT}`);
-  await connectMongo();
-  // Load Google Drive tokens from DB on startup
-  const loaded = await loadTokensFromDB(readDB, writeDB);
-  if (loaded) {
-    console.log('Google Drive authenticated from saved tokens');
-  } else {
-    console.log('Google Drive not authenticated. Connect from admin panel.');
+app.listen(PORT, '0.0.0.0', async () => {
+  console.log(`Express server running on port ${PORT} (bound to 0.0.0.0)`);
+  try {
+    await connectMongo();
+  } catch (err) {
+    console.error('Failed to connect to MongoDB Atlas on startup:', err);
+  }
+  try {
+    const loaded = await loadTokensFromDB(readDB, writeDB);
+    if (loaded) {
+      console.log('Google Drive authenticated from saved tokens');
+    } else {
+      console.log('Google Drive not authenticated. Connect from admin panel.');
+    }
+  } catch (err) {
+    console.error('Failed to load Google Drive tokens on startup:', err);
   }
 });
