@@ -265,7 +265,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .tab-content-wrapper {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -1335,13 +1335,15 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .center-student-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  min-width: 1200px;
 }
 
 .center-student-table th {
