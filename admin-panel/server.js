@@ -2019,8 +2019,25 @@ app.post('/api/staff-admin/login', async (req, res) => {
 // Staff Admin: Get all staff
 app.get('/api/staff-admin/staff', (req, res) => {
   const db = readDB();
-  const staffList = (db.staff || []).map(s => ({ id: s.id, name: s.name, mobile: s.mobile, isActive: s.isActive, createdAt: s.createdAt }));
+  const staffList = (db.staff || []).map(s => ({ id: s.id, name: s.name, mobile: s.mobile, password: s.password, isActive: s.isActive, createdAt: s.createdAt }));
   res.json(staffList);
+});
+
+// Staff Admin: Change staff password
+app.put('/api/staff-admin/staff/:id/password', async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password || password.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
+    const db = readDB();
+    const staff = (db.staff || []).find(s => s.id === req.params.id);
+    if (!staff) return res.status(404).json({ error: 'Staff member not found' });
+    staff.password = await bcrypt.hash(password, 10);
+    writeDB(db);
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Change staff password error:', err);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
 });
 
 // Staff Admin: Delete a staff member

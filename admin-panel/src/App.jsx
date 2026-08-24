@@ -4,7 +4,7 @@ import {
   Edit3, Trash2, Globe, Sliders, CheckCircle, Eye, 
   Printer, ArrowLeft, User, Image, BookOpen, 
   RefreshCw, X, AlertCircle, Wallet, CreditCard, 
-  FileDown, Building2, Download, Lock, EyeOff, Bell
+  FileDown, Building2, Download, Lock, EyeOff, Bell, Key
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -32,6 +32,7 @@ export default function App() {
   });
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [adminShowPass, setAdminShowPass] = useState(false);
   const [authError, setAuthError] = useState('');
 
   // Admin Tab: 'dashboard', 'add-student', 'courses'
@@ -99,6 +100,7 @@ export default function App() {
   });
   const [centerLoginUser, setCenterLoginUser] = useState('');
   const [centerLoginPass, setCenterLoginPass] = useState('');
+  const [centerLoginShowPass, setCenterLoginShowPass] = useState(false);
   const [centerLoginError, setCenterLoginError] = useState('');
   const [centerStudents, setCenterStudents] = useState([]);
   const [centerStats, setCenterStats] = useState({ total: 0, active: 0, pending: 0, walletBalance: 0 });
@@ -128,6 +130,7 @@ export default function App() {
   });
   const [staffLoginMobile, setStaffLoginMobile] = useState('');
   const [staffLoginPass, setStaffLoginPass] = useState('');
+  const [staffLoginShowPass, setStaffLoginShowPass] = useState(false);
   const [staffLoginError, setStaffLoginError] = useState('');
   const [staffRegName, setStaffRegName] = useState('');
   const [staffRegMobile, setStaffRegMobile] = useState('');
@@ -191,6 +194,7 @@ export default function App() {
   });
   const [staffAdminUsername, setStaffAdminUsername] = useState('');
   const [staffAdminPass, setStaffAdminPass] = useState('');
+  const [staffAdminShowPass, setStaffAdminShowPass] = useState(false);
   const [staffAdminLoginError, setStaffAdminLoginError] = useState('');
   const [staffAdminStats, setStaffAdminStats] = useState({ totalStaff: 0, totalStudents: 0, pending: 0, active: 0 });
   const [staffAdminStaffList, setStaffAdminStaffList] = useState([]);
@@ -1216,6 +1220,33 @@ export default function App() {
     });
   };
 
+  const [staffListShowPassMap, setStaffListShowPassMap] = useState({});
+  const [staffListEditingPass, setStaffListEditingPass] = useState(null);
+  const [staffListNewPass, setStaffListNewPass] = useState('');
+
+  const handleStaffAdminChangePassword = async (staffId) => {
+    if (!staffListNewPass || staffListNewPass.length < 4) {
+      showAlert('Password must be at least 4 characters');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/staff-admin/staff/${staffId}/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: staffListNewPass })
+      });
+      if (res.ok) {
+        showAlert('Password updated successfully');
+        setStaffListEditingPass(null);
+        setStaffListNewPass('');
+        fetchStaffAdminData();
+      } else {
+        const err = await res.json();
+        showAlert(err.error || 'Failed to change password');
+      }
+    } catch (err) { showAlert('Connection error'); }
+  };
+
   const handleStaffAdminDeletePaymentScreenshot = (studentId) => {
     showConfirm('Are you sure you want to delete this payment screenshot? This action cannot be undone.', async () => {
       try {
@@ -1429,15 +1460,20 @@ export default function App() {
                   </div>
                   <div>
                     <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>PASSWORD</label>
-                    <input 
-                      type="password" 
-                      required 
-                      className="form-input portal-input" 
-                      style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
-                      placeholder="Enter password"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input 
+                        type={adminShowPass ? 'text' : 'password'} 
+                        required 
+                        className="form-input portal-input" 
+                        style={{ width: '100%', padding: '10px 14px', paddingRight: '40px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                        placeholder="Enter password"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                      />
+                      <button type="button" onClick={() => setAdminShowPass(!adminShowPass)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                        {adminShowPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                   
                   {authError && (
@@ -2425,7 +2461,12 @@ export default function App() {
                     </div>
                     <div>
                       <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>PASSWORD</label>
-                      <input type="password" required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter password" value={staffLoginPass} onChange={e => setStaffLoginPass(e.target.value)} />
+                      <div style={{ position: 'relative' }}>
+                        <input type={staffLoginShowPass ? 'text' : 'password'} required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', paddingRight: '40px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter password" value={staffLoginPass} onChange={e => setStaffLoginPass(e.target.value)} />
+                        <button type="button" onClick={() => setStaffLoginShowPass(!staffLoginShowPass)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                          {staffLoginShowPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
                     <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '8px', padding: '12px' }}>
                       <Lock size={16} /> Staff Login
@@ -2811,7 +2852,12 @@ export default function App() {
                     </div>
                     <div>
                       <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>PASSWORD</label>
-                      <input type="password" required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter password" value={staffAdminPass} onChange={e => setStaffAdminPass(e.target.value)} />
+                      <div style={{ position: 'relative' }}>
+                        <input type={staffAdminShowPass ? 'text' : 'password'} required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', paddingRight: '40px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter password" value={staffAdminPass} onChange={e => setStaffAdminPass(e.target.value)} />
+                        <button type="button" onClick={() => setStaffAdminShowPass(!staffAdminShowPass)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                          {staffAdminShowPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
                     <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '8px', padding: '12px' }}>
                       <Lock size={16} /> Staff Admin Login
@@ -2894,19 +2940,47 @@ export default function App() {
                 </div>
                 <div className="center-student-table-wrapper">
                   <table className="center-student-table">
-                    <thead><tr><th>S.No</th><th>Name</th><th>Mobile</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>S.No</th><th>Name</th><th>Mobile</th><th>Password</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
                     <tbody>
                       {staffAdminStaffList.map((s, idx) => (
                         <tr key={s.id}>
                           <td>{idx + 1}</td>
                           <td style={{ fontWeight: '600' }}>{s.name}</td>
                           <td>{s.mobile}</td>
+                          <td>
+                            {staffListEditingPass === s.id ? (
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                <div style={{ position: 'relative' }}>
+                                  <input type={staffListShowPassMap[`edit_${s.id}`] ? 'text' : 'password'} value={staffListNewPass} onChange={e => setStaffListNewPass(e.target.value)} className="form-input" style={{ padding: '4px 28px 4px 8px', fontSize: '12px', width: '140px' }} placeholder="New password" />
+                                  <button type="button" onClick={() => setStaffListShowPassMap(p => ({ ...p, [`edit_${s.id}`]: !p[`edit_${s.id}`] }))} style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                                    {staffListShowPassMap[`edit_${s.id}`] ? <EyeOff size={14} /> : <Eye size={14} />}
+                                  </button>
+                                </div>
+                                <button className="center-action-btn" onClick={() => handleStaffAdminChangePassword(s.id)} style={{ color: 'var(--secondary)', borderColor: 'var(--secondary)', fontSize: '11px' }}>Save</button>
+                                <button className="center-action-btn" onClick={() => { setStaffListEditingPass(null); setStaffListNewPass(''); }} style={{ fontSize: '11px' }}>Cancel</button>
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{staffListShowPassMap[s.id] ? '••••••••' : '••••••••'}</span>
+                                <button type="button" onClick={() => setStaffListShowPassMap(p => ({ ...p, [s.id]: !p[s.id] }))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px' }}>
+                                  {staffListShowPassMap[s.id] ? <EyeOff size={14} /> : <Eye size={14} />}
+                                </button>
+                              </div>
+                            )}
+                          </td>
                           <td><span className={`center-status-badge ${s.isActive ? 'active' : 'inactive'}`}>{s.isActive ? 'Active' : 'Inactive'}</span></td>
                           <td>{new Date(s.createdAt).toLocaleDateString('en-IN')}</td>
                           <td>
-                            <button className="center-action-btn" onClick={() => handleStaffAdminDeleteStaff(s.id)} style={{ color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
-                              <Trash2 size={12} /> Delete
-                            </button>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              {staffListEditingPass !== s.id && (
+                                <button className="center-action-btn" onClick={() => { setStaffListEditingPass(s.id); setStaffListNewPass(''); }} style={{ color: 'var(--primary)', borderColor: 'var(--primary)' }}>
+                                  <Key size={12} /> Change Pass
+                                </button>
+                              )}
+                              <button className="center-action-btn" onClick={() => handleStaffAdminDeleteStaff(s.id)} style={{ color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+                                <Trash2 size={12} /> Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -3549,7 +3623,12 @@ export default function App() {
                   </div>
                   <div>
                     <label className="form-label" style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>PASSWORD</label>
-                    <input type="password" required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter password" value={centerLoginPass} onChange={(e) => setCenterLoginPass(e.target.value)} />
+                    <div style={{ position: 'relative' }}>
+                      <input type={centerLoginShowPass ? 'text' : 'password'} required className="form-input portal-input" style={{ width: '100%', padding: '10px 14px', paddingRight: '40px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.05)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Enter password" value={centerLoginPass} onChange={(e) => setCenterLoginPass(e.target.value)} />
+                      <button type="button" onClick={() => setCenterLoginShowPass(!centerLoginShowPass)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                        {centerLoginShowPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                   {centerLoginError && (
                     <div style={{ color: 'var(--danger)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(220, 38, 38, 0.1)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
