@@ -316,6 +316,15 @@ export default function App() {
     return () => clearInterval(poll);
   }, [staffAdminAuthenticated, staffAdminData?.id]);
 
+  // A stale session from an earlier version can contain a view name that no
+  // longer has a matching panel. Without this guard the sidebar remains while
+  // the entire content area is blank.
+  useEffect(() => {
+    if (!staffAdminAuthenticated) return;
+    const validViews = ['dashboard', 'students', 'staff-list', 'payments', 'manage-student', 'staff-detail'];
+    if (!validViews.includes(staffAdminView)) setStaffAdminView('dashboard');
+  }, [staffAdminAuthenticated, staffAdminView]);
+
   // Load database on mount and check URL params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
