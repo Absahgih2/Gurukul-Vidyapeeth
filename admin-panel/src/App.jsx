@@ -2575,7 +2575,7 @@ export default function App() {
                       {staffAdminSelectedStudent.adminDocuments.map(doc => (
                         <div key={doc.id} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
                           <div style={{ marginBottom: '8px' }}>
-                            <span style={{ fontWeight: '600', fontSize: '13px' }}>Round {doc.correctionRound}</span>
+                            <span style={{ fontWeight: '600', fontSize: '13px' }}>{doc.correctionRound === 0 ? 'Initial Upload' : `Round ${doc.correctionRound}`}</span>
                             <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>{new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
                             {doc.note && <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>({doc.note})</span>}
                           </div>
@@ -2951,7 +2951,9 @@ export default function App() {
 
                 {/* Admin Corrected Documents section */}
                 <div className="glass-panel" style={{ padding: '24px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '16px', color: 'var(--text-main)' }}>Admin Corrected Documents</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '16px', color: 'var(--text-main)' }}>
+                    {staffSelectedStudentDocs.documents.some(d => d.correctionRound > 0) ? 'Admin Corrected Documents' : 'Admin Uploaded Documents'}
+                  </h3>
                   {staffSelectedStudentDocs.documents.length === 0 ? (
                     <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No documents uploaded by admin yet.</p>
                   ) : (
@@ -2960,7 +2962,7 @@ export default function App() {
                         <div key={doc.id} style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                             <div>
-                              <span style={{ fontWeight: '700', fontSize: '14px' }}>Correction Round {doc.correctionRound}</span>
+                              <span style={{ fontWeight: '700', fontSize: '14px' }}>{doc.correctionRound === 0 ? 'Initial Upload' : `Correction Round ${doc.correctionRound}`}</span>
                               <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>Uploaded: {new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
                             </div>
                             {doc.isAvailable ? (
@@ -3612,14 +3614,14 @@ export default function App() {
                       {staffAdminSelectedStudent.adminDocuments.map(doc => {
                         const now = new Date();
                         const uploadedAt = new Date(doc.uploadedAt);
-                        const delayDays = doc.correctionRound || 1;
+                        const delayDays = doc.correctionRound !== undefined ? doc.correctionRound : 1;
                         const availableAt = new Date(uploadedAt.getTime() + delayDays * 24 * 60 * 60 * 1000);
                         const isAvailable = doc.forceAvailable || now >= availableAt;
                         return (
                           <div key={doc.id} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                               <div>
-                                <span style={{ fontWeight: '600' }}>Round {doc.correctionRound}</span>
+                                <span style={{ fontWeight: '600' }}>{doc.correctionRound === 0 ? 'Initial Upload' : `Round ${doc.correctionRound}`}</span>
                                 <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>{new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
                                 {doc.note && <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>({doc.note})</span>}
                               </div>

@@ -1988,7 +1988,7 @@ app.get('/api/staff/students/:id/documents', (req, res) => {
   const docs = (student.adminDocuments || []).map(doc => {
     if (doc.forceAvailable) return { ...doc, isAvailable: true };
     const uploadedAt = new Date(doc.uploadedAt);
-    const delayDays = doc.correctionRound || 1;
+    const delayDays = doc.correctionRound !== undefined ? doc.correctionRound : 1;
     const availableAt = new Date(uploadedAt.getTime() + delayDays * 24 * 60 * 60 * 1000);
     return { ...doc, isAvailable: now >= availableAt, availableAt: availableAt.toISOString() };
   });
@@ -2225,7 +2225,7 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), a
     if (studentIdx < 0) return res.status(404).json({ error: 'Student not found' });
     const student = db.staffStudents[studentIdx];
     if (!student.adminDocuments) student.adminDocuments = [];
-    const correctionRound = (student.correctionCount || 0) + 1;
+    const correctionRound = student.correctionCount || 0;
 
     // 1. Delete previous admin files from Google Drive
     if (student.adminDocuments && student.adminDocuments.length > 0) {
