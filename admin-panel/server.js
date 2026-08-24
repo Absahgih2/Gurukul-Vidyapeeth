@@ -1737,7 +1737,7 @@ app.get('/api/staff/profile', (req, res) => {
   const staffId = req.headers['x-staff-id'];
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   const db = readDB();
-  const staff = (db.staff || []).find(s => s.id === staffId);
+  const staff = (db.staff || []).find(s => String(s.id) === String(staffId));
   if (!staff) return res.status(404).json({ error: 'Staff not found' });
   res.json({ id: staff.id, name: staff.name, mobile: staff.mobile });
 });
@@ -1747,7 +1747,7 @@ app.get('/api/staff/dashboard-stats', (req, res) => {
   const staffId = req.headers['x-staff-id'];
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   const db = readDB();
-  const myStudents = (db.staffStudents || []).filter(s => s.staffId === staffId);
+  const myStudents = (db.staffStudents || []).filter(s => String(s.staffId) === String(staffId));
   const total = myStudents.length;
   const active = myStudents.filter(s => s.status === 'active').length;
   const pending = myStudents.filter(s => s.status === 'pending').length;
@@ -1759,7 +1759,7 @@ app.get('/api/staff/students', (req, res) => {
   const staffId = req.headers['x-staff-id'];
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   const db = readDB();
-  let myStudents = (db.staffStudents || []).filter(s => s.staffId === staffId);
+  let myStudents = (db.staffStudents || []).filter(s => String(s.staffId) === String(staffId));
   myStudents.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
   const { search } = req.query;
   if (search) {
@@ -1778,7 +1778,7 @@ app.post('/api/staff/students', upload.array('documents', 10), async (req, res) 
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const db = readDB();
-    const staff = (db.staff || []).find(s => s.id === staffId);
+    const staff = (db.staff || []).find(s => String(s.id) === String(staffId));
     const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, paymentDescription, staffNote, universityBoard } = req.body;
     if (!name || !fatherName || !dob || !course || !session) {
       return res.status(400).json({ error: 'Name, father name, DOB, course and session are required' });
@@ -1850,7 +1850,7 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), async (req, re
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const db = readDB();
-    const studentIdx = (db.staffStudents || []).findIndex(s => s.id === req.params.id && s.staffId === staffId);
+    const studentIdx = (db.staffStudents || []).findIndex(s => String(s.id) === String(req.params.id) && String(s.staffId) === String(staffId));
     if (studentIdx < 0) return res.status(404).json({ error: 'Student not found' });
     const student = db.staffStudents[studentIdx];
     const { name, fatherName, motherName, dob, email, address, admissionDate, contactNumber, course, session, photo, correctionNote, staffNote, universityBoard } = req.body;
@@ -1921,7 +1921,7 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), async (req, re
       try {
         let folderId = student.driveFolderId;
         if (!folderId) {
-          const staff = (db.staff || []).find(s => s.id === staffId);
+          const staff = (db.staff || []).find(s => String(s.id) === String(staffId));
           const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
           folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
           student.driveFolderId = folderId;
@@ -1959,7 +1959,7 @@ app.delete('/api/staff/students/:id', (req, res) => {
   const staffId = req.headers['x-staff-id'];
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   const db = readDB();
-  const idx = (db.staffStudents || []).findIndex(s => s.id === req.params.id && s.staffId === staffId);
+  const idx = (db.staffStudents || []).findIndex(s => String(s.id) === String(req.params.id) && String(s.staffId) === String(staffId));
   if (idx < 0) return res.status(404).json({ error: 'Student not found' });
   db.staffStudents.splice(idx, 1);
   writeDB(db);
@@ -1971,7 +1971,7 @@ app.get('/api/staff/students/:id/documents', (req, res) => {
   const staffId = req.headers['x-staff-id'];
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   const db = readDB();
-  const student = (db.staffStudents || []).find(s => s.id === req.params.id && s.staffId === staffId);
+  const student = (db.staffStudents || []).find(s => String(s.id) === String(req.params.id) && String(s.staffId) === String(staffId));
   if (!student) return res.status(404).json({ error: 'Student not found' });
   const now = new Date();
   const docs = (student.adminDocuments || []).map(doc => {
@@ -2076,7 +2076,7 @@ app.get('/api/staff-admin/staff/:id/details', (req, res) => {
   res.json({
     staff: { id: staff.id, name: staff.name, mobile: staff.mobile, plainPassword: staff.plainPassword || '', createdAt: staff.createdAt },
     totalStudents, pendingStudents, activeStudents, totalCorrections,
-    recentStudents: students.slice(0, 10).map(s => ({ id: s.id, name: s.name, fatherName: s.fatherName, course: s.course, status: s.status, correctionCount: s.correctionCount || 0, createdAt: s.createdAt }))
+    recentStudents: students.map(s => ({ id: s.id, name: s.name, fatherName: s.fatherName, course: s.course, status: s.status, correctionCount: s.correctionCount || 0, createdAt: s.createdAt }))
   });
 });
 
@@ -2113,7 +2113,8 @@ app.get('/api/chat/messages', (req, res) => {
     if (!user1 || !user2) return res.status(400).json({ error: 'user1 and user2 are required' });
     const db = readDB();
     let msgs = (db.messages || []).filter(m =>
-      (m.from === user1 && m.to === user2) || (m.from === user2 && m.to === user1)
+      (String(m.from) === String(user1) && String(m.to) === String(user2)) ||
+      (String(m.from) === String(user2) && String(m.to) === String(user1))
     );
     if (since) msgs = msgs.filter(m => m.createdAt > since);
     res.json(msgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
@@ -2132,15 +2133,15 @@ app.get('/api/chat/conversations', (req, res) => {
     const msgs = db.messages || [];
     const convMap = {};
     msgs.forEach(m => {
-      if (m.from === userId || m.to === userId) {
-        const otherId = m.from === userId ? m.to : m.from;
+      if (String(m.from) === String(userId) || String(m.to) === String(userId)) {
+        const otherId = String(m.from) === String(userId) ? m.to : m.from;
         if (!convMap[otherId] || new Date(m.createdAt) > new Date(convMap[otherId].lastMessageAt)) {
           convMap[otherId] = { otherId, lastMessage: m.text, lastMessageAt: m.createdAt, unread: 0 };
         }
       }
     });
     Object.values(convMap).forEach(c => {
-      c.unread = msgs.filter(m => m.from === c.otherId && m.to === userId && !m.read).length;
+      c.unread = msgs.filter(m => String(m.from) === String(c.otherId) && String(m.to) === String(userId) && !m.read).length;
     });
     res.json(Object.values(convMap).sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt)));
   } catch (err) {
@@ -2157,7 +2158,7 @@ app.put('/api/chat/read', (req, res) => {
     const db = readDB();
     let count = 0;
     (db.messages || []).forEach(m => {
-      if (m.from === from && m.to === to && !m.read) { m.read = true; count++; }
+      if (String(m.from) === String(from) && String(m.to) === String(to) && !m.read) { m.read = true; count++; }
     });
     if (count > 0) writeDB(db);
     res.json({ marked: count });
@@ -2202,7 +2203,7 @@ app.get('/api/staff-admin/students', (req, res) => {
   const db = readDB();
   let allStudents = (db.staffStudents || []).sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
   const { search, staffId } = req.query;
-  if (staffId) allStudents = allStudents.filter(s => s.staffId === staffId);
+  if (staffId) allStudents = allStudents.filter(s => String(s.staffId) === String(staffId));
   if (search) {
     const q = search.toLowerCase();
     allStudents = allStudents.filter(s =>
@@ -2212,7 +2213,7 @@ app.get('/api/staff-admin/students', (req, res) => {
   }
   // Enrich with staff name
   const enriched = allStudents.map(s => {
-    const staffMember = (db.staff || []).find(st => st.id === s.staffId);
+    const staffMember = (db.staff || []).find(st => String(st.id) === String(s.staffId));
     return { ...s, staffName: staffMember ? staffMember.name : 'Unknown' };
   });
   res.json(enriched);
@@ -2246,7 +2247,7 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), a
     // 3. Upload new files to Google Drive
     let folderId = student.driveFolderId;
     if (!folderId) {
-      const staff = (db.staff || []).find(s => s.id === student.staffId);
+      const staff = (db.staff || []).find(s => String(s.id) === String(student.staffId));
       const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : student.staffId, ROOT_FOLDER_ID);
       folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
       student.driveFolderId = folderId;
@@ -2371,7 +2372,7 @@ app.get('/api/staff/notifications', (req, res) => {
     if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
     const db = readDB();
     const notifications = (db.notifications || [])
-      .filter(n => n.staffId === staffId)
+      .filter(n => String(n.staffId) === String(staffId))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json(notifications);
   } catch (err) {
@@ -2385,7 +2386,7 @@ app.post('/api/staff/notifications/:id/read', (req, res) => {
     const staffId = req.headers['x-staff-id'];
     if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
     const db = readDB();
-    const notification = (db.notifications || []).find(n => n.id === req.params.id && n.staffId === staffId);
+    const notification = (db.notifications || []).find(n => n.id === req.params.id && String(n.staffId) === String(staffId));
     if (!notification) return res.status(404).json({ error: 'Notification not found' });
     notification.read = true;
     writeDB(db);
@@ -2401,7 +2402,7 @@ app.post('/api/staff/notifications/read-all', (req, res) => {
     const staffId = req.headers['x-staff-id'];
     if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
     const db = readDB();
-    (db.notifications || []).filter(n => n.staffId === staffId && !n.read).forEach(n => { n.read = true; });
+    (db.notifications || []).filter(n => String(n.staffId) === String(staffId) && !n.read).forEach(n => { n.read = true; });
     writeDB(db);
     res.json({ message: 'All notifications marked as read' });
   } catch (err) {
@@ -2415,7 +2416,7 @@ app.delete('/api/staff/notifications/:id', (req, res) => {
     const staffId = req.headers['x-staff-id'];
     if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
     const db = readDB();
-    const idx = (db.notifications || []).findIndex(n => n.id === req.params.id && n.staffId === staffId);
+    const idx = (db.notifications || []).findIndex(n => n.id === req.params.id && String(n.staffId) === String(staffId));
     if (idx < 0) return res.status(404).json({ error: 'Notification not found' });
     db.notifications.splice(idx, 1);
     writeDB(db);

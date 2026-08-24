@@ -2352,4 +2352,10 @@ h1, h2, h3, h4, h5, h6 {
   .center-sidebar > div .sidebar-link, .dashboard-sidebar > div .sidebar-link {
     margin-top: 0 !important;
   }
+  .center-sidebar .sidebar-heading, .dashboard-sidebar .sidebar-heading {
+    display: none !important;
+  }
+  .center-sidebar .sidebar-footer-info, .dashboard-sidebar .sidebar-footer-info {
+    display: none !important;
+  }
 }

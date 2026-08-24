@@ -16,6 +16,18 @@ import OnlineResultTemplate from './components/OnlineResultTemplate';
 import ImageCropper from './components/ImageCropper';
 import AcknowledgementTemplate from './components/AcknowledgementTemplate';
 
+const safeFormatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('en-IN');
+};
+
+const safeFormatTime = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+};
+
 export default function App() {
   // Navigation View: 'admin' or 'portal'
   const [currentView, setCurrentView] = useState('admin');
@@ -2954,7 +2966,7 @@ export default function App() {
                       <div key={msg.id || i} style={{ display: 'flex', justifyContent: msg.from === staffData?.id ? 'flex-end' : 'flex-start', animation: 'chatBubbleIn 0.3s ease' }}>
                         <div style={{ maxWidth: '70%', padding: '10px 14px', borderRadius: msg.from === staffData?.id ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.from === staffData?.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white', color: msg.from === staffData?.id ? 'white' : 'var(--text-main)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', fontSize: '13px', wordBreak: 'break-word' }}>
                           <p style={{ margin: 0 }}>{msg.text}</p>
-                          <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.6, textAlign: 'right' }}>{new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                          <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.6, textAlign: 'right' }}>{safeFormatTime(msg.createdAt)}</p>
                         </div>
                       </div>
                     ))}
@@ -3135,7 +3147,7 @@ export default function App() {
                             )}
                           </td>
                           <td><span className={`center-status-badge ${s.isActive ? 'active' : 'inactive'}`}>{s.isActive ? 'Active' : 'Inactive'}</span></td>
-                          <td>{new Date(s.createdAt).toLocaleDateString('en-IN')}</td>
+                          <td>{safeFormatDate(s.createdAt)}</td>
                           <td>
                             <div style={{ display: 'flex', gap: '4px' }}>
                               {staffListEditingPass !== s.id && (
@@ -4150,9 +4162,14 @@ export default function App() {
             )}
             {/* STAFF ADMIN STAFF DETAIL + CHAT */}
             {staffAdminAuthenticated && staffAdminView === 'staff-detail' && staffAdminSelectedStaffId && (() => {
-              const staff = staffAdminStaffList.find(s => String(s.id) === String(staffAdminSelectedStaffId));
-              if (!staff) return null;
-              const staffStudents = staffAdminStudents.filter(s => String(s.staffId) === String(staff.id));
+              if (!staffDetailData) {
+                return (
+                  <div className="tab-content-wrapper" style={{ padding: '40px', textAlign: 'center' }}>
+                    <p style={{ color: 'var(--text-muted)' }}>Loading staff profile details...</p>
+                  </div>
+                );
+              }
+              const { staff, totalStudents, pendingStudents, activeStudents, totalCorrections, recentStudents } = staffDetailData;
               return (
                 <div className="tab-content-wrapper">
                   <div className="page-header-row">
@@ -4161,19 +4178,19 @@ export default function App() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
                     <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>{staffStudents.length}</p>
+                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>{totalStudents}</p>
                       <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Total Students</p>
                     </div>
                     <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--warning)', margin: 0 }}>{staffStudents.filter(s => s.status === 'pending').length}</p>
+                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--warning)', margin: 0 }}>{pendingStudents}</p>
                       <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Pending</p>
                     </div>
                     <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>{staffStudents.filter(s => s.status === 'active').length}</p>
+                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>{activeStudents}</p>
                       <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Active</p>
                     </div>
                     <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '28px', fontWeight: '800', color: '#e65100', margin: 0 }}>{staffStudents.reduce((sum, s) => sum + (s.correctionCount || 0), 0)}</p>
+                      <p style={{ fontSize: '28px', fontWeight: '800', color: '#e65100', margin: 0 }}>{totalCorrections}</p>
                       <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Corrections</p>
                     </div>
                   </div>
@@ -4181,18 +4198,18 @@ export default function App() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px', fontSize: '13px' }}>
                       <p><strong>Mobile:</strong> {staff.mobile}</p>
                       <p><strong>Password:</strong> <span style={{ fontFamily: 'monospace' }}>{staff.plainPassword || 'Set via Change Pass'}</span></p>
-                      <p><strong>Joined:</strong> {new Date(staff.createdAt).toLocaleDateString('en-IN')}</p>
+                      <p><strong>Joined:</strong> {safeFormatDate(staff.createdAt)}</p>
                       <p><strong>Status:</strong> <span className={`center-status-badge ${staff.isActive ? 'active' : 'inactive'}`}>{staff.isActive ? 'Active' : 'Inactive'}</span></p>
                     </div>
                   </div>
-                  {staffStudents.length > 0 && (
+                  {recentStudents && recentStudents.length > 0 && (
                     <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
-                      <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>Students ({staffStudents.length})</h3>
+                      <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>Students ({recentStudents.length})</h3>
                       <div className="center-student-table-wrapper">
                         <table className="center-student-table">
                           <thead><tr><th>S.No</th><th>Student</th><th>Father</th><th>Course</th><th>Status</th><th>Corrections</th><th>Actions</th></tr></thead>
                           <tbody>
-                            {staffStudents.map((s, idx) => (
+                            {recentStudents.map((s, idx) => (
                               <tr key={s.id}>
                                 <td>{idx + 1}</td>
                                 <td style={{ fontWeight: '600' }}>{s.name}</td>
@@ -4228,7 +4245,7 @@ export default function App() {
                         <div key={msg.id || i} style={{ display: 'flex', justifyContent: msg.from === 'staffadmin_1' ? 'flex-end' : 'flex-start', animation: 'chatBubbleIn 0.3s ease' }}>
                           <div style={{ maxWidth: '70%', padding: '10px 14px', borderRadius: msg.from === 'staffadmin_1' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.from === 'staffadmin_1' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white', color: msg.from === 'staffadmin_1' ? 'white' : 'var(--text-main)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', fontSize: '13px', wordBreak: 'break-word' }}>
                             <p style={{ margin: 0 }}>{msg.text}</p>
-                            <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.6, textAlign: 'right' }}>{new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                            <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.6, textAlign: 'right' }}>{safeFormatTime(msg.createdAt)}</p>
                           </div>
                         </div>
                       ))}
