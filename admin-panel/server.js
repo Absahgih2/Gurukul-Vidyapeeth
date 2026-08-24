@@ -2024,6 +2024,27 @@ app.get('/api/staff-admin/staff', (req, res) => {
   res.json(staffList);
 });
 
+// Staff Admin: Backfill missing plainPassword for old staff
+app.post('/api/staff-admin/backfill-passwords', async (req, res) => {
+  try {
+    const db = readDB();
+    let count = 0;
+    for (const staff of (db.staff || [])) {
+      if (!staff.plainPassword) {
+        const defaultPass = `staff${staff.mobile ? staff.mobile.slice(-4) : '0000'}`;
+        staff.plainPassword = defaultPass;
+        staff.password = await bcrypt.hash(defaultPass, 10);
+        count++;
+      }
+    }
+    if (count > 0) writeDB(db);
+    res.json({ message: `Updated ${count} staff members`, count });
+  } catch (err) {
+    console.error('Backfill passwords error:', err);
+    res.status(500).json({ error: 'Failed to backfill passwords' });
+  }
+});
+
 // Staff Admin: Change staff password
 app.put('/api/staff-admin/staff/:id/password', async (req, res) => {
   try {

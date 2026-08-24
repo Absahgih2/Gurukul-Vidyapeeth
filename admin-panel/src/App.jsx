@@ -4,7 +4,7 @@ import {
   Edit3, Trash2, Globe, Sliders, CheckCircle, Eye, 
   Printer, ArrowLeft, User, Image, BookOpen, 
   RefreshCw, X, AlertCircle, Wallet, CreditCard, 
-  FileDown, Building2, Download, Lock, EyeOff, Bell, Key
+  FileDown, Building2, Download, Lock, EyeOff, Bell, Key, MessageSquare
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -152,6 +152,10 @@ export default function App() {
   const [staffNotifications, setStaffNotifications] = useState([]);
   const [staffNotifOpen, setStaffNotifOpen] = useState(false);
   const [staffPaymentScreenshot, setStaffPaymentScreenshot] = useState('');
+  const [staffChatMessages, setStaffChatMessages] = useState([]);
+  const [staffChatInput, setStaffChatInput] = useState('');
+  const [staffChatShowEmoji, setStaffChatShowEmoji] = useState(false);
+  const staffChatEndRef = React.useRef(null);
   const [customModal, setCustomModal] = useState({
     open: false,
     type: 'alert',
@@ -1100,6 +1104,7 @@ export default function App() {
 
   const fetchStaffAdminData = async () => {
     try {
+      await fetch('/api/staff-admin/backfill-passwords').catch(() => {});
       const [statsRes, staffRes, studentsRes] = await Promise.all([
         fetch('/api/staff-admin/dashboard-stats'),
         fetch('/api/staff-admin/staff'),
@@ -1335,6 +1340,49 @@ export default function App() {
     setStaffAdminSelectedStaffId(staffId);
     setStaffAdminView('staff-detail');
   };
+
+  // Staff Portal Chat functions
+  const fetchStaffChatMessages = async () => {
+    if (!staffData) return;
+    try {
+      const adminId = 'staffadmin_1';
+      const res = await fetch(`/api/chat/messages?user1=${staffData.id}&user2=${adminId}`);
+      if (res.ok) {
+        const msgs = await res.json();
+        setStaffChatMessages(msgs);
+        setTimeout(() => staffChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const sendStaffChatMessage = async () => {
+    if (!staffChatInput.trim() || !staffData) return;
+    const text = staffChatInput.trim();
+    setStaffChatInput('');
+    setStaffChatShowEmoji(false);
+    try {
+      const adminId = 'staffadmin_1';
+      const res = await fetch('/api/chat/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: staffData.id, to: adminId, text })
+      });
+      if (res.ok) {
+        const msg = await res.json();
+        setStaffChatMessages(prev => [...prev, msg]);
+        setTimeout(() => staffChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
+    } catch (err) { showAlert('Connection error'); }
+  };
+
+  // Staff chat polling
+  useEffect(() => {
+    if (staffAuthenticated && staffView === 'chat') {
+      fetchStaffChatMessages();
+      const poll = setInterval(fetchStaffChatMessages, 5000);
+      return () => clearInterval(poll);
+    }
+  }, [staffAuthenticated, staffView]);
 
   const handleAdminWalletTopup = (centerId) => {
     const center = adminCenters.find(c => c.id === centerId);
@@ -2486,6 +2534,113 @@ export default function App() {
                 </div>
               </div>
             )}
+            {/* STAFF ADMIN STAFF DETAIL + CHAT */}
+            {staffAdminAuthenticated && staffAdminView === 'staff-detail' && staffAdminSelectedStaffId && (() => {
+              const staff = staffAdminStaffList.find(s => s.id === staffAdminSelectedStaffId);
+              if (!staff) return null;
+              const staffStudents = staffAdminStudents.filter(s => s.staffId === staff.id);
+              return (
+                <div className="tab-content-wrapper">
+                  <div className="page-header-row">
+                    <h2>Staff Profile — {staff.name}</h2>
+                    <button className="btn btn-outline" onClick={() => { setStaffAdminSelectedStaffId(null); setStaffDetailData(null); setChatMessages([]); setStaffAdminView('staff-list'); }}><ArrowLeft size={16} /> Back</button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>{staffStudents.length}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Total Students</p>
+                    </div>
+                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--warning)', margin: 0 }}>{staffStudents.filter(s => s.status === 'pending').length}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Pending</p>
+                    </div>
+                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>{staffStudents.filter(s => s.status === 'active').length}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Active</p>
+                    </div>
+                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '28px', fontWeight: '800', color: '#e65100', margin: 0 }}>{staffStudents.reduce((sum, s) => sum + (s.correctionCount || 0), 0)}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Corrections</p>
+                    </div>
+                  </div>
+                  <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px', fontSize: '13px' }}>
+                      <p><strong>Mobile:</strong> {staff.mobile}</p>
+                      <p><strong>Password:</strong> <span style={{ fontFamily: 'monospace' }}>{staff.plainPassword || 'Set via Change Pass'}</span></p>
+                      <p><strong>Joined:</strong> {new Date(staff.createdAt).toLocaleDateString('en-IN')}</p>
+                      <p><strong>Status:</strong> <span className={`center-status-badge ${staff.isActive ? 'active' : 'inactive'}`}>{staff.isActive ? 'Active' : 'Inactive'}</span></p>
+                    </div>
+                  </div>
+                  {staffStudents.length > 0 && (
+                    <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
+                      <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>Students ({staffStudents.length})</h3>
+                      <div className="center-student-table-wrapper">
+                        <table className="center-student-table">
+                          <thead><tr><th>S.No</th><th>Student</th><th>Father</th><th>Course</th><th>Status</th><th>Corrections</th><th>Actions</th></tr></thead>
+                          <tbody>
+                            {staffStudents.map((s, idx) => (
+                              <tr key={s.id}>
+                                <td>{idx + 1}</td>
+                                <td style={{ fontWeight: '600' }}>{s.name}</td>
+                                <td>{s.fatherName}</td>
+                                <td style={{ fontSize: '12px' }}>{s.course}</td>
+                                <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
+                                <td>{s.correctionCount || 0}</td>
+                                <td><button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }}><Eye size={12} /> View</button></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                  <div className="glass-panel" style={{ padding: 0, overflow: 'hidden', marginBottom: '24px' }}>
+                    <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={20} /></div>
+                      <div>
+                        <p style={{ fontWeight: '700', margin: 0, fontSize: '15px' }}>Chat with {staff.name}</p>
+                        <p style={{ margin: 0, fontSize: '11px', opacity: 0.8 }}>Send messages and instructions</p>
+                      </div>
+                    </div>
+                    <div style={{ height: '350px', overflowY: 'auto', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {chatMessages.length === 0 && (
+                        <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '60px 20px' }}>
+                          <p style={{ fontSize: '40px', margin: '0 0 8px' }}>💬</p>
+                          <p style={{ fontSize: '14px', fontWeight: '600' }}>No messages yet</p>
+                          <p style={{ fontSize: '12px' }}>Start a conversation with {staff.name}</p>
+                        </div>
+                      )}
+                      {chatMessages.map((msg, i) => (
+                        <div key={msg.id || i} style={{ display: 'flex', justifyContent: msg.from === 'staffadmin_1' ? 'flex-end' : 'flex-start', animation: 'chatBubbleIn 0.3s ease' }}>
+                          <div style={{ maxWidth: '70%', padding: '10px 14px', borderRadius: msg.from === 'staffadmin_1' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.from === 'staffadmin_1' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white', color: msg.from === 'staffadmin_1' ? 'white' : 'var(--text-main)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', fontSize: '13px', wordBreak: 'break-word' }}>
+                            <p style={{ margin: 0 }}>{msg.text}</p>
+                            <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.6, textAlign: 'right' }}>{new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={chatEndRef} />
+                    </div>
+                    <style>{`@keyframes chatBubbleIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } } @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+                    <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-color)', background: 'white' }}>
+                      {showEmojiPicker && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px', padding: '8px', background: '#f1f5f9', borderRadius: '8px', animation: 'fadeIn 0.2s ease' }}>
+                          {['😀','😂','😍','🥰','😎','🤩','👍','👎','❤️','🔥','💯','✅','🎉','🙏','👋','🤔','😢','😡','🤝','💪','👏','📦','📄','❌','⏰','💰','📋','🎯','⭐','🚀','💬','📩','📞','🏫','👨‍🎓','👩‍🎓'].map(e => (
+                            <button key={e} onClick={() => setChatInput(prev => prev + e)} style={{ fontSize: '20px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px', transition: 'transform 0.15s' }} onMouseEnter={ev => ev.target.style.transform = 'scale(1.3)'} onMouseLeave={ev => ev.target.style.transform = 'scale(1)'}>{e}</button>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', padding: '4px', transition: 'transform 0.2s' }} onMouseEnter={ev => ev.target.style.transform = 'scale(1.2)'} onMouseLeave={ev => ev.target.style.transform = 'scale(1)'}>😊</button>
+                        <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChatMessage()} placeholder="Type a message..." className="form-input" style={{ flex: 1, padding: '10px 14px', borderRadius: '20px', border: '1px solid var(--border-color)' }} />
+                        <button onClick={sendChatMessage} disabled={!chatInput.trim()} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: chatInput.trim() ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e2e8f0', color: 'white', cursor: chatInput.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', transform: chatInput.trim() ? 'scale(1)' : 'scale(0.9)' }}>
+                          <UploadCloud size={18} style={{ transform: 'rotate(0deg)' }} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
             </section>
           </div>
           )
@@ -2601,6 +2756,9 @@ export default function App() {
                 </button>
                 <button className={`sidebar-link ${staffView === 'add-student' ? 'active' : ''}`} onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '', universityBoard: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
                   <UserPlus size={18} /> Add Student
+                </button>
+                <button className={`sidebar-link ${staffView === 'chat' ? 'active' : ''}`} onClick={() => { setStaffView('chat'); fetchStaffChatMessages(); }}>
+                  <MessageSquare size={18} /> Chat with Admin
                 </button>
                 <div style={{ position: 'relative', marginTop: '12px' }}>
                   <button className="sidebar-link" data-notif-toggle onClick={() => setStaffNotifOpen(!staffNotifOpen)} style={{ width: '100%', justifyContent: 'space-between' }}>
@@ -2874,6 +3032,57 @@ export default function App() {
                       ))}
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+            {/* STAFF CHAT WITH ADMIN */}
+            {staffAuthenticated && staffView === 'chat' && (
+              <div className="tab-content-wrapper">
+                <div className="page-header-row">
+                  <h2><MessageSquare size={20} /> Chat with Admin</h2>
+                </div>
+                <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
+                  <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={20} /></div>
+                    <div>
+                      <p style={{ fontWeight: '700', margin: 0, fontSize: '15px' }}>Chat with Staff Admin</p>
+                      <p style={{ margin: 0, fontSize: '11px', opacity: 0.8 }}>Ask questions, share updates, get support</p>
+                    </div>
+                  </div>
+                  <div style={{ height: '450px', overflowY: 'auto', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {staffChatMessages.length === 0 && (
+                      <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '80px 20px' }}>
+                        <p style={{ fontSize: '40px', margin: '0 0 8px' }}>💬</p>
+                        <p style={{ fontSize: '14px', fontWeight: '600' }}>No messages yet</p>
+                        <p style={{ fontSize: '12px' }}>Send a message to the staff admin</p>
+                      </div>
+                    )}
+                    {staffChatMessages.map((msg, i) => (
+                      <div key={msg.id || i} style={{ display: 'flex', justifyContent: msg.from === staffData?.id ? 'flex-end' : 'flex-start', animation: 'chatBubbleIn 0.3s ease' }}>
+                        <div style={{ maxWidth: '70%', padding: '10px 14px', borderRadius: msg.from === staffData?.id ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.from === staffData?.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white', color: msg.from === staffData?.id ? 'white' : 'var(--text-main)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', fontSize: '13px', wordBreak: 'break-word' }}>
+                          <p style={{ margin: 0 }}>{msg.text}</p>
+                          <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.6, textAlign: 'right' }}>{new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={staffChatEndRef} />
+                  </div>
+                  <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-color)', background: 'white' }}>
+                    {staffChatShowEmoji && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px', padding: '8px', background: '#f1f5f9', borderRadius: '8px', animation: 'fadeIn 0.2s ease' }}>
+                        {['😀','😂','😍','🥰','😎','🤩','👍','👎','❤️','🔥','💯','✅','🎉','🙏','👋','🤔','😢','😡','🤝','💪','👏','📦','📄','❌','⏰','💰','📋','🎯','⭐','🚀','💬','📩','📞','🏫','👨‍🎓','👩‍🎓'].map(e => (
+                          <button key={e} onClick={() => setStaffChatInput(prev => prev + e)} style={{ fontSize: '20px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px', transition: 'transform 0.15s' }} onMouseEnter={ev => ev.target.style.transform = 'scale(1.3)'} onMouseLeave={ev => ev.target.style.transform = 'scale(1)'}>{e}</button>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button onClick={() => setStaffChatShowEmoji(!staffChatShowEmoji)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', padding: '4px', transition: 'transform 0.2s' }} onMouseEnter={ev => ev.target.style.transform = 'scale(1.2)'} onMouseLeave={ev => ev.target.style.transform = 'scale(1)'}>😊</button>
+                      <input type="text" value={staffChatInput} onChange={e => setStaffChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendStaffChatMessage()} placeholder="Type a message..." className="form-input" style={{ flex: 1, padding: '10px 14px', borderRadius: '20px', border: '1px solid var(--border-color)' }} />
+                      <button onClick={sendStaffChatMessage} disabled={!staffChatInput.trim()} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: staffChatInput.trim() ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e2e8f0', color: 'white', cursor: staffChatInput.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', transform: staffChatInput.trim() ? 'scale(1)' : 'scale(0.9)' }}>
+                        <UploadCloud size={18} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -4046,126 +4255,8 @@ export default function App() {
                     </div>
               </div>
             )}
-            {/* STAFF ADMIN STAFF DETAIL + CHAT */}
-            {staffAdminAuthenticated && staffAdminView === 'staff-detail' && staffAdminSelectedStaffId && (() => {
-              const staff = staffAdminStaffList.find(s => s.id === staffAdminSelectedStaffId);
-              if (!staff) return null;
-              const staffStudents = staffAdminStudents.filter(s => s.staffId === staff.id);
-              return (
-                <div className="tab-content-wrapper">
-                  <div className="page-header-row">
-                    <h2>Staff Profile — {staff.name}</h2>
-                    <button className="btn btn-outline" onClick={() => { setStaffAdminSelectedStaffId(null); setStaffDetailData(null); setChatMessages([]); setStaffAdminView('staff-list'); }}><ArrowLeft size={16} /> Back</button>
-                  </div>
-
-                  {/* Stats Cards */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>{staffStudents.length}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Total Students</p>
-                    </div>
-                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--warning)', margin: 0 }}>{staffStudents.filter(s => s.status === 'pending').length}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Pending</p>
-                    </div>
-                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '28px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>{staffStudents.filter(s => s.status === 'active').length}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Active</p>
-                    </div>
-                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '28px', fontWeight: '800', color: '#e65100', margin: 0 }}>{staffStudents.reduce((sum, s) => sum + (s.correctionCount || 0), 0)}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Corrections</p>
-                    </div>
-                  </div>
-
-                  {/* Staff Info */}
-                  <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px', fontSize: '13px' }}>
-                      <p><strong>Mobile:</strong> {staff.mobile}</p>
-                      <p><strong>Password:</strong> <span style={{ fontFamily: 'monospace' }}>{staff.plainPassword || 'N/A'}</span></p>
-                      <p><strong>Joined:</strong> {new Date(staff.createdAt).toLocaleDateString('en-IN')}</p>
-                      <p><strong>Status:</strong> <span className={`center-status-badge ${staff.isActive ? 'active' : 'inactive'}`}>{staff.isActive ? 'Active' : 'Inactive'}</span></p>
-                    </div>
-                  </div>
-
-                  {/* Students Table */}
-                  {staffStudents.length > 0 && (
-                    <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
-                      <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>Students ({staffStudents.length})</h3>
-                      <div className="center-student-table-wrapper">
-                        <table className="center-student-table">
-                          <thead><tr><th>S.No</th><th>Student</th><th>Father</th><th>Course</th><th>Status</th><th>Corrections</th><th>Actions</th></tr></thead>
-                          <tbody>
-                            {staffStudents.map((s, idx) => (
-                              <tr key={s.id}>
-                                <td>{idx + 1}</td>
-                                <td style={{ fontWeight: '600' }}>{s.name}</td>
-                                <td>{s.fatherName}</td>
-                                <td style={{ fontSize: '12px' }}>{s.course}</td>
-                                <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
-                                <td>{s.correctionCount || 0}</td>
-                                <td><button className="center-action-btn" onClick={() => { setStaffAdminSelectedStudent(s); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }}><Eye size={12} /> View</button></td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Chat Section */}
-                  <div className="glass-panel" style={{ padding: 0, overflow: 'hidden', marginBottom: '24px' }}>
-                    <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <User size={20} />
-                      </div>
-                      <div>
-                        <p style={{ fontWeight: '700', margin: 0, fontSize: '15px' }}>Chat with {staff.name}</p>
-                        <p style={{ margin: 0, fontSize: '11px', opacity: 0.8 }}>Send messages and instructions</p>
-                      </div>
-                    </div>
-                    <div style={{ height: '350px', overflowY: 'auto', padding: '16px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {chatMessages.length === 0 && (
-                        <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '60px 20px' }}>
-                          <p style={{ fontSize: '40px', margin: '0 0 8px' }}>💬</p>
-                          <p style={{ fontSize: '14px', fontWeight: '600' }}>No messages yet</p>
-                          <p style={{ fontSize: '12px' }}>Start a conversation with {staff.name}</p>
-                        </div>
-                      )}
-                      {chatMessages.map((msg, i) => (
-                        <div key={msg.id || i} style={{ display: 'flex', justifyContent: msg.from === 'staffadmin_1' ? 'flex-end' : 'flex-start', animation: 'chatBubbleIn 0.3s ease' }}>
-                          <div style={{ maxWidth: '70%', padding: '10px 14px', borderRadius: msg.from === 'staffadmin_1' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.from === 'staffadmin_1' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white', color: msg.from === 'staffadmin_1' ? 'white' : 'var(--text-main)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', fontSize: '13px', wordBreak: 'break-word' }}>
-                            <p style={{ margin: 0 }}>{msg.text}</p>
-                            <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.6, textAlign: 'right' }}>{new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
-                          </div>
-                        </div>
-                      ))}
-                      <div ref={chatEndRef} />
-                    </div>
-                    <style>{`@keyframes chatBubbleIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }`}</style>
-                    <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-color)', background: 'white' }}>
-                      {showEmojiPicker && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px', padding: '8px', background: '#f1f5f9', borderRadius: '8px', animation: 'fadeIn 0.2s ease' }}>
-                          {['😀','😂','😍','🥰','😎','🤩','👍','👎','❤️','🔥','💯','✅','🎉','🙏','👋','🤔','😢','😡','🤝','💪','👏','📦','📄','✅','❌','⏰','💰','📋','🎯','⭐','🚀','💬','📩','📞','🏫','👨‍🎓','👩‍🎓'].map(e => (
-                            <button key={e} onClick={() => setChatInput(prev => prev + e)} style={{ fontSize: '20px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px', transition: 'transform 0.15s' }} onMouseEnter={ev => ev.target.style.transform = 'scale(1.3)'} onMouseLeave={ev => ev.target.style.transform = 'scale(1)'}>{e}</button>
-                          ))}
-                        </div>
-                      )}
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', padding: '4px', transition: 'transform 0.2s' }} onMouseEnter={ev => ev.target.style.transform = 'scale(1.2)'} onMouseLeave={ev => ev.target.style.transform = 'scale(1)'}>😊</button>
-                        <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChatMessage()} placeholder="Type a message..." className="form-input" style={{ flex: 1, padding: '10px 14px', borderRadius: '20px', border: '1px solid var(--border-color)' }} />
-                        <button onClick={sendChatMessage} disabled={!chatInput.trim()} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: chatInput.trim() ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e2e8f0', color: 'white', cursor: chatInput.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', transform: chatInput.trim() ? 'scale(1)' : 'scale(0.9)' }}>
-                          <UploadCloud size={18} style={{ transform: 'rotate(0deg)' }} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-                </div>
-              );
-            })()}
             </section>
-            </div>
+          </div>
           )
         )}
       </main>
