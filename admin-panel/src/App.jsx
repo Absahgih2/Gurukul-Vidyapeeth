@@ -258,6 +258,14 @@ export default function App() {
     } catch (err) { alert('Failed to disconnect'); }
   };
 
+  // Keep Render free instance awake by pinging every 10 minutes
+  useEffect(() => {
+    const ping = () => fetch('/health').catch(() => {});
+    ping();
+    const interval = setInterval(ping, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Load database on mount and check URL params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

@@ -2315,6 +2315,11 @@ app.post('/api/auth/google/disconnect', (req, res) => {
   res.json({ message: 'Google Drive disconnected' });
 });
 
+// Health check endpoint for keep-alive
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Start Express Server
 app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Express server running on port ${PORT} (bound to 0.0.0.0)`);
