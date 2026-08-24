@@ -2027,25 +2027,9 @@ app.get('/api/staff-admin/staff', (req, res) => {
   res.json(staffList);
 });
 
-// Staff Admin: Backfill missing plainPassword for old staff
+// Staff Admin: Backfill missing plainPassword for old staff (deprecated/disabled)
 app.all('/api/staff-admin/backfill-passwords', async (req, res) => {
-  try {
-    const db = readDB();
-    let count = 0;
-    for (const staff of (db.staff || [])) {
-      if (!staff.plainPassword) {
-        const defaultPass = `staff${staff.mobile ? staff.mobile.slice(-4) : '0000'}`;
-        staff.plainPassword = defaultPass;
-        staff.password = await bcrypt.hash(defaultPass, 10);
-        count++;
-      }
-    }
-    if (count > 0) writeDB(db);
-    res.json({ message: `Updated ${count} staff members`, count });
-  } catch (err) {
-    console.error('Backfill passwords error:', err);
-    res.status(500).json({ error: 'Failed to backfill passwords' });
-  }
+  res.json({ message: 'Backfill disabled', count: 0 });
 });
 
 // Staff Admin: Change staff password
@@ -2476,14 +2460,24 @@ app.listen(PORT, '0.0.0.0', async () => {
     const db = readDB();
     let dbChanged = false;
     (db.staff || []).forEach((s, idx) => {
+      // 1. Resolve missing legacy IDs
       if (!s.id) {
         s.id = s._id || s.mobile || `staff_${Date.now()}_${idx}`;
         dbChanged = true;
       }
-      if (s.mobile === '9142492535' && (s.plainPassword === 'staff2535' || !s.plainPassword)) {
-        s.plainPassword = 'priya00';
-        s.password = bcrypt.hashSync('priya00', 10);
-        dbChanged = true;
+      // 2. Recover Priya Kumari's custom password
+      if (s.mobile === '9142492535') {
+        if (s.plainPassword !== 'priya00') {
+          s.plainPassword = 'priya00';
+          s.password = bcrypt.hashSync('priya00', 10);
+          dbChanged = true;
+        }
+      } else {
+        // 3. Delete other auto-generated default passwords from the database
+        if (s.plainPassword && /^staff\d{4}$/.test(s.plainPassword)) {
+          s.plainPassword = ''; // remove plaintext default
+          dbChanged = true;
+        }
       }
     });
     if (dbChanged) {

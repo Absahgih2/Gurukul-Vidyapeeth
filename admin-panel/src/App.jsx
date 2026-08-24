@@ -1116,7 +1116,6 @@ export default function App() {
 
   const fetchStaffAdminData = async () => {
     try {
-      await fetch('/api/staff-admin/backfill-passwords', { method: 'POST' }).catch(() => {});
       const [statsRes, staffRes, studentsRes] = await Promise.all([
         fetch('/api/staff-admin/dashboard-stats'),
         fetch('/api/staff-admin/staff'),
