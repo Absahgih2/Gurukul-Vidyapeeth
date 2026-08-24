@@ -225,6 +225,7 @@ export default function App() {
   const [staffAdminPaymentFilterUniv, setStaffAdminPaymentFilterUniv] = useState('');
   const [staffAdminSelectedStaffId, setStaffAdminSelectedStaffId] = useState(null);
   const [staffDetailData, setStaffDetailData] = useState(null);
+  const [staffDetailError, setStaffDetailError] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -1330,10 +1331,19 @@ export default function App() {
 
   // Staff detail + chat handlers
   const fetchStaffDetail = async (staffId) => {
+    setStaffDetailError(null);
     try {
       const res = await fetch(`/api/staff-admin/staff/${staffId}/details`);
-      if (res.ok) setStaffDetailData(await res.json());
-    } catch (err) { console.error(err); }
+      if (res.ok) {
+        setStaffDetailData(await res.json());
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setStaffDetailError(errData.error || 'Failed to load staff details');
+      }
+    } catch (err) {
+      console.error(err);
+      setStaffDetailError('Connection error: Failed to connect to server');
+    }
   };
 
   const fetchChatMessages = async (otherId) => {
@@ -4213,6 +4223,17 @@ export default function App() {
             )}
             {/* STAFF ADMIN STAFF DETAIL + CHAT */}
             {staffAdminAuthenticated && staffAdminView === 'staff-detail' && staffAdminSelectedStaffId && (() => {
+              if (staffDetailError) {
+                return (
+                  <div className="tab-content-wrapper" style={{ padding: '40px', textAlign: 'center' }}>
+                    <p style={{ color: 'var(--danger)', marginBottom: '16px', fontWeight: '600' }}>{staffDetailError}</p>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                      <button className="btn btn-primary" onClick={() => fetchStaffDetail(staffAdminSelectedStaffId)}>Retry</button>
+                      <button className="btn btn-outline" onClick={() => { setStaffAdminSelectedStaffId(null); setStaffDetailData(null); setStaffDetailError(null); setChatMessages([]); setStaffAdminView('staff-list'); }}>Back</button>
+                    </div>
+                  </div>
+                );
+              }
               if (!staffDetailData) {
                 return (
                   <div className="tab-content-wrapper" style={{ padding: '40px', textAlign: 'center' }}>
