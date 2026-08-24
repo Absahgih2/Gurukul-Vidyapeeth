@@ -1728,7 +1728,7 @@ app.post('/api/staff/login', async (req, res) => {
     if (!staff) return res.status(401).json({ error: 'Invalid credentials or account inactive' });
     const isMatch = await bcrypt.compare(password, staff.password);
     if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
-    res.json({ message: 'Login successful', staff: { id: staff.id, name: staff.name, mobile: staff.mobile } });
+    res.json({ message: 'Login successful', staff: { id: staff.id || staff._id || '', name: staff.name, mobile: staff.mobile } });
   } catch (err) {
     console.error('Staff login error:', err);
     res.status(500).json({ error: 'Login failed' });
@@ -2023,7 +2023,7 @@ app.post('/api/staff-admin/login', async (req, res) => {
 // Staff Admin: Get all staff
 app.get('/api/staff-admin/staff', (req, res) => {
   const db = readDB();
-  const staffList = (db.staff || []).map(s => ({ id: s.id, name: s.name, mobile: s.mobile, plainPassword: s.plainPassword || '', isActive: s.isActive, createdAt: s.createdAt }));
+  const staffList = (db.staff || []).map(s => ({ id: s.id || s._id || '', name: s.name, mobile: s.mobile, plainPassword: s.plainPassword || '', isActive: s.isActive, createdAt: s.createdAt }));
   res.json(staffList);
 });
 
@@ -2474,15 +2474,24 @@ app.listen(PORT, '0.0.0.0', async () => {
   try {
     await connectMongo();
     const db = readDB();
-    const priya = (db.staff || []).find(s => s.mobile === '9142492535');
-    if (priya && (priya.plainPassword === 'staff2535' || !priya.plainPassword)) {
-      priya.plainPassword = 'priya00';
-      priya.password = await bcrypt.hash('priya00', 10);
+    let dbChanged = false;
+    (db.staff || []).forEach((s, idx) => {
+      if (!s.id) {
+        s.id = s._id || s.mobile || `staff_${Date.now()}_${idx}`;
+        dbChanged = true;
+      }
+      if (s.mobile === '9142492535' && (s.plainPassword === 'staff2535' || !s.plainPassword)) {
+        s.plainPassword = 'priya00';
+        s.password = bcrypt.hashSync('priya00', 10);
+        dbChanged = true;
+      }
+    });
+    if (dbChanged) {
       writeDB(db);
-      console.log('Successfully restored Priya Kumari\'s password to priya00');
+      console.log('Successfully ran database migrations for staff IDs and passwords');
     }
   } catch (err) {
-    console.error('Failed to connect to MongoDB Atlas or run password migration on startup:', err);
+    console.error('Failed to connect to MongoDB Atlas or run database migrations on startup:', err);
   }
   try {
     const loaded = await loadTokensFromDB(readDB, writeDB);
