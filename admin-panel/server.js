@@ -2061,15 +2061,18 @@ app.put('/api/staff-admin/staff/:id/password', async (req, res) => {
 // Staff Admin: Get staff details (students, corrections)
 app.get('/api/staff-admin/staff/:id/details', (req, res) => {
   const db = readDB();
-  const staff = (db.staff || []).find(s => String(s.id) === String(req.params.id));
+  // Older records can have a Mongo `_id` but no legacy `id`.  The staff list
+  // already exposes either value, so resolve the profile with the same ID.
+  const staff = (db.staff || []).find(s => String(s.id || s._id) === String(req.params.id));
   if (!staff) return res.status(404).json({ error: 'Staff not found' });
-  const students = (db.staffStudents || []).filter(s => String(s.staffId) === String(staff.id));
+  const staffId = String(staff.id || staff._id);
+  const students = (db.staffStudents || []).filter(s => String(s.staffId) === staffId);
   const totalStudents = students.length;
   const pendingStudents = students.filter(s => s.status === 'pending').length;
   const activeStudents = students.filter(s => s.status === 'active').length;
   const totalCorrections = students.reduce((sum, s) => sum + (s.correctionCount || 0), 0);
   res.json({
-    staff: { id: staff.id, name: staff.name, mobile: staff.mobile, plainPassword: staff.plainPassword || '', createdAt: staff.createdAt },
+    staff: { id: staffId, name: staff.name, mobile: staff.mobile, plainPassword: staff.plainPassword || '', isActive: staff.isActive !== false, createdAt: staff.createdAt },
     totalStudents, pendingStudents, activeStudents, totalCorrections,
     recentStudents: students.map(s => ({ id: s.id, name: s.name, fatherName: s.fatherName, course: s.course, status: s.status, correctionCount: s.correctionCount || 0, createdAt: s.createdAt }))
   });

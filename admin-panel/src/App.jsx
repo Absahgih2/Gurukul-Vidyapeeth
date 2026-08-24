@@ -228,6 +228,7 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [staffAdminConversations, setStaffAdminConversations] = useState([]);
   const chatPollRef = React.useRef(null);
   const chatEndRef = React.useRef(null);
 
@@ -304,6 +305,16 @@ export default function App() {
       if (chatPollRef.current) clearInterval(chatPollRef.current);
     }
   }, [staffAdminView, staffAdminSelectedStaffId]);
+
+  // Keep the admin informed about incoming staff messages, even before a
+  // particular staff profile is open.
+  useEffect(() => {
+    if (!staffAdminAuthenticated) return;
+    const loadConversations = () => fetchStaffAdminConversations();
+    loadConversations();
+    const poll = setInterval(loadConversations, 5000);
+    return () => clearInterval(poll);
+  }, [staffAdminAuthenticated, staffAdminData?.id]);
 
   // Load database on mount and check URL params
   useEffect(() => {
@@ -1318,11 +1329,17 @@ export default function App() {
 
   const fetchChatMessages = async (otherId) => {
     try {
-      const adminId = 'staffadmin_1';
+      const adminId = staffAdminData?.id || 'staffadmin_1';
       const res = await fetch(`/api/chat/messages?user1=${adminId}&user2=${otherId}`);
       if (res.ok) {
         const msgs = await res.json();
         setChatMessages(msgs);
+        await fetch('/api/chat/read', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: otherId, to: adminId })
+        });
+        setStaffAdminConversations(prev => prev.map(c => c.otherId === otherId ? { ...c, unread: 0 } : c));
         setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       }
     } catch (err) { console.error(err); }
@@ -1337,7 +1354,7 @@ export default function App() {
       const res = await fetch('/api/chat/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: 'staffadmin_1', to: staffAdminSelectedStaffId, text })
+        body: JSON.stringify({ from: staffAdminData?.id || 'staffadmin_1', to: staffAdminSelectedStaffId, text })
       });
       if (res.ok) {
         const msg = await res.json();
@@ -1348,8 +1365,18 @@ export default function App() {
   };
 
   const handleStaffDetailChatOpen = (staffId) => {
+    setStaffDetailData(null);
+    setChatMessages([]);
     setStaffAdminSelectedStaffId(staffId);
     setStaffAdminView('staff-detail');
+  };
+
+  const fetchStaffAdminConversations = async () => {
+    try {
+      const adminId = staffAdminData?.id || 'staffadmin_1';
+      const res = await fetch(`/api/chat/conversations?userId=${adminId}`);
+      if (res.ok) setStaffAdminConversations(await res.json());
+    } catch (err) { console.error(err); }
   };
 
   // Staff Portal Chat functions
@@ -3103,7 +3130,14 @@ export default function App() {
 
                 <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                   <button className="btn btn-primary" onClick={() => { setStaffAdminView('students'); fetchStaffAdminData(); }}><Eye size={16} /> View All Students</button>
-                  <button className="btn btn-outline" onClick={() => { setStaffAdminView('staff-list'); }}><User size={16} /> View Staff</button>
+                  <button className="btn btn-outline" onClick={() => { setStaffAdminView('staff-list'); }}>
+                    <User size={16} /> View Staff
+                    {staffAdminConversations.reduce((total, conversation) => total + (conversation.unread || 0), 0) > 0 && (
+                      <span style={{ marginLeft: '6px', minWidth: '18px', height: '18px', padding: '0 5px', borderRadius: '9px', background: '#dc2626', color: 'white', fontSize: '11px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {staffAdminConversations.reduce((total, conversation) => total + (conversation.unread || 0), 0)}
+                      </span>
+                    )}
+                  </button>
                 </div>
               </div>
             )}
@@ -3119,10 +3153,15 @@ export default function App() {
                   <table className="center-student-table">
                     <thead><tr><th>S.No</th><th>Name</th><th>Mobile</th><th>Password</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
                     <tbody>
-                      {staffAdminStaffList.map((s, idx) => (
+                      {staffAdminStaffList.map((s, idx) => {
+                        const unread = staffAdminConversations.find(conversation => String(conversation.otherId) === String(s.id))?.unread || 0;
+                        return (
                         <tr key={s.id}>
                           <td>{idx + 1}</td>
-                          <td style={{ fontWeight: '600', color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { setStaffAdminView('staff-detail'); setStaffAdminSelectedStaffId(s.id); }} title="Click to view details">{s.name}</td>
+                          <td style={{ fontWeight: '600', color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => handleStaffDetailChatOpen(s.id)} title="Click to view profile and chat">
+                            {s.name}
+                            {unread > 0 && <span style={{ marginLeft: '8px', padding: '2px 7px', borderRadius: '10px', background: '#dc2626', color: 'white', fontSize: '10px', textDecoration: 'none' }}>{unread} new</span>}
+                          </td>
                           <td>{s.mobile}</td>
                           <td>
                             {staffListEditingPass === s.id ? (
@@ -3154,13 +3193,17 @@ export default function App() {
                                   <Key size={12} /> Change Pass
                                 </button>
                               )}
+                              <button className="center-action-btn" onClick={() => handleStaffDetailChatOpen(s.id)} style={{ color: 'var(--secondary)', borderColor: 'var(--secondary)' }}>
+                                <MessageSquare size={12} /> Profile & Chat
+                              </button>
                               <button className="center-action-btn" onClick={() => handleStaffAdminDeleteStaff(s.id)} style={{ color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
                                 <Trash2 size={12} /> Delete
                               </button>
                             </div>
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -4241,8 +4284,8 @@ export default function App() {
                         </div>
                       )}
                       {chatMessages.map((msg, i) => (
-                        <div key={msg.id || i} style={{ display: 'flex', justifyContent: msg.from === 'staffadmin_1' ? 'flex-end' : 'flex-start', animation: 'chatBubbleIn 0.3s ease' }}>
-                          <div style={{ maxWidth: '70%', padding: '10px 14px', borderRadius: msg.from === 'staffadmin_1' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.from === 'staffadmin_1' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white', color: msg.from === 'staffadmin_1' ? 'white' : 'var(--text-main)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', fontSize: '13px', wordBreak: 'break-word' }}>
+                        <div key={msg.id || i} style={{ display: 'flex', justifyContent: msg.from === (staffAdminData?.id || 'staffadmin_1') ? 'flex-end' : 'flex-start', animation: 'chatBubbleIn 0.3s ease' }}>
+                          <div style={{ maxWidth: '70%', padding: '10px 14px', borderRadius: msg.from === (staffAdminData?.id || 'staffadmin_1') ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.from === (staffAdminData?.id || 'staffadmin_1') ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white', color: msg.from === (staffAdminData?.id || 'staffadmin_1') ? 'white' : 'var(--text-main)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', fontSize: '13px', wordBreak: 'break-word' }}>
                             <p style={{ margin: 0 }}>{msg.text}</p>
                             <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.6, textAlign: 'right' }}>{safeFormatTime(msg.createdAt)}</p>
                           </div>
