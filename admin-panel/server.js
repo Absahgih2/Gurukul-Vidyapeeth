@@ -131,7 +131,7 @@ const storage = multer.diskStorage({
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fieldSize: 50 * 1024 * 1024, fileSize: 50 * 1024 * 1024 } });
 
 // CSV Parser Helper
 function parseCSV(text) {
