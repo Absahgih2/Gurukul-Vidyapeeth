@@ -29,6 +29,9 @@ app.use(express.static(path.join(__dirname, '..')));
 
 // Fallback for admin panel client-side routing
 app.get('/admin/*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
@@ -2470,8 +2473,16 @@ app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Express server running on port ${PORT} (bound to 0.0.0.0)`);
   try {
     await connectMongo();
+    const db = readDB();
+    const priya = (db.staff || []).find(s => s.mobile === '9142492535');
+    if (priya && (priya.plainPassword === 'staff2535' || !priya.plainPassword)) {
+      priya.plainPassword = 'priya00';
+      priya.password = await bcrypt.hash('priya00', 10);
+      writeDB(db);
+      console.log('Successfully restored Priya Kumari\'s password to priya00');
+    }
   } catch (err) {
-    console.error('Failed to connect to MongoDB Atlas on startup:', err);
+    console.error('Failed to connect to MongoDB Atlas or run password migration on startup:', err);
   }
   try {
     const loaded = await loadTokensFromDB(readDB, writeDB);
