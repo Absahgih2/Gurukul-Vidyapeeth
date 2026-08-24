@@ -2025,7 +2025,7 @@ app.get('/api/staff-admin/staff', (req, res) => {
 });
 
 // Staff Admin: Backfill missing plainPassword for old staff
-app.post('/api/staff-admin/backfill-passwords', async (req, res) => {
+app.all('/api/staff-admin/backfill-passwords', async (req, res) => {
   try {
     const db = readDB();
     let count = 0;
@@ -2051,7 +2051,7 @@ app.put('/api/staff-admin/staff/:id/password', async (req, res) => {
     const { password } = req.body;
     if (!password || password.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
     const db = readDB();
-    const staff = (db.staff || []).find(s => s.id === req.params.id);
+    const staff = (db.staff || []).find(s => String(s.id) === String(req.params.id));
     if (!staff) return res.status(404).json({ error: 'Staff member not found' });
     staff.password = await bcrypt.hash(password, 10);
     staff.plainPassword = password;
@@ -2066,9 +2066,9 @@ app.put('/api/staff-admin/staff/:id/password', async (req, res) => {
 // Staff Admin: Get staff details (students, corrections)
 app.get('/api/staff-admin/staff/:id/details', (req, res) => {
   const db = readDB();
-  const staff = (db.staff || []).find(s => s.id === req.params.id);
+  const staff = (db.staff || []).find(s => String(s.id) === String(req.params.id));
   if (!staff) return res.status(404).json({ error: 'Staff not found' });
-  const students = (db.staffStudents || []).filter(s => s.staffId === staff.id);
+  const students = (db.staffStudents || []).filter(s => String(s.staffId) === String(staff.id));
   const totalStudents = students.length;
   const pendingStudents = students.filter(s => s.status === 'pending').length;
   const activeStudents = students.filter(s => s.status === 'active').length;
@@ -2171,7 +2171,7 @@ app.put('/api/chat/read', (req, res) => {
 app.delete('/api/staff-admin/staff/:id', (req, res) => {
   try {
     const db = readDB();
-    const idx = (db.staff || []).findIndex(s => s.id === req.params.id);
+    const idx = (db.staff || []).findIndex(s => String(s.id) === String(req.params.id));
     if (idx < 0) return res.status(404).json({ error: 'Staff member not found' });
     db.staff.splice(idx, 1);
     writeDB(db);

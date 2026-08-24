@@ -2321,3 +2321,35 @@ h1, h2, h3, h4, h5, h6 {
 .staff-notif-item.unread:hover {
   background: rgba(59, 130, 246, 0.1);
 }
+
+/* Custom overrides for mobile responsive sidebars to align elements horizontally */
+@media screen and (max-width: 768px) {
+  .center-sidebar, .dashboard-sidebar {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+  .center-sidebar::-webkit-scrollbar, .dashboard-sidebar::-webkit-scrollbar {
+    display: none !important;
+  }
+  .center-sidebar .sidebar-link, .dashboard-sidebar .sidebar-link {
+    margin-top: 0 !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+  }
+  .center-sidebar > div, .dashboard-sidebar > div {
+    margin-top: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+  }
+  .center-sidebar > div .sidebar-link, .dashboard-sidebar > div .sidebar-link {
+    margin-top: 0 !important;
+  }
+}

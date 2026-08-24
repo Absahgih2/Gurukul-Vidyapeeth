@@ -1104,7 +1104,7 @@ export default function App() {
 
   const fetchStaffAdminData = async () => {
     try {
-      await fetch('/api/staff-admin/backfill-passwords').catch(() => {});
+      await fetch('/api/staff-admin/backfill-passwords', { method: 'POST' }).catch(() => {});
       const [statsRes, staffRes, studentsRes] = await Promise.all([
         fetch('/api/staff-admin/dashboard-stats'),
         fetch('/api/staff-admin/staff'),
@@ -4150,9 +4150,9 @@ export default function App() {
             )}
             {/* STAFF ADMIN STAFF DETAIL + CHAT */}
             {staffAdminAuthenticated && staffAdminView === 'staff-detail' && staffAdminSelectedStaffId && (() => {
-              const staff = staffAdminStaffList.find(s => s.id === staffAdminSelectedStaffId);
+              const staff = staffAdminStaffList.find(s => String(s.id) === String(staffAdminSelectedStaffId));
               if (!staff) return null;
-              const staffStudents = staffAdminStudents.filter(s => s.staffId === staff.id);
+              const staffStudents = staffAdminStudents.filter(s => String(s.staffId) === String(staff.id));
               return (
                 <div className="tab-content-wrapper">
                   <div className="page-header-row">
