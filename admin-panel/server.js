@@ -1702,6 +1702,7 @@ app.post('/api/staff/register', async (req, res) => {
       name: name.toUpperCase(),
       mobile: mobile.trim(),
       password: hashedPassword,
+      plainPassword: password,
       isActive: true,
       createdAt: new Date().toISOString()
     };
@@ -2019,7 +2020,7 @@ app.post('/api/staff-admin/login', async (req, res) => {
 // Staff Admin: Get all staff
 app.get('/api/staff-admin/staff', (req, res) => {
   const db = readDB();
-  const staffList = (db.staff || []).map(s => ({ id: s.id, name: s.name, mobile: s.mobile, password: s.password, isActive: s.isActive, createdAt: s.createdAt }));
+  const staffList = (db.staff || []).map(s => ({ id: s.id, name: s.name, mobile: s.mobile, plainPassword: s.plainPassword || '', isActive: s.isActive, createdAt: s.createdAt }));
   res.json(staffList);
 });
 
@@ -2032,11 +2033,116 @@ app.put('/api/staff-admin/staff/:id/password', async (req, res) => {
     const staff = (db.staff || []).find(s => s.id === req.params.id);
     if (!staff) return res.status(404).json({ error: 'Staff member not found' });
     staff.password = await bcrypt.hash(password, 10);
+    staff.plainPassword = password;
     writeDB(db);
     res.json({ message: 'Password updated successfully' });
   } catch (err) {
     console.error('Change staff password error:', err);
     res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+// Staff Admin: Get staff details (students, corrections)
+app.get('/api/staff-admin/staff/:id/details', (req, res) => {
+  const db = readDB();
+  const staff = (db.staff || []).find(s => s.id === req.params.id);
+  if (!staff) return res.status(404).json({ error: 'Staff not found' });
+  const students = (db.staffStudents || []).filter(s => s.staffId === staff.id);
+  const totalStudents = students.length;
+  const pendingStudents = students.filter(s => s.status === 'pending').length;
+  const activeStudents = students.filter(s => s.status === 'active').length;
+  const totalCorrections = students.reduce((sum, s) => sum + (s.correctionCount || 0), 0);
+  res.json({
+    staff: { id: staff.id, name: staff.name, mobile: staff.mobile, plainPassword: staff.plainPassword || '', createdAt: staff.createdAt },
+    totalStudents, pendingStudents, activeStudents, totalCorrections,
+    recentStudents: students.slice(0, 10).map(s => ({ id: s.id, name: s.name, fatherName: s.fatherName, course: s.course, status: s.status, correctionCount: s.correctionCount || 0, createdAt: s.createdAt }))
+  });
+});
+
+// ============================================================
+// CHAT SYSTEM
+// ============================================================
+
+// Chat: Send message
+app.post('/api/chat/send', (req, res) => {
+  try {
+    const { from, to, text } = req.body;
+    if (!from || !to || !text || !text.trim()) return res.status(400).json({ error: 'from, to, and text are required' });
+    const db = readDB();
+    if (!db.messages) db.messages = [];
+    const msg = {
+      id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      from, to, text: text.trim(),
+      createdAt: new Date().toISOString(),
+      read: false
+    };
+    db.messages.push(msg);
+    writeDB(db);
+    res.json(msg);
+  } catch (err) {
+    console.error('Chat send error:', err);
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
+// Chat: Get messages between two users
+app.get('/api/chat/messages', (req, res) => {
+  try {
+    const { user1, user2, since } = req.query;
+    if (!user1 || !user2) return res.status(400).json({ error: 'user1 and user2 are required' });
+    const db = readDB();
+    let msgs = (db.messages || []).filter(m =>
+      (m.from === user1 && m.to === user2) || (m.from === user2 && m.to === user1)
+    );
+    if (since) msgs = msgs.filter(m => m.createdAt > since);
+    res.json(msgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
+  } catch (err) {
+    console.error('Chat fetch error:', err);
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
+
+// Chat: Get conversations list (for admin)
+app.get('/api/chat/conversations', (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: 'userId is required' });
+    const db = readDB();
+    const msgs = db.messages || [];
+    const convMap = {};
+    msgs.forEach(m => {
+      if (m.from === userId || m.to === userId) {
+        const otherId = m.from === userId ? m.to : m.from;
+        if (!convMap[otherId] || new Date(m.createdAt) > new Date(convMap[otherId].lastMessageAt)) {
+          convMap[otherId] = { otherId, lastMessage: m.text, lastMessageAt: m.createdAt, unread: 0 };
+        }
+      }
+    });
+    Object.values(convMap).forEach(c => {
+      c.unread = msgs.filter(m => m.from === c.otherId && m.to === userId && !m.read).length;
+    });
+    res.json(Object.values(convMap).sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt)));
+  } catch (err) {
+    console.error('Chat conversations error:', err);
+    res.status(500).json({ error: 'Failed to fetch conversations' });
+  }
+});
+
+// Chat: Mark messages as read
+app.put('/api/chat/read', (req, res) => {
+  try {
+    const { from, to } = req.body;
+    if (!from || !to) return res.status(400).json({ error: 'from and to are required' });
+    const db = readDB();
+    let count = 0;
+    (db.messages || []).forEach(m => {
+      if (m.from === from && m.to === to && !m.read) { m.read = true; count++; }
+    });
+    if (count > 0) writeDB(db);
+    res.json({ marked: count });
+  } catch (err) {
+    console.error('Chat read error:', err);
+    res.status(500).json({ error: 'Failed to mark as read' });
   }
 });
 
