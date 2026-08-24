@@ -20,6 +20,14 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Force cache-busting on the entry index.html for /admin and /admin/
+app.get(['/admin', '/admin/'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
 // Serve production build from dist folder under /admin
 app.use('/admin', express.static(path.join(__dirname, 'dist')));
 // Expose public folder (uploads, etc.)
@@ -2462,11 +2470,12 @@ app.listen(PORT, '0.0.0.0', async () => {
     (db.staff || []).forEach((s, idx) => {
       // 1. Resolve missing legacy IDs
       if (!s.id) {
-        s.id = s._id || s.mobile || `staff_${Date.now()}_${idx}`;
+        s.id = String(s._id || s.mobile || `staff_${Date.now()}_${idx}`);
         dbChanged = true;
       }
+      s.id = String(s.id);
       // 2. Recover Priya Kumari's custom password
-      if (s.mobile === '9142492535') {
+      if (String(s.mobile) === '9142492535') {
         if (s.plainPassword !== 'priya00') {
           s.plainPassword = 'priya00';
           s.password = bcrypt.hashSync('priya00', 10);
@@ -2474,7 +2483,7 @@ app.listen(PORT, '0.0.0.0', async () => {
         }
       } else {
         // 3. Delete other auto-generated default passwords from the database
-        if (s.plainPassword && /^staff\d{4}$/.test(s.plainPassword)) {
+        if (s.plainPassword && /^staff\d{4}$/.test(String(s.plainPassword))) {
           s.plainPassword = ''; // remove plaintext default
           dbChanged = true;
         }
