@@ -65,10 +65,14 @@ export default function App() {
     session: '',
     photo: '',
     email: '',
+    rollNo: '',
+    enrollmentNo: '',
     centerStudentId: '',
   });
   const [selectedTerm, setSelectedTerm] = useState(''); // e.g. "1st Semester"
   const [formMarksheets, setFormMarksheets] = useState({}); // { termName: { subjectCode: obtainedMarks } }
+  const [formDmcNumbers, setFormDmcNumbers] = useState({}); // { termName: dmcNo }
+  const [formIssueDates, setFormIssueDates] = useState({}); // { termName: issueDate }
   const [editingStudentId, setEditingStudentId] = useState(null);
   const [isCompleteEdit, setIsCompleteEdit] = useState(false);
 
@@ -397,10 +401,14 @@ export default function App() {
       session: '',
       photo: '',
       email: '',
+      rollNo: '',
+      enrollmentNo: '',
       centerStudentId: '',
     });
     setSelectedTerm('');
     setFormMarksheets({});
+    setFormDmcNumbers({});
+    setFormIssueDates({});
     setAdminTab('add-student');
   };
 
@@ -417,6 +425,8 @@ export default function App() {
       session: student.session,
       photo: student.photo,
       email: student.email || '',
+      rollNo: student.rollNo || '',
+      enrollmentNo: student.enrollmentNo || '',
       centerStudentId: '',
     });
     
@@ -427,10 +437,16 @@ export default function App() {
     
     // Gather all existing term marks into formMarksheets
     const initialMarks = {};
+    const initialDmcNumbers = {};
+    const initialIssueDates = {};
     Object.keys(student.marksheets).forEach(t => {
       initialMarks[t] = student.marksheets[t].marks || {};
+      initialDmcNumbers[t] = student.marksheets[t].dmcNo || '';
+      initialIssueDates[t] = student.marksheets[t].issueDate || '';
     });
     setFormMarksheets(initialMarks);
+    setFormDmcNumbers(initialDmcNumbers);
+    setFormIssueDates(initialIssueDates);
     
     setAdminTab('add-student');
   };
@@ -471,9 +487,65 @@ export default function App() {
       if (terms.length > 0) {
         setSelectedTerm(terms[0]);
         setFormMarksheets({});
+        if (!editingStudentId) {
+          setFormDmcNumbers({});
+          setFormIssueDates({});
+        }
       }
     }
   }, [formData.courseName, courses]);
+
+  // Fetch and pre-populate next Roll, Enrollment, and DMC numbers for new registrations
+  useEffect(() => {
+    if (editingStudentId) return; // Only auto-generate/pre-populate for new student registration
+    if (!formData.courseName) return;
+    
+    const fetchNextNumbers = async () => {
+      let url = `/api/next-numbers?courseName=${encodeURIComponent(formData.courseName)}`;
+      if (formData.session) {
+        url += `&session=${encodeURIComponent(formData.session)}`;
+      }
+      
+      try {
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          setFormData(prev => ({
+            ...prev,
+            rollNo: prev.rollNo || data.rollNo || '',
+            enrollmentNo: prev.enrollmentNo || data.enrollmentNo || '',
+          }));
+          setFormDmcNumbers(prev => {
+            const updated = { ...prev };
+            if (data.dmcNumbers) {
+              Object.keys(data.dmcNumbers).forEach(term => {
+                if (!updated[term]) {
+                  updated[term] = data.dmcNumbers[term];
+                }
+              });
+            }
+            return updated;
+          });
+          setFormIssueDates(prev => {
+            const updated = { ...prev };
+            if (data.issueDates) {
+              Object.keys(data.issueDates).forEach(term => {
+                if (!updated[term]) {
+                  updated[term] = data.issueDates[term];
+                }
+              });
+            }
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch next numbers preview:', err);
+      }
+    };
+    
+    const timer = setTimeout(fetchNextNumbers, 300);
+    return () => clearTimeout(timer);
+  }, [formData.courseName, formData.session, editingStudentId]);
 
   // Close staff notification dropdown on outside click
   useEffect(() => {
@@ -508,11 +580,18 @@ export default function App() {
     }
 
     try {
-      // Assemble marksheet data structure for all terms in formMarksheets
+      // Assemble marksheet data structure for all terms in formMarksheets, formDmcNumbers, and formIssueDates
       const marksheetsData = {};
-      Object.keys(formMarksheets).forEach(termName => {
+      const allTerms = new Set([
+        ...Object.keys(formMarksheets),
+        ...Object.keys(formDmcNumbers),
+        ...Object.keys(formIssueDates)
+      ]);
+      allTerms.forEach(termName => {
         marksheetsData[termName] = {
-          marks: formMarksheets[termName] || {}
+          marks: formMarksheets[termName] || {},
+          dmcNo: formDmcNumbers[termName] || '',
+          issueDate: formIssueDates[termName] || ''
         };
       });
 
@@ -1523,6 +1602,8 @@ export default function App() {
     });
     setSelectedTerm('');
     setFormMarksheets({});
+    setFormDmcNumbers({});
+    setFormIssueDates({});
     setAdminTab('add-student');
   };
 
@@ -1943,7 +2024,13 @@ export default function App() {
                           <select 
                             className="form-select"
                             value={formData.courseName}
-                            onChange={(e) => setFormData(prev => ({ ...prev, courseName: e.target.value }))}
+                            onChange={(e) => setFormData(prev => {
+                              if (editingStudentId) {
+                                return { ...prev, courseName: e.target.value };
+                              } else {
+                                return { ...prev, courseName: e.target.value, rollNo: '', enrollmentNo: '' };
+                              }
+                            })}
                           >
                             {courses.length === 0 ? (
                               <option value="">No courses parsed. Upload CSV first.</option>
@@ -1964,7 +2051,19 @@ export default function App() {
                           disabled={editingStudentId && !isCompleteEdit}
                           style={{ opacity: editingStudentId && !isCompleteEdit ? 0.6 : 1 }}
                           value={formData.session}
-                          onChange={(e) => setFormData(prev => ({ ...prev, session: e.target.value.toUpperCase() }))}
+                          onChange={(e) => {
+                            const val = e.target.value.toUpperCase();
+                            setFormData(prev => {
+                              if (editingStudentId) {
+                                return { ...prev, session: val };
+                              } else {
+                                return { ...prev, session: val, rollNo: '', enrollmentNo: '' };
+                              }
+                            });
+                            if (!editingStudentId) {
+                              setFormIssueDates({});
+                            }
+                          }}
                         />
                       </div>
 
@@ -1977,6 +2076,27 @@ export default function App() {
                           className="form-input"
                           value={formData.email || ''}
                           onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value.toLowerCase() }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-row-grid">
+                      <div>
+                        <label className="form-label">Roll Number</label>
+                        <input 
+                          type="text" 
+                          className="form-input"
+                          value={formData.rollNo || ''}
+                          onChange={(e) => setFormData(prev => ({ ...prev, rollNo: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="form-label">Enrollment Number</label>
+                        <input 
+                          type="text" 
+                          className="form-input"
+                          value={formData.enrollmentNo || ''}
+                          onChange={(e) => setFormData(prev => ({ ...prev, enrollmentNo: e.target.value }))}
                         />
                       </div>
                     </div>
@@ -2135,6 +2255,33 @@ export default function App() {
                           >
                             Generate Marks
                           </button>
+                        </div>
+
+                        {/* DMC Number and Date of Issue input */}
+                        <div style={{ marginBottom: '12px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="form-label" style={{ margin: 0, textTransform: 'none' }}>DMC Number for {selectedTerm}:</span>
+                            <input 
+                              type="text"
+                              placeholder="e.g. 1001"
+                              className="form-input"
+                              style={{ width: '150px', padding: '6px 10px' }}
+                              value={formDmcNumbers[selectedTerm] || ''}
+                              onChange={(e) => setFormDmcNumbers(prev => ({ ...prev, [selectedTerm]: e.target.value }))}
+                            />
+                          </div>
+                          
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="form-label" style={{ margin: 0, textTransform: 'none' }}>Date of Issue:</span>
+                            <input 
+                              type="text"
+                              placeholder="DD-MM-YYYY"
+                              className="form-input"
+                              style={{ width: '150px', padding: '6px 10px' }}
+                              value={formIssueDates[selectedTerm] || ''}
+                              onChange={(e) => setFormIssueDates(prev => ({ ...prev, [selectedTerm]: e.target.value }))}
+                            />
+                          </div>
                         </div>
 
                         {/* Subject Input Fields */}

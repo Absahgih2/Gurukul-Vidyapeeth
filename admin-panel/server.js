@@ -457,6 +457,63 @@ app.get('/api/courses', (req, res) => {
   res.json(db.courses);
 });
 
+// Preview next student roll number, enrollment number, and DMC numbers (read-only)
+app.get('/api/next-numbers', (req, res) => {
+  try {
+    const { session, courseName } = req.query;
+    const db = readDB();
+    
+    // 1. Next Roll Number
+    let rollNo;
+    if (db.settings.lastRollNo) {
+      rollNo = (db.settings.lastRollNo + 1).toString();
+    } else {
+      rollNo = "100001";
+    }
+    
+    // 2. Next Enrollment Number
+    let enrollmentNo = "";
+    if (session) {
+      const yearMatch = session.match(/\b(20\d{2})\b/g);
+      if (yearMatch) {
+        const finalYear = parseInt(yearMatch[yearMatch.length - 1]);
+        const prefix = (finalYear - 1).toString();
+        let suffix;
+        if (db.settings.lastEnrollSuffix) {
+          suffix = db.settings.lastEnrollSuffix + 1;
+        } else {
+          suffix = 100001;
+        }
+        enrollmentNo = `${prefix}${suffix}`;
+      }
+    }
+    
+    // 3. Next DMC Numbers for each term
+    const dmcNumbers = {};
+    const issueDates = {};
+    if (courseName) {
+      const course = db.courses.find(c => c.name.toLowerCase() === courseName.toLowerCase());
+      if (course) {
+        const terms = Object.keys(course.terms);
+        const totalTerms = terms.length;
+        let currentDmc = db.settings.lastDmcNo || 1000;
+        terms.forEach((term, idx) => {
+          currentDmc += 1;
+          dmcNumbers[term] = currentDmc.toString();
+          if (session) {
+            issueDates[term] = calculateIssueDate(session, course.type, term, idx, totalTerms);
+          }
+        });
+      }
+    }
+    
+    res.json({ rollNo, enrollmentNo, dmcNumbers, issueDates });
+  } catch (err) {
+    console.error('Error generating next numbers preview:', err);
+    res.status(500).json({ error: 'Failed to generate numbers preview' });
+  }
+});
+
 // Helper to generate next Roll Number
 function generateRollNumber(db) {
   if (db.settings.lastRollNo) {
@@ -581,7 +638,7 @@ app.post('/api/upload-photo', upload.single('photo'), async (req, res) => {
 // Register new student (auto-generates numbers and calculates dates)
 app.post('/api/students', (req, res) => {
   try {
-    const { name, fatherName, motherName, dob, courseName, session, marksheetsData, email, centerStudentId } = req.body;
+    const { name, fatherName, motherName, dob, courseName, session, marksheetsData, email, centerStudentId, rollNo: customRollNo, enrollmentNo: customEnrollmentNo } = req.body;
     
     if (!name || !fatherName || !motherName || !dob || !courseName || !session || !email) {
       return res.status(400).json({ error: 'Missing required student details (including Email ID)' });
@@ -602,9 +659,32 @@ app.post('/api/students', (req, res) => {
     }
     const finalYear = parseInt(yearMatch[yearMatch.length - 1]); // Take last year matched
     
-    // Generate sequential numbers
-    const rollNo = generateRollNumber(db).toString();
-    const enrollmentNo = generateEnrollmentNumber(db, finalYear).toString();
+    // Handle Roll Number (custom or auto-generated)
+    let rollNo = "";
+    if (customRollNo && customRollNo.trim() !== "") {
+      rollNo = customRollNo.trim();
+      const numericRoll = parseInt(rollNo);
+      if (!isNaN(numericRoll)) {
+        db.settings.lastRollNo = Math.max(db.settings.lastRollNo || 0, numericRoll);
+      }
+    } else {
+      rollNo = generateRollNumber(db).toString();
+    }
+
+    // Handle Enrollment Number (custom or auto-generated)
+    let enrollmentNo = "";
+    if (customEnrollmentNo && customEnrollmentNo.trim() !== "") {
+      enrollmentNo = customEnrollmentNo.trim();
+      const numericEnroll = parseInt(enrollmentNo);
+      if (!isNaN(numericEnroll) && enrollmentNo.length > 4) {
+        const suffix = parseInt(enrollmentNo.slice(-6));
+        if (!isNaN(suffix)) {
+          db.settings.lastEnrollSuffix = Math.max(db.settings.lastEnrollSuffix || 0, suffix);
+        }
+      }
+    } else {
+      enrollmentNo = generateEnrollmentNumber(db, finalYear).toString();
+    }
     
     // Prepare marksheets
     const terms = Object.keys(course.terms); // e.g. ["1st Semester", "2nd Semester"] or ["1st Year", "2nd Year"]
@@ -613,11 +693,23 @@ app.post('/api/students', (req, res) => {
     const marksheets = {};
     
     terms.forEach((termName, idx) => {
-      // Auto generate DMC number
-      const dmcNo = generateDmcNumber(db).toString();
+      // Handle DMC Number (custom or auto-generated)
+      let dmcNo = "";
+      const customDmcNo = marksheetsData && marksheetsData[termName] && marksheetsData[termName].dmcNo;
+      if (customDmcNo && customDmcNo.trim() !== "") {
+        dmcNo = customDmcNo.trim();
+        const numericDmc = parseInt(dmcNo);
+        if (!isNaN(numericDmc)) {
+          db.settings.lastDmcNo = Math.max(db.settings.lastDmcNo || 0, numericDmc);
+        }
+      } else {
+        dmcNo = generateDmcNumber(db).toString();
+      }
       
-      // Calculate Date of Issue
-      const issueDate = calculateIssueDate(session, course.type, termName, idx, totalTerms);
+      // Calculate Date of Issue or use provided one
+      const issueDate = (marksheetsData && marksheetsData[termName] && marksheetsData[termName].issueDate && marksheetsData[termName].issueDate.trim() !== "")
+        ? marksheetsData[termName].issueDate.trim()
+        : calculateIssueDate(session, course.type, termName, idx, totalTerms);
       
       // Gather marks entered for this term from request or initialize empty
       const termMarks = (marksheetsData && marksheetsData[termName]) ? marksheetsData[termName].marks : {};
@@ -721,8 +813,23 @@ app.put('/api/students/:id', (req, res) => {
     if (dob) student.dob = dob;
     if (photo !== undefined) student.photo = photo;
     if (email !== undefined) student.email = email.trim().toLowerCase();
-    if (rollNo !== undefined && rollNo !== '') student.rollNo = rollNo.trim();
-    if (enrollmentNo !== undefined && enrollmentNo !== '') student.enrollmentNo = enrollmentNo.trim();
+    if (rollNo !== undefined && rollNo !== '') {
+      student.rollNo = rollNo.trim();
+      const numericRoll = parseInt(student.rollNo);
+      if (!isNaN(numericRoll)) {
+        db.settings.lastRollNo = Math.max(db.settings.lastRollNo || 0, numericRoll);
+      }
+    }
+    if (enrollmentNo !== undefined && enrollmentNo !== '') {
+      student.enrollmentNo = enrollmentNo.trim();
+      const numericEnroll = parseInt(student.enrollmentNo);
+      if (!isNaN(numericEnroll) && student.enrollmentNo.length > 4) {
+        const suffix = parseInt(student.enrollmentNo.slice(-6));
+        if (!isNaN(suffix)) {
+          db.settings.lastEnrollSuffix = Math.max(db.settings.lastEnrollSuffix || 0, suffix);
+        }
+      }
+    }
     
     if (isCompleteEdit) {
       // Changing Course/Session recalculates roll/enrollment number prefixes or structural terms
@@ -802,6 +909,10 @@ app.put('/api/students/:id', (req, res) => {
           }
           if (marksheetsData[termName].dmcNo) {
             student.marksheets[termName].dmcNo = marksheetsData[termName].dmcNo;
+            const numericDmc = parseInt(marksheetsData[termName].dmcNo);
+            if (!isNaN(numericDmc)) {
+              db.settings.lastDmcNo = Math.max(db.settings.lastDmcNo || 0, numericDmc);
+            }
           }
           if (marksheetsData[termName].issueDate) {
             student.marksheets[termName].issueDate = marksheetsData[termName].issueDate;
