@@ -703,7 +703,7 @@ app.post('/api/students', (req, res) => {
 app.put('/api/students/:id', (req, res) => {
   try {
     const { id } = req.params;
-    const { name, fatherName, motherName, dob, photo, marksheetsData, isCompleteEdit, courseName, session, email } = req.body;
+    const { name, fatherName, motherName, dob, photo, marksheetsData, isCompleteEdit, courseName, session, email, rollNo, enrollmentNo } = req.body;
     
     const db = readDB();
     const studentIdx = db.students.findIndex(s => s.id === id);
@@ -721,6 +721,8 @@ app.put('/api/students/:id', (req, res) => {
     if (dob) student.dob = dob;
     if (photo !== undefined) student.photo = photo;
     if (email !== undefined) student.email = email.trim().toLowerCase();
+    if (rollNo !== undefined && rollNo !== '') student.rollNo = rollNo.trim();
+    if (enrollmentNo !== undefined && enrollmentNo !== '') student.enrollmentNo = enrollmentNo.trim();
     
     if (isCompleteEdit) {
       // Changing Course/Session recalculates roll/enrollment number prefixes or structural terms
