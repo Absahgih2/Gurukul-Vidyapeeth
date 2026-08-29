@@ -404,6 +404,20 @@ function openProgramDetail(programKey) {
       eligibility: '10+2 with Physics, Chemistry & Biology/Agriculture (Min 50% Marks)',
       description: 'A comprehensive 2-year diploma program (commonly known as VLDD) equipping students with practical trade skills in domestic animal anatomy, feeding, reproduction, and first-aid healthcare.',
       careers: 'Veterinary Assistant, Livestock Supervisor, Animal Health Worker, Dairy Farm Manager'
+    },
+    'pgdca': {
+      title: 'Post Graduate Diploma in Computer Applications (PGDCA)',
+      duration: '1 Year (2 Semesters)',
+      eligibility: "Bachelor's Degree in any discipline",
+      description: 'Comprehensive program covering programming, database management, web technologies, software engineering, and practical computer applications for professional growth. Ideal for graduates seeking IT career advancement.',
+      careers: 'Software Developer, Web Developer, Database Administrator, IT Support Specialist, Systems Analyst'
+    },
+    'blis': {
+      title: 'Bachelor of Library & Information Science (BLis)',
+      duration: '1 Year (2 Semesters)',
+      eligibility: "Bachelor's Degree in any discipline",
+      description: 'Professional degree in library management, information organization, cataloguing, classification, digital archiving, and knowledge management systems. Prepares students for modern library and information center roles.',
+      careers: 'Librarian, Information Scientist, Digital Archivist, Knowledge Manager, Library Information Officer'
     }
   };
 
@@ -423,7 +437,10 @@ function openProgramDetail(programKey) {
     else if (programKey === 'msc-pharmacology') folder = 'msc-medical-pharmacology';
     else if (programKey === 'msc-biochemistry') folder = 'msc-medical-biochemistry';
     
-    let detailButton = `<button class="btn btn-outline btn-block mt-2" onclick="closeStatutoryModal(); window.location.href='programs/${folder}/index.html';"><i class="fa-solid fa-circle-info"></i> View Full Syllabus & Detailed Page</button>`;
+    let detailButton = '';
+    if (!['pgdca', 'blis'].includes(programKey)) {
+      detailButton = `<button class="btn btn-outline btn-block mt-2" onclick="closeStatutoryModal(); window.location.href='programs/${folder}/index.html';"><i class="fa-solid fa-circle-info"></i> View Full Syllabus & Detailed Page</button>`;
+    }
 
     modalBody.innerHTML = `
       <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
