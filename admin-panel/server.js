@@ -2615,17 +2615,6 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Debug endpoint to safely inspect Render environment variables
-app.get('/api/admin/debug-env', (req, res) => {
-  const uri = process.env.MONGODB_URI || 'NOT_CONFIGURED';
-  const maskedUri = uri.replace(/:([^:@]+)@/, ':******@');
-  res.json({
-    MONGODB_URI: maskedUri,
-    PORT: process.env.PORT,
-    NODE_ENV: process.env.NODE_ENV
-  });
-});
-
 // Start Express Server
 app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Express server running on port ${PORT} (bound to 0.0.0.0)`);
