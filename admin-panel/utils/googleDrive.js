@@ -168,6 +168,77 @@ function getMimeType(fileName) {
   return mimeTypes[ext] || 'application/octet-stream';
 }
 
+async function runDailyBackup() {
+  if (!isAuthenticated()) return;
+  try {
+    const drive = await getDriveClient();
+    const dbPath = path.resolve(__dirname, '../data/db.json');
+    if (!fs.existsSync(dbPath)) return;
+    
+    // Format date: YYYY-MM-DD
+    const date = new Date();
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const fileName = `db_backup_${formattedDate}.json`;
+    
+    // Check if backup already exists
+    const escapedName = fileName.replace(/'/g, "\\'");
+    const checkRes = await drive.files.list({
+      q: `name='${escapedName}' and '${ROOT_FOLDER_ID}' in parents and trashed=false`,
+      fields: 'files(id)'
+    });
+    
+    if (checkRes.data.files.length > 0) {
+      console.log(`Backup for today (${fileName}) already exists on Google Drive.`);
+    } else {
+      console.log(`Uploading daily backup: ${fileName}...`);
+      const fileStream = fs.createReadStream(dbPath);
+      const file = await drive.files.create({
+        resource: { name: fileName, parents: [ROOT_FOLDER_ID] },
+        media: { mimeType: 'application/json', body: fileStream },
+        fields: 'id',
+      });
+      
+      await drive.permissions.create({
+        fileId: file.data.id,
+        resource: { role: 'reader', type: 'anyone' },
+      });
+      console.log(`Daily backup uploaded successfully. File ID: ${file.data.id}`);
+    }
+    
+    // Retention policy: Delete files older than 6 months (180 days)
+    console.log('Running backup retention check...');
+    const listRes = await drive.files.list({
+      q: `'${ROOT_FOLDER_ID}' in parents and name contains 'db_backup_' and name contains '.json' and trashed=false`,
+      fields: 'files(id, name, createdTime)',
+      spaces: 'drive'
+    });
+    
+    const files = listRes.data.files || [];
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setDate(sixMonthsAgo.getDate() - 180);
+    
+    for (const file of files) {
+      // Parse date from file name (db_backup_YYYY-MM-DD.json)
+      const match = file.name.match(/db_backup_(\d{4})-(\d{2})-(\d{2})\.json/);
+      let fileDate = null;
+      
+      if (match) {
+        fileDate = new Date(`${match[1]}-${match[2]}-${match[3]}`);
+      } else {
+        // Fallback to Google Drive creation time
+        fileDate = new Date(file.createdTime);
+      }
+      
+      if (fileDate && fileDate < sixMonthsAgo) {
+        console.log(`Deleting old backup file: ${file.name} (ID: ${file.id}) created on ${fileDate.toISOString()}`);
+        await deleteFileFromDrive(file.id);
+      }
+    }
+  } catch (err) {
+    console.error('Daily backup failed:', err.message);
+  }
+}
+
 export {
   getDriveClient,
   getOrCreateSubfolder,
@@ -182,4 +253,5 @@ export {
   isAuthenticated,
   getConfig,
   ROOT_FOLDER_ID,
+  runDailyBackup,
 };

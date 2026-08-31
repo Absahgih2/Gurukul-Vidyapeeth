@@ -6,7 +6,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
-import { getOrCreateSubfolder, uploadFileToDrive, deleteFilesFromDrive, ROOT_FOLDER_ID, getAuthUrl, exchangeCode, loadTokensFromDB, isAuthenticated, getConfig } from './utils/googleDrive.js';
+import { getOrCreateSubfolder, uploadFileToDrive, deleteFilesFromDrive, ROOT_FOLDER_ID, getAuthUrl, exchangeCode, loadTokensFromDB, isAuthenticated, getConfig, runDailyBackup } from './utils/googleDrive.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -2595,6 +2595,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
   if (!code) return res.status(400).send('No authorization code provided');
   try {
     await exchangeCode(code, readDB, writeDB);
+    startBackupScheduler();
     res.redirect('/admin/');
   } catch (err) {
     console.error('Google OAuth callback error:', err.message);
@@ -2655,6 +2656,7 @@ app.listen(PORT, '0.0.0.0', async () => {
     const loaded = await loadTokensFromDB(readDB, writeDB);
     if (loaded) {
       console.log('Google Drive authenticated from saved tokens');
+      startBackupScheduler();
     } else {
       console.log('Google Drive not authenticated. Connect from admin panel.');
     }
@@ -2662,3 +2664,32 @@ app.listen(PORT, '0.0.0.0', async () => {
     console.error('Failed to load Google Drive tokens on startup:', err);
   }
 });
+
+let backupSchedulerStarted = false;
+
+function startBackupScheduler() {
+  if (backupSchedulerStarted) return;
+  backupSchedulerStarted = true;
+  
+  const BACKUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
+  
+  // Run first backup shortly after startup (10 seconds)
+  setTimeout(async () => {
+    try {
+      console.log('Starting initial scheduled daily backup...');
+      await runDailyBackup();
+    } catch (err) {
+      console.error('Initial scheduled backup failed:', err);
+    }
+  }, 10000);
+  
+  // Run backup every 24 hours
+  setInterval(async () => {
+    try {
+      console.log('Starting scheduled daily backup...');
+      await runDailyBackup();
+    } catch (err) {
+      console.error('Scheduled daily backup failed:', err);
+    }
+  }, BACKUP_INTERVAL);
+}
