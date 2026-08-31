@@ -16,9 +16,24 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+let isSynced = false;
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// Middleware to block API requests until database sync completes
+app.use('/api', (req, res, next) => {
+  if (isSynced) {
+    return next();
+  }
+  const checkInterval = setInterval(() => {
+    if (isSynced) {
+      clearInterval(checkInterval);
+      next();
+    }
+  }, 100);
+});
 
 // Force cache-busting on the entry index.html for /admin and /admin/
 app.get(['/admin', '/admin/'], (req, res) => {
@@ -69,6 +84,7 @@ let isMongoConnected = false;
 async function connectMongo() {
   if (!MONGODB_URI || MONGODB_URI.includes('<db_username>')) {
     console.log('MongoDB URI is not configured or contains placeholder. Running in local filesystem database mode.');
+    isSynced = true;
     return;
   }
   try {
@@ -78,8 +94,10 @@ async function connectMongo() {
     isMongoConnected = true;
     console.log('Successfully connected to MongoDB Atlas cloud database.');
     await syncFromMongo();
+    isSynced = true;
   } catch (err) {
     console.error('Failed to connect to MongoDB Atlas:', err);
+    isSynced = true;
   }
 }
 
@@ -88,7 +106,28 @@ async function syncFromMongo() {
   if (!isMongoConnected) return;
   try {
     const col = mongoDb.collection('state');
-    const doc = await col.findOne({ _id: 'main_db' });
+    let doc = await col.findOne({ _id: 'main_db' });
+    
+    // Check if restore file exists
+    const restorePath = path.join(dataDir, 'db_restore.json');
+    const hasRestoreFile = fs.existsSync(restorePath);
+    
+    // Determine if the cloud database is empty/fresh
+    const isCloudDbEmpty = !doc || !doc.students || doc.students.length === 0;
+
+    if (isCloudDbEmpty && hasRestoreFile) {
+      console.log('Detected empty cloud database and local db_restore.json file. Restoring database...');
+      try {
+        const restoreData = JSON.parse(fs.readFileSync(restorePath, 'utf8'));
+        fs.writeFileSync(dbPath, JSON.stringify(restoreData, null, 2), 'utf8');
+        await col.replaceOne({ _id: 'main_db' }, { _id: 'main_db', ...restoreData }, { upsert: true });
+        console.log('Database successfully restored from db_restore.json.');
+        doc = { _id: 'main_db', ...restoreData };
+      } catch (restoreErr) {
+        console.error('Failed to restore database from db_restore.json:', restoreErr);
+      }
+    }
+
     if (doc) {
       const { _id, ...cleanData } = doc;
       fs.writeFileSync(dbPath, JSON.stringify(cleanData, null, 2), 'utf8');
