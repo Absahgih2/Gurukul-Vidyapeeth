@@ -3428,7 +3428,16 @@ export default function App() {
                         <tr key={s.id}>
                           <td>{idx + 1}</td>
                           <td style={{ fontSize: '12px' }}>{s.staffName}</td>
-                          <td style={{ fontWeight: '600' }}>
+                          <td 
+                            style={{ fontWeight: '600', color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }}
+                            onClick={() => {
+                              setStaffAdminSelectedStudent(s);
+                              setStaffAdminView('manage-student');
+                              setStaffAdminUploadFiles([]);
+                              setStaffAdminUploadNote('');
+                            }}
+                            title="Click to manage student"
+                          >
                             {s.name}
                             {s.hasNewUpdates && (
                               <span className="payment-status pending" style={{ marginLeft: '8px', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Updates Pending</span>
@@ -3810,7 +3819,7 @@ export default function App() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '20px' }}>
                       {[['Total Students', totalStudents, 'var(--primary)'], ['Pending', pendingStudents, 'var(--warning)'], ['Active', activeStudents, 'var(--secondary)'], ['Corrections', totalCorrections, '#e65100']].map(([label, value, color]) => <div key={label} className="glass-panel" style={{ padding: '18px', textAlign: 'center' }}><p style={{ color, fontSize: '26px', fontWeight: '800', margin: 0 }}>{value}</p><p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '5px 0 0' }}>{label}</p></div>)}
                     </div>
-                    <div className="glass-panel" style={{ padding: '18px', marginBottom: '20px' }}><h3 style={{ margin: '0 0 12px', fontSize: '16px' }}>Students ({recentStudents.length})</h3>{recentStudents.length === 0 ? <p style={{ margin: 0, color: 'var(--text-muted)' }}>No students added by this staff member.</p> : <div className="center-student-table-wrapper"><table className="center-student-table"><thead><tr><th>Student</th><th>Course</th><th>Status</th><th>Corrections</th></tr></thead><tbody>{recentStudents.map(student => <tr key={student.id}><td>{student.name}</td><td>{student.course || '—'}</td><td><span className={`center-status-badge ${student.status}`}>{student.status}</span></td><td>{student.correctionCount || 0}</td></tr>)}</tbody></table></div>}</div>
+                    <div className="glass-panel" style={{ padding: '18px', marginBottom: '20px' }}><h3 style={{ margin: '0 0 12px', fontSize: '16px' }}>Students ({recentStudents.length})</h3>{recentStudents.length === 0 ? <p style={{ margin: 0, color: 'var(--text-muted)' }}>No students added by this staff member.</p> : <div className="center-student-table-wrapper"><table className="center-student-table"><thead><tr><th>Student</th><th>Course</th><th>Status</th><th>Corrections</th></tr></thead><tbody>{recentStudents.map(student => <tr key={student.id}><td style={{ fontWeight: '600', color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { setStaffAdminSelectedStudent(student); setStaffAdminView('manage-student'); setStaffAdminUploadFiles([]); setStaffAdminUploadNote(''); }} title="Click to manage student">{student.name}</td><td>{student.course || '—'}</td><td><span className={`center-status-badge ${student.status}`}>{student.status}</span></td><td>{student.correctionCount || 0}</td></tr>)}</tbody></table></div>}</div>
                     <div className="glass-panel" style={{ overflow: 'hidden', padding: 0 }}>
                       <div style={{ padding: '15px 18px', background: 'linear-gradient(135deg, #667eea, #764ba2)', color: 'white' }}><strong>Chat with {staff.name}</strong></div>
                       <div style={{ height: '320px', overflowY: 'auto', padding: '14px', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '8px' }}>{chatMessages.length === 0 && <p style={{ margin: 'auto', color: 'var(--text-muted)' }}>No messages yet. Start the conversation below.</p>}{chatMessages.map(message => <div key={message.id} style={{ alignSelf: message.from === adminId ? 'flex-end' : 'flex-start', maxWidth: '70%', padding: '9px 12px', borderRadius: '12px', background: message.from === adminId ? '#667eea' : 'white', color: message.from === adminId ? 'white' : 'var(--text-main)' }}><div>{message.text}</div><small style={{ opacity: 0.7 }}>{safeFormatTime(message.createdAt)}</small></div>)}<div ref={chatEndRef} /></div>
@@ -4458,7 +4467,18 @@ export default function App() {
                             {recentStudents.map((s, idx) => (
                               <tr key={s.id}>
                                 <td>{idx + 1}</td>
-                                <td style={{ fontWeight: '600' }}>{s.name}</td>
+                                <td 
+                                  style={{ fontWeight: '600', color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }}
+                                  onClick={() => {
+                                    setStaffAdminSelectedStudent(s);
+                                    setStaffAdminView('manage-student');
+                                    setStaffAdminUploadFiles([]);
+                                    setStaffAdminUploadNote('');
+                                  }}
+                                  title="Click to manage student"
+                                >
+                                  {s.name}
+                                </td>
                                 <td>{s.fatherName}</td>
                                 <td style={{ fontSize: '12px' }}>{s.course}</td>
                                 <td><span className={`center-status-badge ${s.status}`}>{s.status}</span></td>
