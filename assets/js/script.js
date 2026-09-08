@@ -418,6 +418,13 @@ function openProgramDetail(programKey) {
       eligibility: "Bachelor's Degree in any discipline",
       description: 'Professional degree in library management, information organization, cataloguing, classification, digital archiving, and knowledge management systems. Prepares students for modern library and information center roles.',
       careers: 'Librarian, Information Scientist, Digital Archivist, Knowledge Manager, Library Information Officer'
+    },
+    'diploma-labour-law': {
+      title: 'Diploma in Labour Law',
+      duration: '1 Year (2 Semesters)',
+      eligibility: "Bachelor's Degree in any discipline",
+      description: 'Comprehensive study of Indian labour legislation including Industrial Disputes Act, Factories Act, Employees Provident Fund, Maternity Benefit Act, and other key employment and industrial relations laws.',
+      careers: 'Labour Law Consultant, HR Compliance Officer, Industrial Relations Manager, Legal Advisor, Employment Law Specialist'
     }
   };
 
@@ -438,7 +445,7 @@ function openProgramDetail(programKey) {
     else if (programKey === 'msc-biochemistry') folder = 'msc-medical-biochemistry';
     
     let detailButton = '';
-    if (!['pgdca', 'blis'].includes(programKey)) {
+    if (!['pgdca', 'blis', 'diploma-labour-law'].includes(programKey)) {
       detailButton = `<button class="btn btn-outline btn-block mt-2" onclick="closeStatutoryModal(); window.location.href='programs/${folder}/index.html';"><i class="fa-solid fa-circle-info"></i> View Full Syllabus & Detailed Page</button>`;
     }
 
