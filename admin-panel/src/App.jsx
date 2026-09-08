@@ -169,6 +169,7 @@ export default function App() {
   const [staffNotifOpen, setStaffNotifOpen] = useState(false);
   const [staffPaymentScreenshot, setStaffPaymentScreenshot] = useState('');
   const [staffChatMessages, setStaffChatMessages] = useState([]);
+  const [staffChatUnread, setStaffChatUnread] = useState(0);
   const [staffChatInput, setStaffChatInput] = useState('');
   const [staffChatShowEmoji, setStaffChatShowEmoji] = useState(false);
   const staffChatEndRef = React.useRef(null);
@@ -290,6 +291,35 @@ export default function App() {
       setGoogleDriveConnected(false);
     } catch (err) { alert('Failed to disconnect'); }
   };
+
+  // Push Notification: Request permission and subscribe
+  const subscribeToPush = async () => {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+      const reg = await navigator.serviceWorker.ready;
+      const res = await fetch('/vapid-public-key');
+      if (!res.ok) return;
+      const { publicKey } = await res.json();
+      if (!publicKey) return;
+      const subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: publicKey
+      });
+      const userId = staffData?.id || staffAdminData?.name || 'admin_1';
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, subscription })
+      });
+    } catch (err) { console.log('Push subscription skipped:', err.message); }
+  };
+
+  // Subscribe to push when staff logs in
+  useEffect(() => {
+    if (staffAuthenticated) subscribeToPush();
+  }, [staffAuthenticated]);
 
   // Keep Render free instance awake by pinging every 10 minutes
   useEffect(() => {
@@ -1486,6 +1516,10 @@ export default function App() {
       if (res.ok) {
         const msgs = await res.json();
         setStaffChatMessages(msgs);
+        if (staffView !== 'chat') {
+          const unread = msgs.filter(m => m.from === adminId && !m.read).length;
+          setStaffChatUnread(unread);
+        }
         setTimeout(() => staffChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       }
     } catch (err) { console.error(err); }
@@ -2855,8 +2889,9 @@ export default function App() {
                 <button className={`sidebar-link ${staffView === 'add-student' ? 'active' : ''}`} onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '', universityBoard: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
                   <UserPlus size={18} /> Add Student
                 </button>
-                <button className={`sidebar-link ${staffView === 'chat' ? 'active' : ''}`} onClick={() => { setStaffView('chat'); fetchStaffChatMessages(); }}>
+                <button className={`sidebar-link ${staffView === 'chat' ? 'active' : ''}`} onClick={() => { setStaffView('chat'); setStaffChatUnread(0); fetchStaffChatMessages(); }}>
                   <MessageSquare size={18} /> Chat with Admin
+                  {staffChatUnread > 0 && <span className="chat-badge">{staffChatUnread}</span>}
                 </button>
                 <div style={{ position: 'relative', marginTop: '12px' }}>
                   <button className="sidebar-link" data-notif-toggle onClick={() => setStaffNotifOpen(!staffNotifOpen)} style={{ width: '100%', justifyContent: 'space-between' }}>

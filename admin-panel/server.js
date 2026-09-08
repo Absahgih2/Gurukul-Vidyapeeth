@@ -2249,6 +2249,8 @@ app.post('/api/chat/send', (req, res) => {
     };
     db.messages.push(msg);
     writeDB(db);
+    // Send push notification to recipient
+    sendPushNotification(to, 'New Message', text.trim(), '/?view=staff');
     res.json(msg);
   } catch (err) {
     console.error('Chat send error:', err);
@@ -2616,9 +2618,76 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Push Notification: Get VAPID public key
+app.get('/vapid-public-key', (req, res) => {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || '' });
+});
+
+// Push Notification: Subscribe
+app.post('/api/push/subscribe', (req, res) => {
+  try {
+    const { userId, subscription } = req.body;
+    if (!userId || !subscription) return res.status(400).json({ error: 'userId and subscription required' });
+    const db = readDB();
+    if (!db.pushSubscriptions) db.pushSubscriptions = {};
+    db.pushSubscriptions[userId] = subscription;
+    writeDB(db);
+    res.json({ message: 'Subscribed successfully' });
+  } catch (err) {
+    console.error('Push subscribe error:', err);
+    res.status(500).json({ error: 'Failed to subscribe' });
+  }
+});
+
+// Push Notification: Unsubscribe
+app.post('/api/push/unsubscribe', (req, res) => {
+  try {
+    const { userId } = req.body;
+    const db = readDB();
+    if (db.pushSubscriptions && db.pushSubscriptions[userId]) {
+      delete db.pushSubscriptions[userId];
+      writeDB(db);
+    }
+    res.json({ message: 'Unsubscribed' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to unsubscribe' });
+  }
+});
+
+// Helper: Send push notification to a user
+async function sendPushNotification(userId, title, body, url) {
+  try {
+    const db = readDB();
+    const subscription = db.pushSubscriptions?.[userId];
+    if (!subscription) return;
+    const webpush = require('web-push');
+    const vapidKeys = {
+      publicKey: process.env.VAPID_PUBLIC_KEY || '',
+      privateKey: process.env.VAPID_PRIVATE_KEY || ''
+    };
+    if (!vapidKeys.privateKey) return;
+    webpush.setVapidDetails('mailto:admin@gurukulvidhyapeethuniversity.com', vapidKeys.publicKey, vapidKeys.privateKey);
+    await webpush.sendNotification(subscription, JSON.stringify({ title, body, url }));
+  } catch (err) {
+    console.error('Push notification failed:', err.message);
+  }
+}
+
 // Start Express Server
 app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Express server running on port ${PORT} (bound to 0.0.0.0)`);
+  // Auto-generate VAPID keys if not set
+  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    try {
+      const webpush = require('web-push');
+      const vapidKeys = webpush.generateVAPIDKeys();
+      process.env.VAPID_PUBLIC_KEY = vapidKeys.publicKey;
+      process.env.VAPID_PRIVATE_KEY = vapidKeys.privateKey;
+      console.log('Auto-generated VAPID keys for push notifications');
+    } catch (err) {
+      console.log('VAPID key generation skipped:', err.message);
+    }
+  }
   try {
     await connectMongo();
     const db = readDB();
