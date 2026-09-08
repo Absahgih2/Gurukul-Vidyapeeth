@@ -12,5 +12,8 @@ admin-panel/*.png
 admin-panel/credentials/
 client_secret_*.json
 gurukul-vidhyapeeth-*.json
-*.json.secret
 admin-panel/test-upload.txt
+gvu-android-app/.gradle/
+gvu-android-app/app/build/
+gvu-android-app/local.properties
+gvu-android-app/.idea/

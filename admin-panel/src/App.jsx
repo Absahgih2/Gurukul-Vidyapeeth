@@ -4,7 +4,8 @@ import {
   Edit3, Trash2, Globe, Sliders, CheckCircle, Eye, 
   Printer, ArrowLeft, User, Image, BookOpen, 
   RefreshCw, X, AlertCircle, Wallet, CreditCard, 
-  FileDown, Building2, Download, Lock, EyeOff, Bell, BellOff, Key, MessageSquare
+  FileDown, Building2, Download, Lock, EyeOff, Bell, BellOff, Key, MessageSquare,
+  Smartphone
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -2925,6 +2926,11 @@ export default function App() {
                   <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
                     Don't have an account? <button className="link-btn" style={{ color: 'var(--primary)', fontWeight: '600', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { setStaffView('register'); setStaffLoginError(''); }}>Create Account</button>
                   </p>
+                  <div style={{ textAlign: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '16px', marginTop: '4px' }}>
+                    <a href="/GVU-Staff-Portal.apk" download="GVU-Staff-Portal.apk" className="btn btn-outline btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', fontSize: '12px' }}>
+                      <Smartphone size={16} /> Download Mobile App (.APK)
+                    </a>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -3070,11 +3076,18 @@ export default function App() {
                 <div className="pwa-install-banner-inner">
                   <Download size={20} />
                   <div>
-                    <strong>Install App</strong>
-                    <span>{isIOS ? 'Tap Share → "Add to Home Screen" for quick access' : 'Add Gurukul Staff to your home screen for quick access'}</span>
+                    <strong>Mobile App</strong>
+                    <span>{isIOS ? 'Tap Share → "Add to Home Screen" for quick access' : 'Install web app or download the Android APK'}</span>
                   </div>
-                  <button className="btn btn-primary btn-sm" onClick={handleInstallClick}>{isIOS ? 'How to Install' : 'Install'}</button>
-                  <button className="btn btn-sm" onClick={handleInstallDismiss} style={{ background: 'transparent', color: 'var(--text-secondary)' }}>✕</button>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button className="btn btn-primary btn-sm" onClick={handleInstallClick}>{isIOS ? 'How to Install' : 'Install'}</button>
+                    {!isIOS && (
+                      <a href="/GVU-Staff-Portal.apk" download="GVU-Staff-Portal.apk" className="btn btn-outline btn-sm" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Smartphone size={14} /> Download APK
+                      </a>
+                    )}
+                    <button className="btn btn-sm" onClick={handleInstallDismiss} style={{ background: 'transparent', color: 'var(--text-secondary)' }}>✕</button>
+                  </div>
                 </div>
               </div>
             )}

@@ -56,6 +56,16 @@ app.get(['/manifest.json', '/admin/manifest.json'], (req, res) => {
   res.sendFile(manifestPath);
 });
 
+// Direct APK Download route
+app.get(['/GVU-Staff-Portal.apk', '/admin/GVU-Staff-Portal.apk', '/download-app', '/api/download-app'], (req, res) => {
+  const apkPath = fs.existsSync(path.join(__dirname, 'dist', 'GVU-Staff-Portal.apk'))
+    ? path.join(__dirname, 'dist', 'GVU-Staff-Portal.apk')
+    : path.join(__dirname, '..', 'GVU-Staff-Portal.apk');
+  res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+  res.setHeader('Content-Disposition', 'attachment; filename="GVU-Staff-Portal.apk"');
+  res.sendFile(apkPath);
+});
+
 // Force cache-busting on the entry index.html for /admin and /admin/
 app.get(['/admin', '/admin/'], (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
