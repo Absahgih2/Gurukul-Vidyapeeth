@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gvu-staff-v2';
+const CACHE_NAME = 'gvu-staff-v3';
 const STATIC_ASSETS = [
   '/admin/',
   '/admin/index.html',
