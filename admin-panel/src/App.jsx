@@ -336,9 +336,10 @@ export default function App() {
     const handler = (e) => {
       e.preventDefault();
       setDeferredInstallPrompt(e);
+      console.log('PWA install prompt captured');
     };
     window.addEventListener('beforeinstallprompt', handler);
-    // Show banner after short delay (covers both Android and iOS)
+    // Show banner after short delay
     const timer = setTimeout(() => {
       if (!localStorage.getItem('gvu_install_dismissed')) {
         setShowInstallBanner(true);
@@ -349,15 +350,28 @@ export default function App() {
 
   const handleInstallClick = async () => {
     if (deferredInstallPrompt) {
-      deferredInstallPrompt.prompt();
-      const { outcome } = await deferredInstallPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setShowInstallBanner(false);
-        localStorage.setItem('gvu_install_dismissed', 'true');
+      try {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') {
+          setShowInstallBanner(false);
+          localStorage.setItem('gvu_install_dismissed', 'true');
+        }
+        setDeferredInstallPrompt(null);
+      } catch (err) {
+        console.log('Install prompt error:', err);
+        if (isIOS) {
+          alert('To install:\n\n1. Tap the Share button (□↑) at the bottom\n2. Scroll down and tap "Add to Home Screen"\n3. Tap Add');
+        } else {
+          alert('To install:\n\n1. Tap the 3-dot menu (⋮) in Chrome\n2. Tap "Install app" or "Add to Home Screen"');
+        }
       }
-      setDeferredInstallPrompt(null);
-    } else if (isIOS) {
-      alert('Tap the Share button (□↑) at the bottom of Safari, then tap "Add to Home Screen"');
+    } else {
+      if (isIOS) {
+        alert('To install:\n\n1. Tap the Share button (□↑) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap Add');
+      } else {
+        alert('To install:\n\n1. Tap the 3-dot menu (⋮) in Chrome\n2. Tap "Install app" or "Add to Home Screen"');
+      }
     }
   };
 
