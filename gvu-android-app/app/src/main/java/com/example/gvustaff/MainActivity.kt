@@ -3,6 +3,9 @@ package com.example.gvustaff
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DownloadManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -20,12 +23,19 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.NotificationCompat
+import me.leolin.shortcutbadger.ShortcutBadger
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
     private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
+
+    companion object {
+        const val CHANNEL_ID = "gvu_staff_notifications"
+        const val NOTIFICATION_ID = 1001
+    }
 
     // Primary (Custom Domain) and Secondary (Render Cloud) Live Portal URLs
     private val PRIMARY_URL = "https://gurukulvidhyapeethuniversity.com/admin/?view=staff-login"
@@ -58,6 +68,7 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createNotificationChannel()
 
         // Root container
         val rootLayout = FrameLayout(this).apply {
@@ -122,6 +133,9 @@ class MainActivity : ComponentActivity() {
 
         val defaultUserAgent = settings.userAgentString
         settings.userAgentString = "$defaultUserAgent GVUStaffApp/1.0"
+
+        // Register Native JavaScript Bridge for App Icon Badge and System Notifications
+        webView.addJavascriptInterface(WebAppInterface(), "AndroidBridge")
 
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
@@ -293,6 +307,97 @@ class MainActivity : ComponentActivity() {
             val networkInfo = connectivityManager.activeNetworkInfo ?: return false
             @Suppress("DEPRECATION")
             return networkInfo.isConnected
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "GVU Portal Notifications"
+            val descriptionText = "Notifications for staff messages and portal alerts"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+                setShowBadge(true)
+                enableLights(true)
+                enableVibration(true)
+            }
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    inner class WebAppInterface {
+        @JavascriptInterface
+        fun setBadge(count: Int, title: String?, message: String?) {
+            runOnUiThread {
+                try {
+                    if (count > 0) {
+                        ShortcutBadger.applyCount(this@MainActivity, count)
+                    } else {
+                        ShortcutBadger.removeCount(this@MainActivity)
+                    }
+                } catch (e: Exception) {
+                    // Fallback for custom launchers
+                }
+
+                if (count > 0) {
+                    val notifTitle = if (!title.isNullOrBlank()) title else "GVU Admin"
+                    val notifMsg = if (!message.isNullOrBlank()) message else "$count new message(s)"
+                    showNotification(count, notifTitle, notifMsg)
+                } else {
+                    clearNotifications()
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun clearBadge() {
+            runOnUiThread {
+                try {
+                    ShortcutBadger.removeCount(this@MainActivity)
+                } catch (e: Exception) {}
+                clearNotifications()
+            }
+        }
+    }
+
+    private fun showNotification(count: Int, title: String, message: String) {
+        try {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val intent = Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+            )
+
+            val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setNumber(count) // Sets red badge count number above launcher app icon
+                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+
+            notificationManager.notify(NOTIFICATION_ID, builder.build())
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun clearNotifications() {
+        try {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(NOTIFICATION_ID)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

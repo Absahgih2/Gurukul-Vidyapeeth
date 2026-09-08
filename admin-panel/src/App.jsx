@@ -177,6 +177,35 @@ export default function App() {
     } catch (e) {}
   };
 
+  // Update App Icon Badge on Mobile Home Screen (Android Launcher Badge + Web/PWA Badging API)
+  const updateAppBadge = (count, title = 'GVU Admin', message = '') => {
+    // 1. Android Native App Bridge (sets launcher badge icon number via ShortcutBadger and NotificationManager)
+    try {
+      if (window.AndroidBridge && typeof window.AndroidBridge.setBadge === 'function') {
+        if (count > 0) {
+          window.AndroidBridge.setBadge(count, title, message);
+        } else {
+          window.AndroidBridge.clearBadge();
+        }
+      }
+    } catch (e) {
+      console.log('AndroidBridge error:', e);
+    }
+
+    // 2. Web App Badging API (PWA on iOS 16.4+, Android Chrome, Windows, Mac)
+    try {
+      if ('setAppBadge' in navigator) {
+        if (count > 0) {
+          navigator.setAppBadge(count).catch(() => {});
+        } else {
+          navigator.clearAppBadge().catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.log('AppBadge error:', e);
+    }
+  };
+
   // ---- CENTER STATES ----
   const [centerView, setCenterView] = useState('dashboard');
   const [centerAuthenticated, setCenterAuthenticated] = useState(() => {
@@ -1712,6 +1741,7 @@ export default function App() {
               onAction: () => {
                 setStaffView('chat');
                 setStaffChatUnread(0);
+                updateAppBadge(0);
                 setInAppToast(null);
               }
             });
@@ -1731,10 +1761,11 @@ export default function App() {
         staffPrevMsgCountRef.current = newFromAdmin;
         setStaffChatMessages(msgs);
 
-        // Update unread count
+        // Update unread count and app icon badge (red number over mobile home screen app icon)
         const unread = msgs.filter(m => m.from === adminId && !m.read).length;
         if (staffView === 'chat') {
           setStaffChatUnread(0);
+          updateAppBadge(0);
           if (unread > 0) {
             fetch('/api/chat/read', {
               method: 'PUT',
@@ -1745,6 +1776,8 @@ export default function App() {
           setTimeout(() => staffChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
         } else {
           setStaffChatUnread(unread);
+          const latestAdminMsg = adminMsgs[adminMsgs.length - 1];
+          updateAppBadge(unread, 'GVU Admin', latestAdminMsg?.text || `${unread} new message(s)`);
         }
       }
     } catch (err) { console.error(err); }
@@ -3130,7 +3163,7 @@ export default function App() {
                 <button className={`sidebar-link ${staffView === 'add-student' ? 'active' : ''}`} onClick={() => { setStaffExistingStudent(null); setStaffStudentForm({ name: '', fatherName: '', motherName: '', dob: '', email: '', address: '', admissionDate: '', contactNumber: '', course: '', session: '', paymentDescription: '', staffNote: '', universityBoard: '' }); setStaffStudentPhoto(''); setStaffDocuments([]); setStaffPaymentScreenshot(''); setStaffView('add-student'); }}>
                   <UserPlus size={18} /> Add Student
                 </button>
-                <button className={`sidebar-link ${staffView === 'chat' ? 'active' : ''}`} onClick={() => { setStaffView('chat'); setStaffChatUnread(0); fetchStaffChatMessages(); }}>
+                <button className={`sidebar-link ${staffView === 'chat' ? 'active' : ''}`} onClick={() => { setStaffView('chat'); setStaffChatUnread(0); updateAppBadge(0); fetchStaffChatMessages(); }}>
                   <MessageSquare size={18} /> Chat with Admin
                   {staffChatUnread > 0 && <span className="chat-badge">{staffChatUnread}</span>}
                 </button>
@@ -3196,7 +3229,7 @@ export default function App() {
                     }} />
                   </button>
                 </div>
-                <button className="sidebar-link" onClick={() => { setStaffAuthenticated(false); setStaffData(null); localStorage.removeItem('staffAuthenticated'); localStorage.removeItem('staffData'); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button className="sidebar-link" onClick={() => { setStaffAuthenticated(false); setStaffData(null); updateAppBadge(0); localStorage.removeItem('staffAuthenticated'); localStorage.removeItem('staffData'); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <X size={18} /> Sign Out
                 </button>
                 <div className="sidebar-footer-info">

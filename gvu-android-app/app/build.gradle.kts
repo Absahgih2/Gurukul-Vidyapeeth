@@ -52,6 +52,7 @@ dependencies {
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
+  implementation("me.leolin:ShortcutBadger:1.1.22")
 
   // Arch Components
   implementation(libs.androidx.lifecycle.runtime.compose)
