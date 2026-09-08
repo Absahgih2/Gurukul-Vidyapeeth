@@ -41,7 +41,7 @@ export default function App() {
 
   // Admin Authentication States
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
-    return sessionStorage.getItem('isAdminAuthenticated') === 'true';
+    return localStorage.getItem('isAdminAuthenticated') === 'true' || sessionStorage.getItem('isAdminAuthenticated') === 'true';
   });
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
@@ -109,12 +109,80 @@ export default function App() {
   });
 
   // ---- CENTER STATES ----
-  const [centerView, setCenterView] = useState('dashboard'); // 'dashboard', 'add-student', 'edit-student', 'payment-history', 'wallet', 'acknowledgement'
-  const [centerAuthenticated, setCenterAuthenticated] = useState(() => sessionStorage.getItem('centerAuthenticated') === 'true');
-  const [centerData, setCenterData] = useState(() => {
-    const stored = sessionStorage.getItem('centerData');
-    return stored ? JSON.parse(stored) : null;
+  // Helper functions for persistent data access
+  const getStoredCenter = () => {
+    try {
+      const stored = localStorage.getItem('centerData') || sessionStorage.getItem('centerData');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) { return null; }
+  };
+
+  const getStoredStaff = () => {
+    try {
+      const stored = localStorage.getItem('staffData') || sessionStorage.getItem('staffData');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) { return null; }
+  };
+
+  const getStoredStaffAdmin = () => {
+    try {
+      const stored = localStorage.getItem('staffAdminData') || sessionStorage.getItem('staffAdminData');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) { return null; }
+  };
+
+  // Web Audio API Synthesizer Chime (Reliable on all Android WebViews & Browsers)
+  const playNotificationSound = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        const now = ctx.currentTime;
+        // Tone 1: E5 (659.25Hz)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, now);
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.2);
+
+        // Tone 2: B5 (987.77Hz)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(987.77, now + 0.08);
+        gain2.gain.setValueAtTime(0.35, now + 0.08);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.08);
+        osc2.stop(now + 0.45);
+      }
+    } catch (e) {
+      console.warn('Audio chime error:', e);
+    }
+
+    // Native device vibration on mobile
+    try {
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([150, 100, 250]);
+      }
+    } catch (e) {}
+  };
+
+  // ---- CENTER STATES ----
+  const [centerView, setCenterView] = useState('dashboard');
+  const [centerAuthenticated, setCenterAuthenticated] = useState(() => {
+    return localStorage.getItem('centerAuthenticated') === 'true' || sessionStorage.getItem('centerAuthenticated') === 'true';
   });
+  const [centerData, setCenterData] = useState(() => getStoredCenter());
   const [centerLoginUser, setCenterLoginUser] = useState('');
   const [centerLoginPass, setCenterLoginPass] = useState('');
   const [centerLoginShowPass, setCenterLoginShowPass] = useState(false);
@@ -139,12 +207,11 @@ export default function App() {
   const [adminCenterPaymentsView, setAdminCenterPaymentsView] = useState(null);
 
   // ---- STAFF STATES ----
-  const [staffView, setStaffView] = useState('login'); // 'login', 'register', 'dashboard', 'add-student', 'edit-student', 'view-documents'
-  const [staffAuthenticated, setStaffAuthenticated] = useState(() => sessionStorage.getItem('staffAuthenticated') === 'true');
-  const [staffData, setStaffData] = useState(() => {
-    const stored = sessionStorage.getItem('staffData');
-    return stored ? JSON.parse(stored) : null;
+  const [staffView, setStaffView] = useState('login');
+  const [staffAuthenticated, setStaffAuthenticated] = useState(() => {
+    return localStorage.getItem('staffAuthenticated') === 'true' || sessionStorage.getItem('staffAuthenticated') === 'true';
   });
+  const [staffData, setStaffData] = useState(() => getStoredStaff());
   const [staffLoginMobile, setStaffLoginMobile] = useState('');
   const [staffLoginPass, setStaffLoginPass] = useState('');
   const [staffLoginShowPass, setStaffLoginShowPass] = useState(false);
@@ -175,6 +242,7 @@ export default function App() {
   const [staffChatShowEmoji, setStaffChatShowEmoji] = useState(false);
   const staffChatEndRef = React.useRef(null);
   const staffPrevMsgCountRef = React.useRef(0);
+  const [inAppToast, setInAppToast] = useState(null);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [notifSoundEnabled, setNotifSoundEnabled] = useState(() => {
@@ -217,12 +285,11 @@ export default function App() {
   };
 
   // ---- STAFF ADMIN STATES ----
-  const [staffAdminView, setStaffAdminView] = useState('login'); // 'login', 'dashboard', 'students', 'manage-student', 'view-documents'
-  const [staffAdminAuthenticated, setStaffAdminAuthenticated] = useState(() => sessionStorage.getItem('staffAdminAuthenticated') === 'true');
-  const [staffAdminData, setStaffAdminData] = useState(() => {
-    const stored = sessionStorage.getItem('staffAdminData');
-    return stored ? JSON.parse(stored) : null;
+  const [staffAdminView, setStaffAdminView] = useState('login');
+  const [staffAdminAuthenticated, setStaffAdminAuthenticated] = useState(() => {
+    return localStorage.getItem('staffAdminAuthenticated') === 'true' || sessionStorage.getItem('staffAdminAuthenticated') === 'true';
   });
+  const [staffAdminData, setStaffAdminData] = useState(() => getStoredStaffAdmin());
   const [staffAdminUsername, setStaffAdminUsername] = useState('');
   const [staffAdminPass, setStaffAdminPass] = useState('');
   const [staffAdminShowPass, setStaffAdminShowPass] = useState(false);
@@ -263,6 +330,7 @@ export default function App() {
     const cleanUsername = adminUsername.trim().toUpperCase();
     if ((cleanUsername === 'GURUKUL VIDHYAPEETH UNIVERSITY' || cleanUsername === 'GURUKUL VIDYAPEETH UNIVERSITY') && adminPassword === 'ihatelove') {
       setIsAdminAuthenticated(true);
+      localStorage.setItem('isAdminAuthenticated', 'true');
       sessionStorage.setItem('isAdminAuthenticated', 'true');
       setAdminUsername('');
       setAdminPassword('');
@@ -275,6 +343,7 @@ export default function App() {
 
   const handleAdminLogout = () => {
     setIsAdminAuthenticated(false);
+    localStorage.removeItem('isAdminAuthenticated');
     sessionStorage.removeItem('isAdminAuthenticated');
   };
 
@@ -451,7 +520,12 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const viewParam = params.get('view');
     const docParam = params.get('doc');
-    
+
+    const isCenterAuth = localStorage.getItem('centerAuthenticated') === 'true' || sessionStorage.getItem('centerAuthenticated') === 'true';
+    const isStaffAuth = localStorage.getItem('staffAuthenticated') === 'true' || sessionStorage.getItem('staffAuthenticated') === 'true';
+    const isStaffAdminAuth = localStorage.getItem('staffAdminAuthenticated') === 'true' || sessionStorage.getItem('staffAdminAuthenticated') === 'true';
+    const isAdminAuth = localStorage.getItem('isAdminAuthenticated') === 'true' || sessionStorage.getItem('isAdminAuthenticated') === 'true';
+
     if (viewParam === 'portal') {
       setCurrentView('portal');
       if (docParam) {
@@ -459,12 +533,12 @@ export default function App() {
       }
     } else if (viewParam === 'center-login' || viewParam === 'center-dashboard') {
       setCurrentView('center');
-      if (sessionStorage.getItem('centerAuthenticated') === 'true') {
+      if (isCenterAuth) {
         fetchCenterData();
       }
     } else if (viewParam === 'staff-login') {
       setCurrentView('staff');
-      if (sessionStorage.getItem('staffAuthenticated') === 'true') {
+      if (isStaffAuth) {
         setStaffView('dashboard');
         fetchStaffData();
         fetchStaffNotifications();
@@ -473,14 +547,14 @@ export default function App() {
       }
     } else if (viewParam === 'staff-admin') {
       setCurrentView('staff-admin');
-      if (sessionStorage.getItem('staffAdminAuthenticated') === 'true') {
+      if (isStaffAdminAuth) {
         setStaffAdminView('dashboard');
         fetchStaffAdminData();
       } else {
         setStaffAdminView('login');
       }
     } else {
-      if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
+      if (isAdminAuth) {
         fetchData();
         checkGoogleDriveStatus();
       }
@@ -949,6 +1023,8 @@ export default function App() {
       if (!res.ok) { setCenterLoginError(data.error || 'Login failed'); return; }
       setCenterAuthenticated(true);
       setCenterData(data.center);
+      localStorage.setItem('centerAuthenticated', 'true');
+      localStorage.setItem('centerData', JSON.stringify(data.center));
       sessionStorage.setItem('centerAuthenticated', 'true');
       sessionStorage.setItem('centerData', JSON.stringify(data.center));
       setCenterLoginUser('');
@@ -961,12 +1037,14 @@ export default function App() {
     setCenterAuthenticated(false);
     setCenterData(null);
     setCenterStudents([]);
+    localStorage.removeItem('centerAuthenticated');
+    localStorage.removeItem('centerData');
     sessionStorage.removeItem('centerAuthenticated');
     sessionStorage.removeItem('centerData');
   };
 
   const fetchCenterData = async () => {
-    const center = JSON.parse(sessionStorage.getItem('centerData'));
+    const center = getStoredCenter() || centerData;
     if (!center) return;
     setCenterLoading(true);
     try {
@@ -994,7 +1072,7 @@ export default function App() {
     centerDocuments.forEach(doc => formDataToSend.append('documents', doc));
 
     try {
-      const center = JSON.parse(sessionStorage.getItem('centerData'));
+      const center = getStoredCenter() || centerData;
       const url = centerExistingStudent ? `/api/center/students/${centerExistingStudent.id}` : '/api/center/students';
       const method = centerExistingStudent ? 'PUT' : 'POST';
       const res = await fetch(url, { method, headers: { 'x-center-id': center.id }, body: formDataToSend });
@@ -1027,7 +1105,7 @@ export default function App() {
   };
 
   const fetchCenterPayments = async () => {
-    const center = JSON.parse(sessionStorage.getItem('centerData'));
+    const center = getStoredCenter() || centerData;
     if (!center) return;
     try {
       const res = await fetch('/api/center/payments', { headers: { 'x-center-id': center.id } });
@@ -1036,7 +1114,7 @@ export default function App() {
   };
 
   const fetchCenterWallet = async () => {
-    const center = JSON.parse(sessionStorage.getItem('centerData'));
+    const center = getStoredCenter() || centerData;
     if (!center) return;
     try {
       const res = await fetch('/api/center/wallet', { headers: { 'x-center-id': center.id } });
@@ -1052,7 +1130,7 @@ export default function App() {
   const handleCenterDeleteStudent = async (id) => {
     if (!confirm('Are you sure you want to delete this student? This cannot be undone.')) return;
     try {
-      const center = JSON.parse(sessionStorage.getItem('centerData'));
+      const center = getStoredCenter() || centerData;
       const res = await fetch(`/api/center/students/${id}`, { method: 'DELETE', headers: { 'x-center-id': center.id } });
       if (res.ok) {
         fetchCenterData();
@@ -1068,7 +1146,7 @@ export default function App() {
     if (parseFloat(amount) > centerStats.walletBalance) { alert('Insufficient wallet balance'); return; }
     
     try {
-      const center = JSON.parse(sessionStorage.getItem('centerData'));
+      const center = getStoredCenter() || centerData;
       
       // First upload screenshot if provided
       let screenshotUrl = '';
@@ -1158,6 +1236,8 @@ export default function App() {
       if (!res.ok) { setStaffLoginError(data.error || 'Login failed'); return; }
       setStaffAuthenticated(true);
       setStaffData(data.staff);
+      localStorage.setItem('staffAuthenticated', 'true');
+      localStorage.setItem('staffData', JSON.stringify(data.staff));
       sessionStorage.setItem('staffAuthenticated', 'true');
       sessionStorage.setItem('staffData', JSON.stringify(data.staff));
       setStaffView('dashboard');
@@ -1181,7 +1261,7 @@ export default function App() {
   };
 
   const fetchStaffData = async () => {
-    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    const staff = getStoredStaff() || staffData;
     if (!staff) return;
     setStaffLoading(true);
     try {
@@ -1198,14 +1278,14 @@ export default function App() {
       }
     } catch (err) {
       console.error(err);
-      const cached = localStorage.getItem(`gvu_students_${staff.id}`);
+      const cached = localStorage.getItem(`gvu_students_${staff?.id}`);
       if (cached) setStaffStudents(JSON.parse(cached));
     }
     setStaffLoading(false);
   };
 
   const fetchStaffNotifications = async () => {
-    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    const staff = getStoredStaff() || staffData;
     if (!staff) return;
     try {
       const res = await fetch('/api/staff/notifications', { headers: { 'x-staff-id': staff.id } });
@@ -1214,7 +1294,7 @@ export default function App() {
   };
 
   const handleStaffMarkNotifRead = async (notifId) => {
-    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    const staff = getStoredStaff() || staffData;
     if (!staff) return;
     try {
       await fetch(`/api/staff/notifications/${notifId}/read`, { method: 'POST', headers: { 'x-staff-id': staff.id } });
@@ -1223,7 +1303,7 @@ export default function App() {
   };
 
   const handleStaffMarkAllRead = async () => {
-    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    const staff = getStoredStaff() || staffData;
     if (!staff) return;
     try {
       await fetch('/api/staff/notifications/read-all', { method: 'POST', headers: { 'x-staff-id': staff.id } });
@@ -1232,7 +1312,7 @@ export default function App() {
   };
 
   const handleStaffDeleteNotif = async (notifId) => {
-    const staff = JSON.parse(sessionStorage.getItem('staffData'));
+    const staff = getStoredStaff() || staffData;
     if (!staff) return;
     try {
       await fetch(`/api/staff/notifications/${notifId}`, { method: 'DELETE', headers: { 'x-staff-id': staff.id } });
@@ -1243,7 +1323,7 @@ export default function App() {
   const handleStaffAddStudent = async (e) => {
     e.preventDefault();
     try {
-      const staff = JSON.parse(sessionStorage.getItem('staffData'));
+      const staff = getStoredStaff() || staffData;
       const fd = new FormData();
       Object.entries(staffStudentForm).forEach(([k, v]) => fd.append(k, v));
       if (staffStudentPhoto) fd.append('photo', staffStudentPhoto);
@@ -1263,7 +1343,7 @@ export default function App() {
   const handleStaffEditStudent = async (e) => {
     e.preventDefault();
     try {
-      const staff = JSON.parse(sessionStorage.getItem('staffData'));
+      const staff = getStoredStaff() || staffData;
       const fd = new FormData();
       Object.entries(staffStudentForm).forEach(([k, v]) => fd.append(k, v));
       fd.append('correctionNote', 'Staff correction request');
@@ -1283,7 +1363,7 @@ export default function App() {
   const handleStaffDeleteStudent = async (id) => {
     if (!confirm('Delete this student?')) return;
     try {
-      const staff = JSON.parse(sessionStorage.getItem('staffData'));
+      const staff = getStoredStaff() || staffData;
       await fetch(`/api/staff/students/${id}`, { method: 'DELETE', headers: { 'x-staff-id': staff.id } });
       fetchStaffData();
     } catch (err) { alert('Error'); }
@@ -1291,7 +1371,7 @@ export default function App() {
 
   const handleStaffViewDocs = async (student) => {
     try {
-      const staff = JSON.parse(sessionStorage.getItem('staffData'));
+      const staff = getStoredStaff() || staffData;
       const res = await fetch(`/api/staff/students/${student.id}/documents`, { headers: { 'x-staff-id': staff.id } });
       if (res.ok) {
         const docs = await res.json();
@@ -1331,6 +1411,8 @@ export default function App() {
       }
       setStaffAdminAuthenticated(true);
       setStaffAdminData(data.admin);
+      localStorage.setItem('staffAdminAuthenticated', 'true');
+      localStorage.setItem('staffAdminData', JSON.stringify(data.admin));
       sessionStorage.setItem('staffAdminAuthenticated', 'true');
       sessionStorage.setItem('staffAdminData', JSON.stringify(data.admin));
       setStaffAdminView('dashboard');
@@ -1603,30 +1685,74 @@ export default function App() {
 
   // Staff Portal Chat functions
   const fetchStaffChatMessages = async () => {
-    if (!staffData) return;
+    const staff = getStoredStaff() || staffData;
+    if (!staff) return;
     try {
       const adminId = 'staffadmin_1';
-      const res = await fetch(`/api/chat/messages?user1=${staffData.id}&user2=${adminId}`);
+      const res = await fetch(`/api/chat/messages?user1=${staff.id}&user2=${adminId}`);
       if (res.ok) {
         const msgs = await res.json();
-        const newFromAdmin = msgs.filter(m => m.from === adminId).length;
-        if (staffPrevMsgCountRef.current > 0 && newFromAdmin > staffPrevMsgCountRef.current && notifSoundEnabled) {
-          try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczGhe80OLChVckELLJ2s6IWTELDrvO4dOIThgOrsna0ZBbLQauxtnUmFwuA6jC2NSZXi4Epr/X1ZtfLwWkuNbVnWAyB6C01NagYzUJn67S16NlOQyZqdDXpWk7D5amz9moaz0Qk6PO26ttQBGQn83ar3BDE42ay921dUUVipTK37l4SBaHkcjhvH1LF4OQxt7DgE4Zg43E3caDUh2FisLcyIZVHYGJwN3LiFYf')
-          } catch(e) {}
+        const adminMsgs = msgs.filter(m => m.from === adminId);
+        const newFromAdmin = adminMsgs.length;
+        
+        if (staffPrevMsgCountRef.current > 0 && newFromAdmin > staffPrevMsgCountRef.current) {
+          const latestAdminMsg = adminMsgs[adminMsgs.length - 1];
+          // 1. Play chime sound + device vibration
+          if (notifSoundEnabled) {
+            playNotificationSound();
+          }
+
+          // 2. Show in-app banner toast if not actively in chat view
+          if (staffView !== 'chat' && latestAdminMsg) {
+            setInAppToast({
+              id: Date.now(),
+              sender: 'GVU Admin',
+              message: latestAdminMsg.text || 'Sent an attachment/message',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              onAction: () => {
+                setStaffView('chat');
+                setStaffChatUnread(0);
+                setInAppToast(null);
+              }
+            });
+          }
+
+          // 3. Web Notification if permission granted
+          try {
+            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+              new Notification('GVU Admin', {
+                body: latestAdminMsg ? latestAdminMsg.text : 'New message received',
+                icon: '/favicon.ico'
+              });
+            }
+          } catch (e) {}
         }
+
         staffPrevMsgCountRef.current = newFromAdmin;
         setStaffChatMessages(msgs);
-        if (staffView !== 'chat') {
-          const unread = msgs.filter(m => m.from === adminId && !m.read).length;
+
+        // Update unread count
+        const unread = msgs.filter(m => m.from === adminId && !m.read).length;
+        if (staffView === 'chat') {
+          setStaffChatUnread(0);
+          if (unread > 0) {
+            fetch('/api/chat/read', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ from: adminId, to: staff.id })
+            }).catch(() => {});
+          }
+          setTimeout(() => staffChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        } else {
           setStaffChatUnread(unread);
         }
-        setTimeout(() => staffChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       }
     } catch (err) { console.error(err); }
   };
 
   const sendStaffChatMessage = async () => {
-    if (!staffChatInput.trim() || !staffData) return;
+    const staff = getStoredStaff() || staffData;
+    if (!staffChatInput.trim() || !staff) return;
     const text = staffChatInput.trim();
     setStaffChatInput('');
     setStaffChatShowEmoji(false);
@@ -1635,7 +1761,7 @@ export default function App() {
       const res = await fetch('/api/chat/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: staffData.id, to: adminId, text })
+        body: JSON.stringify({ from: staff.id, to: adminId, text })
       });
       if (res.ok) {
         const msg = await res.json();
@@ -1645,14 +1771,24 @@ export default function App() {
     } catch (err) { showAlert('Connection error'); }
   };
 
-  // Staff chat polling
+  // Continuous Staff chat polling (Runs on all views whenever staff is logged in)
   useEffect(() => {
-    if (staffAuthenticated && staffView === 'chat') {
+    if (staffAuthenticated) {
       fetchStaffChatMessages();
-      const poll = setInterval(fetchStaffChatMessages, 5000);
+      const poll = setInterval(fetchStaffChatMessages, 3500);
       return () => clearInterval(poll);
     }
   }, [staffAuthenticated, staffView]);
+
+  // Auto-dismiss in-app notification toast after 6 seconds
+  useEffect(() => {
+    if (inAppToast) {
+      const timer = setTimeout(() => {
+        setInAppToast(null);
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [inAppToast]);
 
   const handleAdminWalletTopup = (centerId) => {
     const center = adminCenters.find(c => c.id === centerId);
@@ -3060,7 +3196,7 @@ export default function App() {
                     }} />
                   </button>
                 </div>
-                <button className="sidebar-link" onClick={() => { setStaffAuthenticated(false); setStaffData(null); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button className="sidebar-link" onClick={() => { setStaffAuthenticated(false); setStaffData(null); localStorage.removeItem('staffAuthenticated'); localStorage.removeItem('staffData'); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <X size={18} /> Sign Out
                 </button>
                 <div className="sidebar-footer-info">
@@ -3459,7 +3595,7 @@ export default function App() {
                 <button className={`sidebar-link ${staffAdminView === 'payments' ? 'active' : ''}`} onClick={() => { setStaffAdminView('payments'); fetchStaffAdminData(); }}>
                   <CreditCard size={18} /> Payments
                 </button>
-                <button className="sidebar-link" onClick={() => { setStaffAdminAuthenticated(false); setStaffAdminData(null); sessionStorage.removeItem('staffAdminAuthenticated'); sessionStorage.removeItem('staffAdminData'); setStaffAdminView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button className="sidebar-link" onClick={() => { setStaffAdminAuthenticated(false); setStaffAdminData(null); localStorage.removeItem('staffAdminAuthenticated'); localStorage.removeItem('staffAdminData'); sessionStorage.removeItem('staffAdminAuthenticated'); sessionStorage.removeItem('staffAdminData'); setStaffAdminView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <X size={18} /> Sign Out
                 </button>
                 <div className="sidebar-footer-info">
@@ -5210,12 +5346,105 @@ export default function App() {
         </div>
       )}
 
-      {/* Print-only Acknowledgement */}
-      {centerView === 'acknowledgement' && centerAckStudent && (
-        <div className="print-only-container">
-          <AcknowledgementTemplate student={centerAckStudent} center={centerData} />
+      {/* IN-APP FLOATING NOTIFICATION TOAST (Mobile & Desktop) */}
+      {inAppToast && (
+        <div 
+          onClick={() => {
+            if (inAppToast.onAction) inAppToast.onAction();
+            setInAppToast(null);
+          }}
+          style={{
+            position: 'fixed',
+            top: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 'calc(100% - 32px)',
+            maxWidth: '460px',
+            backgroundColor: 'rgba(15, 23, 42, 0.96)',
+            backdropFilter: 'blur(16px)',
+            color: '#ffffff',
+            padding: '14px 18px',
+            borderRadius: '16px',
+            boxShadow: '0 20px 35px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            zIndex: 999998,
+            cursor: 'pointer',
+            animation: 'fadeIn 0.25s ease-out'
+          }}
+        >
+          <div style={{
+            width: '42px',
+            height: '42px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '20px',
+            flexShrink: 0,
+            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)'
+          }}>
+            💬
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+              <span style={{ fontWeight: '700', fontSize: '14px', color: '#60a5fa' }}>{inAppToast.sender || 'Admin Message'}</span>
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>{inAppToast.time || 'Just now'}</span>
+            </div>
+            <p style={{
+              margin: 0,
+              fontSize: '13px',
+              color: '#e2e8f0',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              lineHeight: 1.4
+            }}>
+              {inAppToast.message}
+            </p>
+          </div>
+          <button
+            style={{
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              color: '#fff',
+              border: 'none',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '12px',
+              cursor: 'pointer',
+              flexShrink: 0
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (inAppToast.onAction) inAppToast.onAction();
+              setInAppToast(null);
+            }}
+          >
+            Reply
+          </button>
+          <button
+            style={{
+              background: 'transparent',
+              color: '#94a3b8',
+              border: 'none',
+              fontSize: '16px',
+              padding: '4px',
+              cursor: 'pointer',
+              lineHeight: 1
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setInAppToast(null);
+            }}
+          >
+            ✕
+          </button>
         </div>
       )}
+
       {/* CUSTOM PREMIUM MODAL */}
       {customModal.open && (
         <div style={{

@@ -296,6 +296,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        CookieManager.getInstance().flush()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        CookieManager.getInstance().flush()
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
             webView.goBack()
