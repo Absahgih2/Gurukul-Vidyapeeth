@@ -332,19 +332,19 @@ export default function App() {
 
   // Capture PWA install prompt
   useEffect(() => {
-    if (isStandalone || localStorage.getItem('gvu_install_dismissed')) return;
+    if (isStandalone) return;
     const handler = (e) => {
       e.preventDefault();
       setDeferredInstallPrompt(e);
-      setShowInstallBanner(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    // On iOS, beforeinstallprompt never fires — show banner after delay
-    if (isIOS) {
-      const timer = setTimeout(() => setShowInstallBanner(true), 2000);
-      return () => { window.removeEventListener('beforeinstallprompt', handler); clearTimeout(timer); };
-    }
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    // Show banner after short delay (covers both Android and iOS)
+    const timer = setTimeout(() => {
+      if (!localStorage.getItem('gvu_install_dismissed')) {
+        setShowInstallBanner(true);
+      }
+    }, 1500);
+    return () => { window.removeEventListener('beforeinstallprompt', handler); clearTimeout(timer); };
   }, [isStandalone]);
 
   const handleInstallClick = async () => {
@@ -3048,6 +3048,17 @@ export default function App() {
                   <button className="btn btn-primary btn-sm" onClick={handleInstallClick}>{isIOS ? 'How to Install' : 'Install'}</button>
                   <button className="btn btn-sm" onClick={handleInstallDismiss} style={{ background: 'transparent', color: 'var(--text-secondary)' }}>✕</button>
                 </div>
+              </div>
+            )}
+
+            {!showInstallBanner && !isStandalone && localStorage.getItem('gvu_install_dismissed') && (
+              <div style={{ margin: '8px 16px 0', textAlign: 'right' }}>
+                <button
+                  onClick={() => { localStorage.removeItem('gvu_install_dismissed'); setShowInstallBanner(true); }}
+                  style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Show Install App banner
+                </button>
               </div>
             )}
 
