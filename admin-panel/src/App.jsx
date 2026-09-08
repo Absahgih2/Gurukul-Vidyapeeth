@@ -180,6 +180,8 @@ export default function App() {
     return localStorage.getItem('gvu_notif_sound') !== 'false';
   });
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const [customModal, setCustomModal] = useState({
     open: false,
     type: 'alert',
@@ -330,25 +332,33 @@ export default function App() {
 
   // Capture PWA install prompt
   useEffect(() => {
+    if (isStandalone || localStorage.getItem('gvu_install_dismissed')) return;
     const handler = (e) => {
       e.preventDefault();
       setDeferredInstallPrompt(e);
-      const dismissed = localStorage.getItem('gvu_install_dismissed');
-      if (!dismissed) setShowInstallBanner(true);
+      setShowInstallBanner(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
+    // On iOS, beforeinstallprompt never fires — show banner after delay
+    if (isIOS) {
+      const timer = setTimeout(() => setShowInstallBanner(true), 2000);
+      return () => { window.removeEventListener('beforeinstallprompt', handler); clearTimeout(timer); };
+    }
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [isStandalone]);
 
   const handleInstallClick = async () => {
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    const { outcome } = await deferredInstallPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setShowInstallBanner(false);
-      localStorage.setItem('gvu_install_dismissed', 'true');
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallBanner(false);
+        localStorage.setItem('gvu_install_dismissed', 'true');
+      }
+      setDeferredInstallPrompt(null);
+    } else if (isIOS) {
+      alert('Tap the Share button (□↑) at the bottom of Safari, then tap "Add to Home Screen"');
     }
-    setDeferredInstallPrompt(null);
   };
 
   const handleInstallDismiss = () => {
@@ -3027,15 +3037,15 @@ export default function App() {
               <section className="admin-content-panel">
 
             {/* PWA Install Banner */}
-            {showInstallBanner && (
+            {showInstallBanner && !isStandalone && (
               <div className="pwa-install-banner">
                 <div className="pwa-install-banner-inner">
                   <Download size={20} />
                   <div>
                     <strong>Install App</strong>
-                    <span>Add Gurukul Staff to your home screen for quick access</span>
+                    <span>{isIOS ? 'Tap Share → "Add to Home Screen" for quick access' : 'Add Gurukul Staff to your home screen for quick access'}</span>
                   </div>
-                  <button className="btn btn-primary btn-sm" onClick={handleInstallClick}>Install</button>
+                  <button className="btn btn-primary btn-sm" onClick={handleInstallClick}>{isIOS ? 'How to Install' : 'Install'}</button>
                   <button className="btn btn-sm" onClick={handleInstallDismiss} style={{ background: 'transparent', color: 'var(--text-secondary)' }}>✕</button>
                 </div>
               </div>
