@@ -4,7 +4,7 @@ import {
   Edit3, Trash2, Globe, Sliders, CheckCircle, Eye, 
   Printer, ArrowLeft, User, Image, BookOpen, 
   RefreshCw, X, AlertCircle, Wallet, CreditCard, 
-  FileDown, Building2, Download, Lock, EyeOff, Bell, Key, MessageSquare
+  FileDown, Building2, Download, Lock, EyeOff, Bell, BellOff, Key, MessageSquare
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -173,6 +173,13 @@ export default function App() {
   const [staffChatInput, setStaffChatInput] = useState('');
   const [staffChatShowEmoji, setStaffChatShowEmoji] = useState(false);
   const staffChatEndRef = React.useRef(null);
+  const staffPrevMsgCountRef = React.useRef(0);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [notifSoundEnabled, setNotifSoundEnabled] = useState(() => {
+    return localStorage.getItem('gvu_notif_sound') !== 'false';
+  });
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [customModal, setCustomModal] = useState({
     open: false,
     type: 'alert',
@@ -320,6 +327,46 @@ export default function App() {
   useEffect(() => {
     if (staffAuthenticated) subscribeToPush();
   }, [staffAuthenticated]);
+
+  // Capture PWA install prompt
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+      const dismissed = localStorage.getItem('gvu_install_dismissed');
+      if (!dismissed) setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBanner(false);
+      localStorage.setItem('gvu_install_dismissed', 'true');
+    }
+    setDeferredInstallPrompt(null);
+  };
+
+  const handleInstallDismiss = () => {
+    setShowInstallBanner(false);
+    localStorage.setItem('gvu_install_dismissed', 'true');
+  };
+
+  // Track online/offline status
+  useEffect(() => {
+    const onOnline = () => setIsOffline(false);
+    const onOffline = () => setIsOffline(true);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, []);
 
   // Keep Render free instance awake by pinging every 10 minutes
   useEffect(() => {
@@ -1105,8 +1152,16 @@ export default function App() {
         fetch('/api/staff/students', { headers })
       ]);
       if (statsRes.ok) setStaffStats(await statsRes.json());
-      if (studentsRes.ok) setStaffStudents(await studentsRes.json());
-    } catch (err) { console.error(err); }
+      if (studentsRes.ok) {
+        const students = await studentsRes.json();
+        setStaffStudents(students);
+        localStorage.setItem(`gvu_students_${staff.id}`, JSON.stringify(students));
+      }
+    } catch (err) {
+      console.error(err);
+      const cached = localStorage.getItem(`gvu_students_${staff.id}`);
+      if (cached) setStaffStudents(JSON.parse(cached));
+    }
     setStaffLoading(false);
   };
 
@@ -1515,6 +1570,12 @@ export default function App() {
       const res = await fetch(`/api/chat/messages?user1=${staffData.id}&user2=${adminId}`);
       if (res.ok) {
         const msgs = await res.json();
+        const newFromAdmin = msgs.filter(m => m.from === adminId).length;
+        if (staffPrevMsgCountRef.current > 0 && newFromAdmin > staffPrevMsgCountRef.current && notifSoundEnabled) {
+          try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczGhe80OLChVckELLJ2s6IWTELDrvO4dOIThgOrsna0ZBbLQauxtnUmFwuA6jC2NSZXi4Epr/X1ZtfLwWkuNbVnWAyB6C01NagYzUJn67S16NlOQyZqdDXpWk7D5amz9moaz0Qk6PO26ttQBGQn83ar3BDE42ay921dUUVipTK37l4SBaHkcjhvH1LF4OQxt7DgE4Zg43E3caDUh2FisLcyIZVHYGJwN3LiFYf')
+          } catch(e) {}
+        }
+        staffPrevMsgCountRef.current = newFromAdmin;
         setStaffChatMessages(msgs);
         if (staffView !== 'chat') {
           const unread = msgs.filter(m => m.from === adminId && !m.read).length;
@@ -2931,6 +2992,30 @@ export default function App() {
                     </div>
                   )}
                 </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', marginTop: '12px', borderTop: '1px solid var(--border-color)' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {notifSoundEnabled ? <Bell size={14} /> : <BellOff size={14} />}
+                    Notification Sound
+                  </span>
+                  <button
+                    onClick={() => {
+                      const next = !notifSoundEnabled;
+                      setNotifSoundEnabled(next);
+                      localStorage.setItem('gvu_notif_sound', String(next));
+                    }}
+                    style={{
+                      width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                      background: notifSoundEnabled ? 'var(--primary)' : 'var(--border-color)',
+                      position: 'relative', transition: 'background 0.2s'
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute', top: '2px', left: notifSoundEnabled ? '18px' : '2px',
+                      width: '16px', height: '16px', borderRadius: '50%', background: '#fff',
+                      transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                    }} />
+                  </button>
+                </div>
                 <button className="sidebar-link" onClick={() => { setStaffAuthenticated(false); setStaffData(null); sessionStorage.removeItem('staffAuthenticated'); sessionStorage.removeItem('staffData'); setStaffView('login'); }} style={{ marginTop: '20px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <X size={18} /> Sign Out
                 </button>
@@ -2940,6 +3025,28 @@ export default function App() {
               </aside>
 
               <section className="admin-content-panel">
+
+            {/* PWA Install Banner */}
+            {showInstallBanner && (
+              <div className="pwa-install-banner">
+                <div className="pwa-install-banner-inner">
+                  <Download size={20} />
+                  <div>
+                    <strong>Install App</strong>
+                    <span>Add Gurukul Staff to your home screen for quick access</span>
+                  </div>
+                  <button className="btn btn-primary btn-sm" onClick={handleInstallClick}>Install</button>
+                  <button className="btn btn-sm" onClick={handleInstallDismiss} style={{ background: 'transparent', color: 'var(--text-secondary)' }}>✕</button>
+                </div>
+              </div>
+            )}
+
+            {/* Offline Indicator */}
+            {isOffline && (
+              <div style={{ background: '#f59e0b', color: '#78350f', padding: '8px 16px', margin: '12px 16px 0', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={16} /> You're offline — showing cached data
+              </div>
+            )}
 
             {/* STAFF DASHBOARD */}
             {staffAuthenticated && staffView === 'dashboard' && (
