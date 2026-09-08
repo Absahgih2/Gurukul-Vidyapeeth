@@ -27,8 +27,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var progressBar: ProgressBar
     private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
 
-    // Live URL for Staff & Student Management Portal
-    private val PORTAL_URL = "https://gurukulvidyapeethuniversity.com/admin/?view=staff-login"
+    // Primary (Custom Domain) and Secondary (Render Cloud) Live Portal URLs
+    private val PRIMARY_URL = "https://gurukulvidhyapeethuniversity.com/admin/?view=staff-login"
+    private val BACKUP_URL = "https://gurukul-vidyapeeth.onrender.com/admin/?view=staff-login"
+    private var isUsingBackup = false
 
     private val fileChooserLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -118,11 +120,9 @@ class MainActivity : ComponentActivity() {
         }
         CookieManager.getInstance().setAcceptCookie(true)
 
-        // User Agent adjustment
         val defaultUserAgent = settings.userAgentString
         settings.userAgentString = "$defaultUserAgent GVUStaffApp/1.0"
 
-        // WebChromeClient for File Uploads and Progress
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 if (newProgress < 100) {
@@ -157,12 +157,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // WebViewClient for navigation and error handling
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val url = request?.url?.toString() ?: return false
 
-                // External protocols like tel, mailto, whatsapp
                 if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:")) {
                     try {
                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
@@ -182,6 +180,12 @@ class MainActivity : ComponentActivity() {
                 error: WebResourceError?
             ) {
                 if (request?.isForMainFrame == true) {
+                    if (!isUsingBackup) {
+                        isUsingBackup = true
+                        webView.loadUrl(BACKUP_URL)
+                        return
+                    }
+
                     if (!isNetworkAvailable()) {
                         showOfflinePage()
                     }
@@ -189,7 +193,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Download handling for PDF marksheets, results, admit cards
         webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
             try {
                 val request = DownloadManager.Request(Uri.parse(url)).apply {
@@ -210,7 +213,6 @@ class MainActivity : ComponentActivity() {
                 dm.enqueue(request)
                 Toast.makeText(this, "Downloading file...", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                // If direct download URL fails, open with browser intent
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 startActivity(intent)
             }
@@ -218,7 +220,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun loadPortal() {
-        webView.loadUrl(PORTAL_URL)
+        isUsingBackup = false
+        webView.loadUrl(PRIMARY_URL)
     }
 
     private fun showOfflinePage() {
@@ -260,6 +263,7 @@ class MainActivity : ComponentActivity() {
                         font-weight: 600;
                         font-size: 14px;
                         cursor: pointer;
+                        margin: 4px;
                     }
                     button:active { background: #1d4ed8; }
                 </style>
@@ -267,8 +271,9 @@ class MainActivity : ComponentActivity() {
             <body>
                 <div class="card">
                     <h2>Connection Lost</h2>
-                    <p>Unable to connect to Gurukul Vidyapeeth server. Please check your internet connection and try again.</p>
-                    <button onclick="window.location.reload()">Retry Connection</button>
+                    <p>Unable to reach the server. Please check your internet connection and try again.</p>
+                    <button onclick="window.location.href='$PRIMARY_URL'">Retry Main Server</button>
+                    <button onclick="window.location.href='$BACKUP_URL'" style="background: #475569;">Try Backup Server</button>
                 </div>
             </body>
             </html>
