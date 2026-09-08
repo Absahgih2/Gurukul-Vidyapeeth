@@ -2,15 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/brand-logo.png" />
+    <link rel="icon" type="image/png" href="/admin/icon-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#1e3a8a" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="GVU Staff" />
+    <meta name="application-name" content="GVU Staff" />
     <meta name="description" content="Staff portal for Gurukul Vidyapeeth University - manage students, chat with admin, upload documents" />
-    <link rel="apple-touch-icon" href="/brand-logo.png" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/admin/icon-192.png" />
+    <link rel="manifest" href="/admin/manifest.json" />
     <title>Gurukul Vidyapeeth University - Staff Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +24,9 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
+          navigator.serviceWorker.register('/admin/sw.js', { scope: '/admin/' }).catch((err) => {
+            console.warn('SW registration error:', err);
+          });
         });
       }
     </script>

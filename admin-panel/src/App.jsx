@@ -337,15 +337,29 @@ export default function App() {
       e.preventDefault();
       setDeferredInstallPrompt(e);
       console.log('PWA install prompt captured');
+      setShowInstallBanner(true);
+    };
+    const onInstalled = () => {
+      console.log('GVU Staff App installed');
+      setShowInstallBanner(false);
+      setDeferredInstallPrompt(null);
+      localStorage.setItem('gvu_install_dismissed', 'true');
     };
     window.addEventListener('beforeinstallprompt', handler);
-    // Show banner after short delay
+    window.addEventListener('appinstalled', onInstalled);
+
+    // Show banner after short delay if not dismissed
     const timer = setTimeout(() => {
       if (!localStorage.getItem('gvu_install_dismissed')) {
         setShowInstallBanner(true);
       }
     }, 1500);
-    return () => { window.removeEventListener('beforeinstallprompt', handler); clearTimeout(timer); };
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', onInstalled);
+      clearTimeout(timer);
+    };
   }, [isStandalone]);
 
   const handleInstallClick = async () => {
@@ -361,16 +375,16 @@ export default function App() {
       } catch (err) {
         console.log('Install prompt error:', err);
         if (isIOS) {
-          alert('To install:\n\n1. Tap the Share button (□↑) at the bottom\n2. Scroll down and tap "Add to Home Screen"\n3. Tap Add');
+          showAlert('1. Tap the Share button (□↑) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to install as an App.', 'Install on iOS');
         } else {
-          alert('To install:\n\n1. Tap the 3-dot menu (⋮) in Chrome\n2. Tap "Install app" or "Add to Home Screen"');
+          showAlert('1. Tap the 3-dot menu (⋮) in Chrome\n2. Tap "Install app"\n3. Tap "Install" to add to your phone as a mobile app.\n\nNote: Ensure you are on HTTPS.', 'Install Staff App');
         }
       }
     } else {
       if (isIOS) {
-        alert('To install:\n\n1. Tap the Share button (□↑) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap Add');
+        showAlert('1. Tap the Share button (□↑) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to install as an App.', 'Install on iOS');
       } else {
-        alert('To install:\n\n1. Tap the 3-dot menu (⋮) in Chrome\n2. Tap "Install app" or "Add to Home Screen"');
+        showAlert('1. Tap the 3-dot menu (⋮) in Chrome\n2. Tap "Install app"\n3. Tap "Install" to add to your phone as a mobile app.\n\nNote: Ensure you are on HTTPS (or localhost) for full app installation.', 'Install Staff App');
       }
     }
   };

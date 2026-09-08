@@ -1,25 +1,54 @@
 {
+  "id": "/admin/",
   "name": "Gurukul Vidyapeeth University - Staff Portal",
   "short_name": "GVU Staff",
-  "description": "Staff portal for student management, chat with admin, and document uploads",
-  "start_url": "/?view=staff",
+  "description": "Staff portal for Gurukul Vidyapeeth University - manage students, chat with admin, and document uploads",
+  "start_url": "/admin/?view=staff-login",
+  "scope": "/admin/",
   "display": "standalone",
   "background_color": "#0f172a",
-  "theme_color": "#667eea",
+  "theme_color": "#1e3a8a",
   "orientation": "portrait-primary",
-  "scope": "/",
   "icons": [
     {
-      "src": "/brand-logo.png",
+      "src": "/admin/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/brand-logo.png",
+      "src": "/admin/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/admin/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/admin/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Staff Portal",
+      "short_name": "Staff",
+      "description": "Open Staff Login",
+      "url": "/admin/?view=staff-login",
+      "icons": [{ "src": "/admin/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Center Portal",
+      "short_name": "Center",
+      "description": "Open Center Login",
+      "url": "/admin/?view=center-login",
+      "icons": [{ "src": "/admin/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "categories": ["education", "productivity"],

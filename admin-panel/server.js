@@ -35,6 +35,27 @@ app.use('/api', (req, res, next) => {
   }, 100);
 });
 
+// PWA Service Worker route with proper scope permissions
+app.get(['/sw.js', '/admin/sw.js'], (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  const swPath = fs.existsSync(path.join(__dirname, 'dist', 'sw.js'))
+    ? path.join(__dirname, 'dist', 'sw.js')
+    : path.join(__dirname, 'public', 'sw.js');
+  res.sendFile(swPath);
+});
+
+// PWA Manifest route with proper headers
+app.get(['/manifest.json', '/admin/manifest.json'], (req, res) => {
+  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  const manifestPath = fs.existsSync(path.join(__dirname, 'dist', 'manifest.json'))
+    ? path.join(__dirname, 'dist', 'manifest.json')
+    : path.join(__dirname, 'public', 'manifest.json');
+  res.sendFile(manifestPath);
+});
+
 // Force cache-busting on the entry index.html for /admin and /admin/
 app.get(['/admin', '/admin/'], (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
