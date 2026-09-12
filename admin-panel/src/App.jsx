@@ -505,33 +505,37 @@ export default function App() {
     };
   }, []);
 
-  // Keep Render free instance awake by pinging every 10 minutes
+  // Keep server awake — ping every 30 minutes, pause when tab hidden
   useEffect(() => {
     const ping = () => fetch('/health').catch(() => {});
-    ping();
-    const interval = setInterval(ping, 10 * 60 * 1000);
+    const interval = setInterval(() => {
+      if (!document.hidden) ping();
+    }, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Chat polling + staff detail fetch
+  // Chat polling + staff detail fetch — pause when tab hidden
   useEffect(() => {
     if (staffAdminView === 'staff-detail' && staffAdminSelectedStaffId) {
       fetchStaffDetail(staffAdminSelectedStaffId);
       fetchChatMessages(staffAdminSelectedStaffId);
-      chatPollRef.current = setInterval(() => fetchChatMessages(staffAdminSelectedStaffId), 5000);
+      chatPollRef.current = setInterval(() => {
+        if (!document.hidden) fetchChatMessages(staffAdminSelectedStaffId);
+      }, 15000);
       return () => clearInterval(chatPollRef.current);
     } else {
       if (chatPollRef.current) clearInterval(chatPollRef.current);
     }
   }, [staffAdminView, staffAdminSelectedStaffId]);
 
-  // Keep the admin informed about incoming staff messages, even before a
-  // particular staff profile is open.
+  // Keep the admin informed about incoming staff messages — pause when tab hidden
   useEffect(() => {
     if (!staffAdminAuthenticated) return;
     const loadConversations = () => fetchStaffAdminConversations();
     loadConversations();
-    const poll = setInterval(loadConversations, 5000);
+    const poll = setInterval(() => {
+      if (!document.hidden) loadConversations();
+    }, 15000);
     return () => clearInterval(poll);
   }, [staffAdminAuthenticated, staffAdminData?.id]);
 
@@ -1804,11 +1808,13 @@ export default function App() {
     } catch (err) { showAlert('Connection error'); }
   };
 
-  // Continuous Staff chat polling (Runs on all views whenever staff is logged in)
+  // Continuous Staff chat polling — pause when tab hidden
   useEffect(() => {
     if (staffAuthenticated) {
       fetchStaffChatMessages();
-      const poll = setInterval(fetchStaffChatMessages, 3500);
+      const poll = setInterval(() => {
+        if (!document.hidden) fetchStaffChatMessages();
+      }, 15000);
       return () => clearInterval(poll);
     }
   }, [staffAuthenticated, staffView]);
