@@ -104,6 +104,42 @@ if (!fs.existsSync(dataDir)) {
 }
 
 const dbPath = path.join(dataDir, 'db.json');
+const restorePath = path.join(dataDir, 'db_restore.json');
+
+// Restore local db.json from db_restore.json on startup if db.json is missing or empty
+function ensureInitialData() {
+  if (fs.existsSync(restorePath)) {
+    try {
+      let needsRestore = false;
+      if (!fs.existsSync(dbPath)) {
+        needsRestore = true;
+      } else {
+        const raw = fs.readFileSync(dbPath, 'utf8');
+        const current = JSON.parse(raw);
+        if ((!current.students || current.students.length === 0) && (!current.courses || current.courses.length === 0)) {
+          needsRestore = true;
+        }
+      }
+      if (needsRestore) {
+        const restoreData = JSON.parse(fs.readFileSync(restorePath, 'utf8'));
+        // Preserve any active googleAuth tokens if already present
+        if (fs.existsSync(dbPath)) {
+          try {
+            const cur = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+            if (cur.googleAuth && cur.googleAuth.tokens) {
+              restoreData.googleAuth = cur.googleAuth;
+            }
+          } catch (e) {}
+        }
+        fs.writeFileSync(dbPath, JSON.stringify(restoreData, null, 2), 'utf8');
+        console.log('Restored database from db_restore.json successfully.');
+      }
+    } catch (err) {
+      console.error('Failed to initialize database from db_restore.json:', err);
+    }
+  }
+}
+ensureInitialData();
 
 // MongoDB cloud database sync configuration
 const MONGODB_URI = process.env.MONGODB_URI || ''; 
@@ -113,6 +149,7 @@ let isMongoConnected = false;
 
 // Connect to MongoDB Atlas
 async function connectMongo() {
+  ensureInitialData();
   if (!MONGODB_URI || MONGODB_URI.includes('<db_username>')) {
     console.log('MongoDB URI is not configured or contains placeholder. Running in local filesystem database mode.');
     isSynced = true;
@@ -140,7 +177,6 @@ async function syncFromMongo() {
     let doc = await col.findOne({ _id: 'main_db' });
     
     // Check if restore file exists
-    const restorePath = path.join(dataDir, 'db_restore.json');
     const hasRestoreFile = fs.existsSync(restorePath);
     
     // Determine if the cloud database is empty/fresh
@@ -188,10 +224,23 @@ async function syncToMongo(data) {
 // Helper to read database
 function readDB() {
   try {
+    if (!fs.existsSync(dbPath) && fs.existsSync(restorePath)) {
+      ensureInitialData();
+    }
     const data = fs.readFileSync(dbPath, 'utf8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if ((!parsed.students || parsed.students.length === 0) && (!parsed.courses || parsed.courses.length === 0) && fs.existsSync(restorePath)) {
+      ensureInitialData();
+      return JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    }
+    return parsed;
   } catch (err) {
-    return { students: [], courses: [], centers: [], centerStudents: [], centerPayments: [], walletTransactions: [], staff: [], staffStudents: [], staffPayments: [], settings: { lastRollNo: null, lastEnrollSuffix: null, lastDmcNo: null } };
+    ensureInitialData();
+    try {
+      return JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    } catch (e) {
+      return { students: [], courses: [], centers: [], centerStudents: [], centerPayments: [], walletTransactions: [], staff: [], staffStudents: [], staffPayments: [], settings: { lastRollNo: null, lastEnrollSuffix: null, lastDmcNo: null } };
+    }
   }
 }
 
@@ -454,6 +503,32 @@ app.post('/api/submit-admission', async (req, res) => {
 // Get complete database (for debug / dashboard state)
 app.get('/api/db', (req, res) => {
   res.json(readDB());
+});
+
+// Restore database from db_restore.json backup
+app.all(['/api/admin/restore-backup', '/api/restore-backup'], (req, res) => {
+  try {
+    if (!fs.existsSync(restorePath)) {
+      return res.status(404).json({ error: 'db_restore.json not found on server' });
+    }
+    const restoreData = JSON.parse(fs.readFileSync(restorePath, 'utf8'));
+    const cur = readDB();
+    if (cur.googleAuth && cur.googleAuth.tokens) {
+      restoreData.googleAuth = cur.googleAuth;
+    }
+    writeDB(restoreData);
+    res.json({
+      success: true,
+      message: 'Database restored successfully',
+      counts: {
+        students: restoreData.students?.length,
+        courses: restoreData.courses?.length,
+        staff: restoreData.staff?.length
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Upload and parse course CSV
