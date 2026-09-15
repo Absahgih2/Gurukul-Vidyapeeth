@@ -19,8 +19,14 @@ const PORT = process.env.PORT || 5000;
 let isSynced = false;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Create uploads folder if not exists
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Middleware to block API requests until database sync completes
 app.use('/api', (req, res, next) => {
@@ -78,6 +84,9 @@ app.get(['/admin', '/admin/'], (req, res) => {
 app.use('/admin', express.static(path.join(__dirname, 'dist')));
 // Expose public folder (uploads, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
+// Explicitly serve uploads folder
+app.use('/uploads', express.static(uploadsDir));
+app.use('/admin/uploads', express.static(uploadsDir));
 // Serve main website static files from parent workspace directory
 app.use(express.static(path.join(__dirname, '..')));
 
@@ -88,12 +97,6 @@ app.get('/admin/*', (req, res) => {
   res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
-
-// Create uploads folder if not exists
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
 
 import { MongoClient } from 'mongodb';
 
@@ -754,23 +757,38 @@ function calculateIssueDate(session, termType, termName, termIndex, totalTerms) 
 // Upload cropped photo (raw base64 or file upload)
 app.post('/api/upload-photo', upload.single('photo'), async (req, res) => {
   try {
-    const photosFolderId = await getOrCreateSubfolder('photos', ROOT_FOLDER_ID);
-
     if (req.body.image) {
       const base64Data = req.body.image.replace(/^data:image\/\w+;base64,/, "");
       const ext = req.body.ext || '.png';
       const filename = `photo-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
       const tmpPath = path.join(uploadsDir, filename);
       fs.writeFileSync(tmpPath, base64Data, { encoding: 'base64' });
-      const driveFile = await uploadFileToDrive(tmpPath, filename, photosFolderId);
-      try { fs.unlinkSync(tmpPath); } catch (e) {}
-      return res.json({ photoUrl: driveFile.viewUrl });
+
+      if (isAuthenticated()) {
+        try {
+          const photosFolderId = await getOrCreateSubfolder('photos', ROOT_FOLDER_ID);
+          const driveFile = await uploadFileToDrive(tmpPath, filename, photosFolderId);
+          try { fs.unlinkSync(tmpPath); } catch (e) {}
+          return res.json({ photoUrl: driveFile.viewUrl });
+        } catch (driveErr) {
+          console.warn('Google Drive photo upload failed, falling back to local:', driveErr.message);
+        }
+      }
+      return res.json({ photoUrl: `/uploads/${filename}` });
     }
     
     if (req.file) {
-      const driveFile = await uploadFileToDrive(req.file.path, req.file.originalname, photosFolderId);
-      try { fs.unlinkSync(req.file.path); } catch (e) {}
-      return res.json({ photoUrl: driveFile.viewUrl });
+      if (isAuthenticated()) {
+        try {
+          const photosFolderId = await getOrCreateSubfolder('photos', ROOT_FOLDER_ID);
+          const driveFile = await uploadFileToDrive(req.file.path, req.file.originalname, photosFolderId);
+          try { fs.unlinkSync(req.file.path); } catch (e) {}
+          return res.json({ photoUrl: driveFile.viewUrl });
+        } catch (driveErr) {
+          console.warn('Google Drive photo upload failed, falling back to local:', driveErr.message);
+        }
+      }
+      return res.json({ photoUrl: `/uploads/${req.file.filename}` });
     }
     
     res.status(400).json({ error: 'No image data provided' });
@@ -1318,21 +1336,27 @@ app.post('/api/center/students', upload.array('documents', 10), async (req, res)
     let centerFolderId = '';
     let studentFolderId = '';
     const documents = [];
-    try {
-      centerFolderId = await getOrCreateSubfolder(center.centerName || centerId, ROOT_FOLDER_ID);
-      studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, centerFolderId);
-      if (req.files) {
-        for (const file of req.files) {
-          const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
-          documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
-          try { fs.unlinkSync(file.path); } catch (e) {}
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        let uploadedToDrive = false;
+        if (isAuthenticated()) {
+          try {
+            if (!centerFolderId) {
+              centerFolderId = await getOrCreateSubfolder(center.centerName || centerId, ROOT_FOLDER_ID);
+            }
+            if (!studentFolderId) {
+              studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, centerFolderId);
+            }
+            const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
+            documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+            try { fs.unlinkSync(file.path); } catch (e) {}
+            uploadedToDrive = true;
+          } catch (driveErr) {
+            console.warn('Google Drive upload failed for center student document, saving locally:', driveErr.message);
+          }
         }
-      }
-    } catch (driveErr) {
-      console.error('Google Drive upload failed (student will still be saved):', driveErr.message);
-      if (req.files) {
-        for (const file of req.files) {
-          try { fs.unlinkSync(file.path); } catch (e) {}
+        if (!uploadedToDrive) {
+          documents.push({ driveFileId: null, originalname: file.originalname, path: `/uploads/${file.filename}` });
         }
       }
     }
@@ -1398,17 +1422,29 @@ app.put('/api/center/students/:id', upload.array('documents', 10), async (req, r
     if (photo !== undefined) student.photo = photo;
     
     if (req.files && req.files.length > 0) {
-      let folderId = student.driveFolderId;
-      if (!folderId) {
-        const center = (db.centers || []).find(c => c.id === centerId);
-        const centerFolderId = await getOrCreateSubfolder(center ? center.centerName : centerId, ROOT_FOLDER_ID);
-        folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, centerFolderId);
-        student.driveFolderId = folderId;
-      }
+      if (!student.documents) student.documents = [];
       for (const file of req.files) {
-        const driveFile = await uploadFileToDrive(file.path, file.originalname, folderId);
-        student.documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
-        try { fs.unlinkSync(file.path); } catch (e) {}
+        let uploadedToDrive = false;
+        if (isAuthenticated()) {
+          try {
+            let folderId = student.driveFolderId;
+            if (!folderId) {
+              const center = (db.centers || []).find(c => c.id === centerId);
+              const centerFolderId = await getOrCreateSubfolder(center ? center.centerName : centerId, ROOT_FOLDER_ID);
+              folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, centerFolderId);
+              student.driveFolderId = folderId;
+            }
+            const driveFile = await uploadFileToDrive(file.path, file.originalname, folderId);
+            student.documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+            try { fs.unlinkSync(file.path); } catch (e) {}
+            uploadedToDrive = true;
+          } catch (driveErr) {
+            console.warn('Google Drive upload failed during center student edit, saving locally:', driveErr.message);
+          }
+        }
+        if (!uploadedToDrive) {
+          student.documents.push({ driveFileId: null, originalname: file.originalname, path: `/uploads/${file.filename}` });
+        }
       }
     }
     
@@ -1536,11 +1572,22 @@ app.post('/api/center/payments/upload', upload.single('screenshot'), async (req,
     const center = (db.centers || []).find(c => c.id === centerId);
     let screenshotUrl = '';
     if (req.file) {
-      const paymentsFolderId = await getOrCreateSubfolder('payments', ROOT_FOLDER_ID);
-      const centerPayFolderId = await getOrCreateSubfolder(center ? center.centerName : centerId, paymentsFolderId);
-      const driveFile = await uploadFileToDrive(req.file.path, req.file.originalname, centerPayFolderId);
-      screenshotUrl = driveFile.viewUrl;
-      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      let uploadedToDrive = false;
+      if (isAuthenticated()) {
+        try {
+          const paymentsFolderId = await getOrCreateSubfolder('payments', ROOT_FOLDER_ID);
+          const centerPayFolderId = await getOrCreateSubfolder(center ? center.centerName : centerId, paymentsFolderId);
+          const driveFile = await uploadFileToDrive(req.file.path, req.file.originalname, centerPayFolderId);
+          screenshotUrl = driveFile.viewUrl;
+          try { fs.unlinkSync(req.file.path); } catch (e) {}
+          uploadedToDrive = true;
+        } catch (driveErr) {
+          console.warn('Google Drive payment screenshot upload failed, saving locally:', driveErr.message);
+        }
+      }
+      if (!uploadedToDrive) {
+        screenshotUrl = `/uploads/${req.file.filename}`;
+      }
     }
     const payment = {
       id: `pay_${Date.now()}`,
@@ -2056,21 +2103,27 @@ app.post('/api/staff/students', upload.array('documents', 10), async (req, res) 
     let staffFolderId = '';
     let studentFolderId = '';
     const documents = [];
-    try {
-      staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
-      studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, staffFolderId);
-      if (req.files && req.files.length > 0) {
-        for (const file of req.files) {
-          const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
-          documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
-          try { fs.unlinkSync(file.path); } catch (e) {}
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        let uploadedToDrive = false;
+        if (isAuthenticated()) {
+          try {
+            if (!staffFolderId) {
+              staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
+            }
+            if (!studentFolderId) {
+              studentFolderId = await getOrCreateSubfolder(`${name.toUpperCase()}_${Date.now()}`, staffFolderId);
+            }
+            const driveFile = await uploadFileToDrive(file.path, file.originalname, studentFolderId);
+            documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+            try { fs.unlinkSync(file.path); } catch (e) {}
+            uploadedToDrive = true;
+          } catch (driveErr) {
+            console.warn('Google Drive upload failed for staff student document, saving locally:', driveErr.message);
+          }
         }
-      }
-    } catch (driveErr) {
-      console.error('Google Drive upload failed (student will still be saved):', driveErr.message);
-      if (req.files) {
-        for (const file of req.files) {
-          try { fs.unlinkSync(file.path); } catch (e) {}
+        if (!uploadedToDrive) {
+          documents.push({ driveFileId: null, originalname: file.originalname, path: `/uploads/${file.filename}` });
         }
       }
     }
@@ -2187,30 +2240,33 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), async (req, re
       student.universityBoard = universityBoard;
     }
     if (req.files && req.files.length > 0) {
-      try {
-        let folderId = student.driveFolderId;
-        if (!folderId) {
-          const staff = (db.staff || []).find(s => String(s.id) === String(staffId));
-          const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
-          folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
-          student.driveFolderId = folderId;
-        }
-        for (const file of req.files) {
-          const driveFile = await uploadFileToDrive(file.path, file.originalname, folderId);
-          student.documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
-          try { fs.unlinkSync(file.path); } catch (e) {}
-        }
-        student.hasNewUpdates = true;
-        if (!student.updatedFieldsLog) student.updatedFieldsLog = [];
-        student.updatedFieldsLog.push("New uploaded documents");
-      } catch (driveErr) {
-        console.error('Google Drive upload failed during edit (student update will still be saved):', driveErr.message);
-        if (req.files) {
-          for (const file of req.files) {
+      if (!student.documents) student.documents = [];
+      for (const file of req.files) {
+        let uploadedToDrive = false;
+        if (isAuthenticated()) {
+          try {
+            let folderId = student.driveFolderId;
+            if (!folderId) {
+              const staff = (db.staff || []).find(s => String(s.id) === String(staffId));
+              const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : staffId, ROOT_FOLDER_ID);
+              folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
+              student.driveFolderId = folderId;
+            }
+            const driveFile = await uploadFileToDrive(file.path, file.originalname, folderId);
+            student.documents.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
             try { fs.unlinkSync(file.path); } catch (e) {}
+            uploadedToDrive = true;
+          } catch (driveErr) {
+            console.warn('Google Drive upload failed during staff student edit, saving locally:', driveErr.message);
           }
         }
+        if (!uploadedToDrive) {
+          student.documents.push({ driveFileId: null, originalname: file.originalname, path: `/uploads/${file.filename}` });
+        }
       }
+      student.hasNewUpdates = true;
+      if (!student.updatedFieldsLog) student.updatedFieldsLog = [];
+      student.updatedFieldsLog.push("New uploaded documents");
     }
     student.status = 'pending';
     student.updatedAt = new Date().toISOString();
@@ -2487,37 +2543,67 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), a
     if (!student.adminDocuments) student.adminDocuments = [];
     const correctionRound = student.correctionCount || 0;
 
-    // 1. Delete previous admin files from Google Drive
+    // 1. Delete previous admin files from Google Drive / disk
     if (student.adminDocuments && student.adminDocuments.length > 0) {
       const oldFileIds = [];
       student.adminDocuments.forEach(doc => {
         if (doc.files && doc.files.length > 0) {
           doc.files.forEach(f => {
             if (f.driveFileId) oldFileIds.push(f.driveFileId);
+            if (f.path && f.path.startsWith('/uploads/')) {
+              const localPath = path.join(uploadsDir, path.basename(f.path));
+              if (fs.existsSync(localPath)) {
+                try { fs.unlinkSync(localPath); } catch (e) {}
+              }
+            }
           });
         }
       });
-      if (oldFileIds.length > 0) await deleteFilesFromDrive(oldFileIds);
+      if (oldFileIds.length > 0) {
+        try {
+          if (isAuthenticated()) await deleteFilesFromDrive(oldFileIds);
+        } catch (delErr) {
+          console.warn('Error deleting old files from Google Drive:', delErr.message);
+        }
+      }
     }
     // 2. Clear previous documents list
     student.adminDocuments = [];
 
-    // 3. Upload new files to Google Drive
-    let folderId = student.driveFolderId;
-    if (!folderId) {
-      const staff = (db.staff || []).find(s => String(s.id) === String(student.staffId));
-      const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : student.staffId, ROOT_FOLDER_ID);
-      folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
-      student.driveFolderId = folderId;
+    // 3. Upload new files (Google Drive with local storage fallback)
+    let adminDocsFolderId = '';
+    if (isAuthenticated()) {
+      try {
+        let folderId = student.driveFolderId;
+        if (!folderId) {
+          const staff = (db.staff || []).find(s => String(s.id) === String(student.staffId));
+          const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : student.staffId, ROOT_FOLDER_ID);
+          folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
+          student.driveFolderId = folderId;
+        }
+        adminDocsFolderId = await getOrCreateSubfolder('admin-docs', folderId);
+      } catch (fErr) {
+        console.warn('Failed to get/create Google Drive folder for admin docs:', fErr.message);
+      }
     }
-    const adminDocsFolderId = await getOrCreateSubfolder('admin-docs', folderId);
 
     const files = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        const driveFile = await uploadFileToDrive(file.path, file.originalname, adminDocsFolderId);
-        files.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
-        try { fs.unlinkSync(file.path); } catch (e) {}
+        let uploadedToDrive = false;
+        if (adminDocsFolderId && isAuthenticated()) {
+          try {
+            const driveFile = await uploadFileToDrive(file.path, file.originalname, adminDocsFolderId);
+            files.push({ driveFileId: driveFile.id, originalname: file.originalname, path: driveFile.viewUrl });
+            try { fs.unlinkSync(file.path); } catch (e) {}
+            uploadedToDrive = true;
+          } catch (driveErr) {
+            console.warn('Google Drive upload failed for admin file, saving locally:', driveErr.message);
+          }
+        }
+        if (!uploadedToDrive) {
+          files.push({ driveFileId: null, originalname: file.originalname, path: `/uploads/${file.filename}` });
+        }
       }
     }
     if (files.length === 0) return res.status(400).json({ error: 'No files provided' });
@@ -2584,7 +2670,21 @@ app.delete('/api/staff-admin/students/:studentId/documents/:docId', async (req, 
     const docToDelete = (student.adminDocuments || []).find(d => d.id === req.params.docId);
     if (docToDelete && docToDelete.files) {
       const fileIds = docToDelete.files.filter(f => f.driveFileId).map(f => f.driveFileId);
-      if (fileIds.length > 0) await deleteFilesFromDrive(fileIds);
+      if (fileIds.length > 0) {
+        try {
+          if (isAuthenticated()) await deleteFilesFromDrive(fileIds);
+        } catch (delErr) {
+          console.warn('Error deleting files from drive:', delErr.message);
+        }
+      }
+      docToDelete.files.forEach(f => {
+        if (f.path && f.path.startsWith('/uploads/')) {
+          const localPath = path.join(uploadsDir, path.basename(f.path));
+          if (fs.existsSync(localPath)) {
+            try { fs.unlinkSync(localPath); } catch (e) {}
+          }
+        }
+      });
     }
     student.adminDocuments = (student.adminDocuments || []).filter(d => d.id !== req.params.docId);
     student.updatedAt = new Date().toISOString();
