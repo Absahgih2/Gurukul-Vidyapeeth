@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
 
     // Primary (Custom Domain) and Secondary (Render Cloud) Live Portal URLs
     private val PRIMARY_URL = "https://gurukulvidhyapeethuniversity.com/admin/?view=staff-login"
-    private val BACKUP_URL = "https://gurukul-vidyapeeth.onrender.com/admin/?view=staff-login"
+    private val BACKUP_URL = "https://gurukul-backend-s08h.onrender.com/admin/?view=staff-login"
     private var isUsingBackup = false
 
     private val fileChooserLauncher = registerForActivityResult(

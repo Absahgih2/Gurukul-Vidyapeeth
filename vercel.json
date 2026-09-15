@@ -4,7 +4,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://gurukul-vidyapeeth.onrender.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://gurukul-vidyapeeth.onrender.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://gurukul-backend-s08h.onrender.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://gurukul-backend-s08h.onrender.com/api/:path*" }
   ]
 }
