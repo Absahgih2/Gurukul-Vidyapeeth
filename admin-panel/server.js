@@ -6,6 +6,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
+import webpush from 'web-push';
 import { getOrCreateSubfolder, uploadFileToDrive, deleteFilesFromDrive, ROOT_FOLDER_ID, getAuthUrl, exchangeCode, loadTokensFromDB, isAuthenticated, getConfig, runDailyBackup } from './utils/googleDrive.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -2501,7 +2502,7 @@ app.delete('/api/staff-admin/staff/:id', (req, res) => {
 app.delete('/api/staff-admin/students/:id/payment-screenshot', (req, res) => {
   try {
     const db = readDB();
-    const student = (db.staffStudents || []).find(s => s.id === req.params.id);
+    const student = (db.staffStudents || []).find(s => String(s.id) === String(req.params.id));
     if (!student) return res.status(404).json({ error: 'Student not found' });
     student.paymentScreenshot = '';
     writeDB(db);
@@ -2537,51 +2538,27 @@ app.get('/api/staff-admin/students', (req, res) => {
 app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), async (req, res) => {
   try {
     const db = readDB();
-    const studentIdx = (db.staffStudents || []).findIndex(s => s.id === req.params.id);
+    const studentIdx = (db.staffStudents || []).findIndex(s => String(s.id) === String(req.params.id));
     if (studentIdx < 0) return res.status(404).json({ error: 'Student not found' });
     const student = db.staffStudents[studentIdx];
-    if (!student.adminDocuments) student.adminDocuments = [];
+    if (!Array.isArray(student.adminDocuments)) student.adminDocuments = [];
     const correctionRound = student.correctionCount || 0;
 
-    // 1. Delete previous admin files from Google Drive / disk
-    if (student.adminDocuments && student.adminDocuments.length > 0) {
-      const oldFileIds = [];
-      student.adminDocuments.forEach(doc => {
-        if (doc.files && doc.files.length > 0) {
-          doc.files.forEach(f => {
-            if (f.driveFileId) oldFileIds.push(f.driveFileId);
-            if (f.path && f.path.startsWith('/uploads/')) {
-              const localPath = path.join(uploadsDir, path.basename(f.path));
-              if (fs.existsSync(localPath)) {
-                try { fs.unlinkSync(localPath); } catch (e) {}
-              }
-            }
-          });
-        }
-      });
-      if (oldFileIds.length > 0) {
-        try {
-          if (isAuthenticated()) await deleteFilesFromDrive(oldFileIds);
-        } catch (delErr) {
-          console.warn('Error deleting old files from Google Drive:', delErr.message);
-        }
-      }
-    }
-    // 2. Clear previous documents list
-    student.adminDocuments = [];
-
-    // 3. Upload new files (Google Drive with local storage fallback)
+    // Upload new files (Google Drive with local storage fallback)
     let adminDocsFolderId = '';
     if (isAuthenticated()) {
       try {
         let folderId = student.driveFolderId;
         if (!folderId) {
           const staff = (db.staff || []).find(s => String(s.id) === String(student.staffId));
-          const staffFolderId = await getOrCreateSubfolder(staff ? staff.name : student.staffId, ROOT_FOLDER_ID);
-          folderId = await getOrCreateSubfolder(`${student.name}_${student.id}`, staffFolderId);
+          const staffFolderName = staff ? staff.name : (student.staffId ? `Staff_${student.staffId}` : 'General_Staff');
+          const staffFolderId = await getOrCreateSubfolder(staffFolderName, ROOT_FOLDER_ID);
+          folderId = await getOrCreateSubfolder(`${student.name || 'Student'}_${student.id}`, staffFolderId);
           student.driveFolderId = folderId;
         }
-        adminDocsFolderId = await getOrCreateSubfolder('admin-docs', folderId);
+        if (folderId) {
+          adminDocsFolderId = await getOrCreateSubfolder('admin-docs', folderId);
+        }
       } catch (fErr) {
         console.warn('Failed to get/create Google Drive folder for admin docs:', fErr.message);
       }
@@ -2622,25 +2599,27 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), a
     db.staffStudents[studentIdx] = student;
 
     // Create notification for the respective staff member
-    if (!db.notifications) db.notifications = [];
-    db.notifications.push({
-      id: `notif_${Date.now()}`,
-      staffId: student.staffId,
-      type: 'document_upload',
-      title: 'Document Uploaded by Admin',
-      message: `Admin has uploaded documents for student "${student.name}" (${student.course}).`,
-      studentId: student.id,
-      studentName: student.name,
-      correctionRound,
-      read: false,
-      createdAt: new Date().toISOString()
-    });
+    if (!Array.isArray(db.notifications)) db.notifications = [];
+    if (student.staffId) {
+      db.notifications.push({
+        id: `notif_${Date.now()}`,
+        staffId: String(student.staffId),
+        type: 'document_upload',
+        title: 'Document Uploaded by Admin',
+        message: `Admin has uploaded documents for student "${student.name}" (${student.course}).`,
+        studentId: student.id,
+        studentName: student.name,
+        correctionRound,
+        read: false,
+        createdAt: new Date().toISOString()
+      });
+    }
 
     writeDB(db);
     res.json({ message: 'Documents uploaded successfully', student });
   } catch (err) {
     console.error('Staff admin upload error:', err);
-    res.status(500).json({ error: 'Failed to upload documents' });
+    res.status(500).json({ error: err.message || 'Failed to upload documents' });
   }
 });
 
@@ -2648,7 +2627,7 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), a
 app.post('/api/staff-admin/students/:studentId/documents/:docId/force-available', (req, res) => {
   try {
     const db = readDB();
-    const student = (db.staffStudents || []).find(s => s.id === req.params.studentId);
+    const student = (db.staffStudents || []).find(s => String(s.id) === String(req.params.studentId));
     if (!student) return res.status(404).json({ error: 'Student not found' });
     const doc = (student.adminDocuments || []).find(d => d.id === req.params.docId);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
@@ -2665,11 +2644,11 @@ app.post('/api/staff-admin/students/:studentId/documents/:docId/force-available'
 app.delete('/api/staff-admin/students/:studentId/documents/:docId', async (req, res) => {
   try {
     const db = readDB();
-    const student = (db.staffStudents || []).find(s => s.id === req.params.studentId);
+    const student = (db.staffStudents || []).find(s => String(s.id) === String(req.params.studentId));
     if (!student) return res.status(404).json({ error: 'Student not found' });
     const docToDelete = (student.adminDocuments || []).find(d => d.id === req.params.docId);
-    if (docToDelete && docToDelete.files) {
-      const fileIds = docToDelete.files.filter(f => f.driveFileId).map(f => f.driveFileId);
+    if (docToDelete && docToDelete.files && Array.isArray(docToDelete.files)) {
+      const fileIds = docToDelete.files.filter(f => f && f.driveFileId).map(f => f.driveFileId);
       if (fileIds.length > 0) {
         try {
           if (isAuthenticated()) await deleteFilesFromDrive(fileIds);
@@ -2678,7 +2657,7 @@ app.delete('/api/staff-admin/students/:studentId/documents/:docId', async (req, 
         }
       }
       docToDelete.files.forEach(f => {
-        if (f.path && f.path.startsWith('/uploads/')) {
+        if (f && typeof f === 'object' && f.path && typeof f.path === 'string' && f.path.startsWith('/uploads/')) {
           const localPath = path.join(uploadsDir, path.basename(f.path));
           if (fs.existsSync(localPath)) {
             try { fs.unlinkSync(localPath); } catch (e) {}
@@ -2699,7 +2678,7 @@ app.delete('/api/staff-admin/students/:studentId/documents/:docId', async (req, 
 app.post('/api/staff-admin/students/:id/dismiss-updates', (req, res) => {
   try {
     const db = readDB();
-    const student = (db.staffStudents || []).find(s => s.id === req.params.id);
+    const student = (db.staffStudents || []).find(s => String(s.id) === String(req.params.id));
     if (!student) return res.status(404).json({ error: 'Student not found' });
     student.hasNewUpdates = false;
     student.updatedFieldsLog = [];
@@ -2866,7 +2845,6 @@ async function sendPushNotification(userId, title, body, url) {
     const db = readDB();
     const subscription = db.pushSubscriptions?.[userId];
     if (!subscription) return;
-    const webpush = require('web-push');
     const vapidKeys = {
       publicKey: process.env.VAPID_PUBLIC_KEY || '',
       privateKey: process.env.VAPID_PRIVATE_KEY || ''
@@ -2879,13 +2857,33 @@ async function sendPushNotification(userId, title, body, url) {
   }
 }
 
+// Global Express Error Handler
+app.use((err, req, res, next) => {
+  if (err.type === 'request.aborted' || err.code === 'ECONNABORTED' || err.message === 'request aborted') {
+    // Client aborted request before body was fully read
+    console.warn(`[Client Abort] Request aborted by client: ${req.method} ${req.url}`);
+    if (!res.headersSent) {
+      return res.status(400).json({ error: 'Request aborted by client' });
+    }
+    return;
+  }
+  
+  if (err.type === 'entity.too.large' || err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'Payload or file too large' });
+  }
+
+  console.error('Unhandled server error:', err);
+  if (!res.headersSent) {
+    res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
 // Start Express Server
-app.listen(PORT, '0.0.0.0', async () => {
+const server = app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Express server running on port ${PORT} (bound to 0.0.0.0)`);
   // Auto-generate VAPID keys if not set
   if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
     try {
-      const webpush = require('web-push');
       const vapidKeys = webpush.generateVAPIDKeys();
       process.env.VAPID_PUBLIC_KEY = vapidKeys.publicKey;
       process.env.VAPID_PRIVATE_KEY = vapidKeys.privateKey;
@@ -2939,6 +2937,10 @@ app.listen(PORT, '0.0.0.0', async () => {
     console.error('Failed to load Google Drive tokens on startup:', err);
   }
 });
+
+// Configure server timeouts to prevent reverse-proxy premature disconnects
+server.keepAliveTimeout = 120000; // 120s
+server.headersTimeout = 125000; // 125s
 
 let backupSchedulerStarted = false;
 

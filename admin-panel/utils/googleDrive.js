@@ -87,21 +87,24 @@ function isAuthenticated() {
 const folderCache = {};
 
 async function getOrCreateSubfolder(name, parentId) {
-  const cacheKey = `${parentId}_${name}`;
+  if (!name) name = 'Folder';
+  if (!parentId) parentId = ROOT_FOLDER_ID;
+  const safeName = String(name);
+  const cacheKey = `${parentId}_${safeName}`;
   if (folderCache[cacheKey]) return folderCache[cacheKey];
 
   const drive = await getDriveClient();
-  const escapedName = name.replace(/'/g, "\\'");
+  const escapedName = safeName.replace(/'/g, "\\'");
   const q = `name='${escapedName}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`;
   const res = await drive.files.list({ q, fields: 'files(id, name)', spaces: 'drive' });
 
-  if (res.data.files.length > 0) {
+  if (res.data.files && res.data.files.length > 0) {
     folderCache[cacheKey] = res.data.files[0].id;
     return res.data.files[0].id;
   }
 
   const folder = await drive.files.create({
-    resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
+    requestBody: { name: safeName, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
     fields: 'id',
   });
   folderCache[cacheKey] = folder.data.id;
@@ -117,17 +120,22 @@ async function uploadFileToDrive(filePath, fileName, parentId) {
   const drive = await getDriveClient();
   const fileStream = fs.createReadStream(filePath);
   const mimeType = getMimeType(fileName);
+  const parentsList = parentId ? [parentId] : [ROOT_FOLDER_ID];
 
   const file = await drive.files.create({
-    resource: { name: fileName, parents: [parentId] },
+    requestBody: { name: fileName, parents: parentsList },
     media: { mimeType, body: fileStream },
     fields: 'id, webViewLink, webContentLink',
   });
 
-  await drive.permissions.create({
-    fileId: file.data.id,
-    resource: { role: 'reader', type: 'anyone' },
-  });
+  try {
+    await drive.permissions.create({
+      fileId: file.data.id,
+      requestBody: { role: 'reader', type: 'anyone' },
+    });
+  } catch (permErr) {
+    console.warn(`Permission creation warning for ${fileName}:`, permErr.message);
+  }
 
   return {
     id: file.data.id,
@@ -149,8 +157,8 @@ async function deleteFileFromDrive(fileId) {
 }
 
 async function deleteFilesFromDrive(fileIds) {
-  if (!fileIds || fileIds.length === 0) return;
-  await Promise.all(fileIds.map(id => deleteFileFromDrive(id)));
+  if (!fileIds || !Array.isArray(fileIds) || fileIds.length === 0) return;
+  await Promise.all(fileIds.filter(Boolean).map(id => deleteFileFromDrive(id)));
 }
 
 function getMimeType(fileName) {

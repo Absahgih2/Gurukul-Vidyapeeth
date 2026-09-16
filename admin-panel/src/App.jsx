@@ -1497,7 +1497,7 @@ export default function App() {
           setStaffAdminUploadNote('');
           fetchStaffAdminData().then((updatedList) => {
             if (updatedList) {
-              const updatedStudent = updatedList.find(s => s.id === studentId);
+              const updatedStudent = updatedList.find(s => String(s.id) === String(studentId));
               if (updatedStudent) {
                 setStaffAdminSelectedStudent(updatedStudent);
               }
@@ -1532,7 +1532,7 @@ export default function App() {
       if (res.ok) {
         fetchStaffAdminData().then((updatedList) => {
           if (updatedList) {
-            const updatedStudent = updatedList.find(s => s.id === studentId);
+            const updatedStudent = updatedList.find(s => String(s.id) === String(studentId));
             if (updatedStudent) {
               setStaffAdminSelectedStudent(updatedStudent);
             }
@@ -1549,7 +1549,7 @@ export default function App() {
       if (res.ok) {
         fetchStaffAdminData().then((updatedList) => {
           if (updatedList) {
-            const updatedStudent = updatedList.find(s => s.id === studentId);
+            const updatedStudent = updatedList.find(s => String(s.id) === String(studentId));
             if (updatedStudent) {
               setStaffAdminSelectedStudent(updatedStudent);
             }
@@ -1565,7 +1565,7 @@ export default function App() {
       if (res.ok) {
         fetchStaffAdminData().then((updatedList) => {
           if (updatedList) {
-            const updatedStudent = updatedList.find(s => s.id === studentId);
+            const updatedStudent = updatedList.find(s => String(s.id) === String(studentId));
             if (updatedStudent) {
               setStaffAdminSelectedStudent(updatedStudent);
             }
@@ -1627,8 +1627,8 @@ export default function App() {
         const res = await fetch(`/api/staff-admin/students/${studentId}/payment-screenshot`, { method: 'DELETE' });
         if (res.ok) {
           fetchStaffAdminData().then((updatedList) => {
-            if (updatedList && staffAdminSelectedStudent && staffAdminSelectedStudent.id === studentId) {
-              const updatedStudent = updatedList.find(s => s.id === studentId);
+            if (updatedList && staffAdminSelectedStudent && String(staffAdminSelectedStudent.id) === String(studentId)) {
+              const updatedStudent = updatedList.find(s => String(s.id) === String(studentId));
               if (updatedStudent) {
                 setStaffAdminSelectedStudent(updatedStudent);
               }
