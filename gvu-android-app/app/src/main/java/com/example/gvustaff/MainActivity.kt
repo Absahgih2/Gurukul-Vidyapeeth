@@ -360,6 +360,38 @@ class MainActivity : ComponentActivity() {
                 clearNotifications()
             }
         }
+
+        @JavascriptInterface
+        fun downloadFile(url: String?, fileName: String?) {
+            if (url.isNullOrBlank()) return
+            runOnUiThread {
+                try {
+                    val safeName = if (!fileName.isNullOrBlank()) fileName else URLUtil.guessFileName(url, null, null)
+                    val request = DownloadManager.Request(Uri.parse(url)).apply {
+                        val cookies = CookieManager.getInstance().getCookie(url)
+                        addRequestHeader("cookie", cookies)
+                        addRequestHeader("User-Agent", webView.settings.userAgentString)
+                        setDescription("Downloading $safeName...")
+                        setTitle(safeName)
+                        setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                        setDestinationInExternalPublicDir(
+                            Environment.DIRECTORY_DOWNLOADS,
+                            safeName
+                        )
+                    }
+                    val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                    dm.enqueue(request)
+                    Toast.makeText(this@MainActivity, "Downloading $safeName...", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                    } catch (ex: Exception) {
+                        Toast.makeText(this@MainActivity, "Failed to start download", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 
     private fun showNotification(count: Int, title: String, message: String) {

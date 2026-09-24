@@ -83,23 +83,121 @@ app.get(['/admin', '/admin/'], (req, res) => {
 
 // Serve production build from dist folder under /admin
 app.use('/admin', express.static(path.join(__dirname, 'dist')));
-// Expose public folder (uploads, etc.)
+// Expose public folder (assets, icons, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
-// Explicitly serve uploads folder
-app.use('/uploads', express.static(uploadsDir));
-app.use('/admin/uploads', express.static(uploadsDir));
+
+// Proxy direct download for external or cloud files with proper attachment header
+app.get('/api/proxy-download', async (req, res) => {
+  const { url, name } = req.query;
+  if (!url) return res.status(400).send('Missing url parameter');
+  
+  try {
+    let targetUrl = url;
+    if (targetUrl.includes('drive.google.com') && targetUrl.includes('export=view')) {
+      targetUrl = targetUrl.replace('export=view', 'export=download');
+    }
+    
+    // If it is a relative /uploads/ path, redirect to local download route
+    if (targetUrl.startsWith('/uploads/') || targetUrl.startsWith('uploads/')) {
+      const filename = path.basename(targetUrl.split('?')[0]);
+      return res.redirect(`/uploads/${filename}?download=1&name=${encodeURIComponent(name || filename)}`);
+    }
+
+    const response = await fetch(targetUrl);
+    if (!response.ok) {
+      return res.redirect(targetUrl);
+    }
+    
+    const contentType = response.headers.get('content-type') || 'application/octet-stream';
+    const safeName = name || 'document';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(safeName)}"`);
+    
+    const arrayBuffer = await response.arrayBuffer();
+    res.send(Buffer.from(arrayBuffer));
+  } catch (err) {
+    console.error('Proxy download error:', err.message);
+    res.redirect(url);
+  }
+});
+
+// Uploads route: Serves from local disk if present, streams from MongoDB GridFS if on cloud, or shows friendly recovery page
+app.get(['/uploads/:filename', '/admin/uploads/:filename', '/api/uploads/:filename'], async (req, res) => {
+  const { filename } = req.params;
+  const localPath = path.join(uploadsDir, filename);
+  const isDownload = req.query.download === '1' || req.query.download === 'true';
+  const customName = req.query.name || filename;
+
+  // 1. Send from local disk if present
+  if (fs.existsSync(localPath)) {
+    if (isDownload) {
+      return res.download(localPath, customName);
+    }
+    return res.sendFile(localPath);
+  }
+
+  // 2. Stream from MongoDB GridFS if present
+  if (gridFSBucket) {
+    const streamed = await streamFileFromGridFS(filename, res, isDownload, customName);
+    if (streamed) return;
+  }
+
+  // 3. User friendly message if file was stored on ephemeral disk before cloud backup
+  res.status(404).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>File Not Available - Gurukul Vidyapeeth University</title>
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: #f1f5f9; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { background: white; max-width: 520px; width: 100%; border-radius: 16px; padding: 36px 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; border: 1px solid #e2e8f0; }
+        .icon-circle { width: 64px; height: 64px; background: #fee2e2; color: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; }
+        h1 { font-size: 20px; color: #0f172a; margin-bottom: 12px; font-weight: 700; }
+        p { font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 16px; }
+        .file-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #334155; font-family: monospace; word-break: break-all; margin-bottom: 24px; }
+        .btn-group { display: flex; gap: 12px; justify-content: center; }
+        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-block; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #0D2149; color: white; }
+        .btn-primary:hover { background: #162f65; }
+        .btn-outline { border: 1px solid #cbd5e1; color: #334155; background: transparent; }
+        .btn-outline:hover { background: #f8fafc; }
+        .hint { font-size: 12px; color: #94a3b8; margin-top: 20px; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="icon-circle">📁</div>
+        <h1>File Unavailable</h1>
+        <p>This document was stored on the server's local disk before cloud persistence was configured and is no longer available after a server restart.</p>
+        <div class="file-box">${filename}</div>
+        <p style="font-size: 13px; color: #64748b;">Please re-upload this document in the portal. All new uploads are permanently preserved in the cloud database.</p>
+        <div class="btn-group">
+          <a href="javascript:history.back()" class="btn btn-outline">Go Back</a>
+          <a href="/admin/" class="btn btn-primary">Go to Portal</a>
+        </div>
+        <div class="hint">Gurukul Vidyapeeth University Document Management System</div>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
 // Serve main website static files from parent workspace directory
 app.use(express.static(path.join(__dirname, '..')));
 
 // Fallback for admin panel client-side routing
-app.get('/admin/*', (req, res) => {
+app.get('/admin/*', (req, res, next) => {
+  if (req.path.startsWith('/admin/uploads/')) return next();
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-import { MongoClient } from 'mongodb';
+import { MongoClient, GridFSBucket } from 'mongodb';
 
 // Create data directory if not exists
 const dataDir = path.join(__dirname, 'data');
@@ -149,7 +247,124 @@ ensureInitialData();
 const MONGODB_URI = process.env.MONGODB_URI || ''; 
 let mongoClient = null;
 let mongoDb = null;
+let gridFSBucket = null;
 let isMongoConnected = false;
+
+// Get MIME type by file extension
+function getMimeType(fileName) {
+  const ext = path.extname(fileName || '').toLowerCase();
+  const mimeTypes = {
+    '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
+    '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml',
+    '.pdf': 'application/pdf', '.doc': 'application/msword',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.xls': 'application/vnd.ms-excel',
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.txt': 'text/plain', '.csv': 'text/csv',
+    '.zip': 'application/zip', '.rar': 'application/x-rar-compressed',
+  };
+  return mimeTypes[ext] || 'application/octet-stream';
+}
+
+// Save file to MongoDB GridFS for permanent persistence across Render restarts
+async function saveFileToGridFS(filePath, filename, mimeType, metadata = {}) {
+  if (!gridFSBucket || !fs.existsSync(filePath)) return false;
+  try {
+    const existing = await gridFSBucket.find({ filename }).toArray();
+    for (const f of existing) {
+      try { await gridFSBucket.delete(f._id); } catch (e) {}
+    }
+    return new Promise((resolve) => {
+      const uploadStream = gridFSBucket.openUploadStream(filename, {
+        contentType: mimeType || getMimeType(filename),
+        metadata: { ...metadata, uploadedAt: new Date().toISOString() }
+      });
+      fs.createReadStream(filePath)
+        .pipe(uploadStream)
+        .on('error', (err) => {
+          console.warn(`GridFS upload error for ${filename}:`, err.message);
+          resolve(false);
+        })
+        .on('finish', () => {
+          console.log(`[GridFS] Stored permanent file: ${filename}`);
+          resolve(uploadStream.id);
+        });
+    });
+  } catch (err) {
+    console.warn(`Failed to save ${filename} to GridFS:`, err.message);
+    return false;
+  }
+}
+
+// Stream file from GridFS to HTTP response
+async function streamFileFromGridFS(filename, res, isDownload = false, customName = null) {
+  if (!gridFSBucket) return false;
+  try {
+    const files = await gridFSBucket.find({ filename }).toArray();
+    if (!files || files.length === 0) return false;
+    const file = files[0];
+    
+    const fileNameToUse = customName || file.metadata?.originalname || file.filename;
+    const safeOrigName = encodeURIComponent(fileNameToUse);
+    const dispType = isDownload ? 'attachment' : 'inline';
+    
+    res.setHeader('Content-Type', file.contentType || getMimeType(filename));
+    res.setHeader('Content-Disposition', `${dispType}; filename="${safeOrigName}"`);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    
+    // Save to local disk cache asynchronously
+    try {
+      const localFilePath = path.join(uploadsDir, filename);
+      if (!fs.existsSync(localFilePath)) {
+        const cacheDownloadStream = gridFSBucket.openDownloadStream(file._id);
+        const writeStream = fs.createWriteStream(localFilePath);
+        cacheDownloadStream.pipe(writeStream);
+      }
+    } catch (cErr) {
+      console.warn('Cache write warning:', cErr.message);
+    }
+    
+    const downloadStream = gridFSBucket.openDownloadStream(file._id);
+    downloadStream.pipe(res);
+    return true;
+  } catch (err) {
+    console.error(`Error streaming ${filename} from GridFS:`, err.message);
+    return false;
+  }
+}
+
+// Delete file from GridFS
+async function deleteFileFromGridFS(filename) {
+  if (!gridFSBucket) return;
+  try {
+    const files = await gridFSBucket.find({ filename }).toArray();
+    for (const f of files) {
+      await gridFSBucket.delete(f._id);
+    }
+  } catch (err) {
+    console.warn(`Failed to delete ${filename} from GridFS:`, err.message);
+  }
+}
+
+// Sync existing local files into MongoDB GridFS on startup
+async function syncLocalUploadsToGridFS() {
+  if (!gridFSBucket || !fs.existsSync(uploadsDir)) return;
+  try {
+    const localFiles = fs.readdirSync(uploadsDir);
+    for (const file of localFiles) {
+      const localPath = path.join(uploadsDir, file);
+      const stat = fs.statSync(localPath);
+      if (stat.isFile()) {
+        const existing = await gridFSBucket.find({ filename: file }).toArray();
+        if (existing.length === 0) {
+          await saveFileToGridFS(localPath, file, getMimeType(file), { originalname: file, syncedOnStartup: true });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Startup sync of local uploads to GridFS error:', err.message);
+  }
+}
 
 // Connect to MongoDB Atlas
 async function connectMongo() {
@@ -163,9 +378,11 @@ async function connectMongo() {
     mongoClient = new MongoClient(MONGODB_URI);
     await mongoClient.connect();
     mongoDb = mongoClient.db('gurukul');
+    gridFSBucket = new GridFSBucket(mongoDb, { bucketName: 'uploads' });
     isMongoConnected = true;
-    console.log('Successfully connected to MongoDB Atlas cloud database.');
+    console.log('Successfully connected to MongoDB Atlas cloud database & initialized GridFS.');
     await syncFromMongo();
+    await syncLocalUploadsToGridFS();
     isSynced = true;
   } catch (err) {
     console.error('Failed to connect to MongoDB Atlas:', err);
@@ -765,6 +982,9 @@ app.post('/api/upload-photo', upload.single('photo'), async (req, res) => {
       const tmpPath = path.join(uploadsDir, filename);
       fs.writeFileSync(tmpPath, base64Data, { encoding: 'base64' });
 
+      // Save to MongoDB GridFS for persistent cloud storage
+      await saveFileToGridFS(tmpPath, filename, ext === '.png' ? 'image/png' : 'image/jpeg', { originalname: filename });
+
       if (isAuthenticated()) {
         try {
           const photosFolderId = await getOrCreateSubfolder('photos', ROOT_FOLDER_ID);
@@ -772,13 +992,16 @@ app.post('/api/upload-photo', upload.single('photo'), async (req, res) => {
           try { fs.unlinkSync(tmpPath); } catch (e) {}
           return res.json({ photoUrl: driveFile.viewUrl });
         } catch (driveErr) {
-          console.warn('Google Drive photo upload failed, falling back to local:', driveErr.message);
+          console.warn('Google Drive photo upload failed, falling back to GridFS/local:', driveErr.message);
         }
       }
       return res.json({ photoUrl: `/uploads/${filename}` });
     }
     
     if (req.file) {
+      // Save to MongoDB GridFS for persistent cloud storage
+      await saveFileToGridFS(req.file.path, req.file.filename, req.file.mimetype, { originalname: req.file.originalname });
+
       if (isAuthenticated()) {
         try {
           const photosFolderId = await getOrCreateSubfolder('photos', ROOT_FOLDER_ID);
@@ -786,7 +1009,7 @@ app.post('/api/upload-photo', upload.single('photo'), async (req, res) => {
           try { fs.unlinkSync(req.file.path); } catch (e) {}
           return res.json({ photoUrl: driveFile.viewUrl });
         } catch (driveErr) {
-          console.warn('Google Drive photo upload failed, falling back to local:', driveErr.message);
+          console.warn('Google Drive photo upload failed, falling back to GridFS/local:', driveErr.message);
         }
       }
       return res.json({ photoUrl: `/uploads/${req.file.filename}` });
@@ -1339,6 +1562,8 @@ app.post('/api/center/students', upload.array('documents', 10), async (req, res)
     const documents = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
+        // Save to MongoDB GridFS for persistent cloud storage
+        await saveFileToGridFS(file.path, file.filename, file.mimetype, { originalname: file.originalname });
         let uploadedToDrive = false;
         if (isAuthenticated()) {
           try {
@@ -1353,7 +1578,7 @@ app.post('/api/center/students', upload.array('documents', 10), async (req, res)
             try { fs.unlinkSync(file.path); } catch (e) {}
             uploadedToDrive = true;
           } catch (driveErr) {
-            console.warn('Google Drive upload failed for center student document, saving locally:', driveErr.message);
+            console.warn('Google Drive upload failed for center student document, saving locally/GridFS:', driveErr.message);
           }
         }
         if (!uploadedToDrive) {
@@ -1425,6 +1650,8 @@ app.put('/api/center/students/:id', upload.array('documents', 10), async (req, r
     if (req.files && req.files.length > 0) {
       if (!student.documents) student.documents = [];
       for (const file of req.files) {
+        // Save to MongoDB GridFS for persistent cloud storage
+        await saveFileToGridFS(file.path, file.filename, file.mimetype, { originalname: file.originalname });
         let uploadedToDrive = false;
         if (isAuthenticated()) {
           try {
@@ -1440,7 +1667,7 @@ app.put('/api/center/students/:id', upload.array('documents', 10), async (req, r
             try { fs.unlinkSync(file.path); } catch (e) {}
             uploadedToDrive = true;
           } catch (driveErr) {
-            console.warn('Google Drive upload failed during center student edit, saving locally:', driveErr.message);
+            console.warn('Google Drive upload failed during center student edit, saving locally/GridFS:', driveErr.message);
           }
         }
         if (!uploadedToDrive) {
@@ -1573,6 +1800,8 @@ app.post('/api/center/payments/upload', upload.single('screenshot'), async (req,
     const center = (db.centers || []).find(c => c.id === centerId);
     let screenshotUrl = '';
     if (req.file) {
+      // Save to MongoDB GridFS for persistent cloud storage
+      await saveFileToGridFS(req.file.path, req.file.filename, req.file.mimetype, { originalname: req.file.originalname });
       let uploadedToDrive = false;
       if (isAuthenticated()) {
         try {
@@ -1583,7 +1812,7 @@ app.post('/api/center/payments/upload', upload.single('screenshot'), async (req,
           try { fs.unlinkSync(req.file.path); } catch (e) {}
           uploadedToDrive = true;
         } catch (driveErr) {
-          console.warn('Google Drive payment screenshot upload failed, saving locally:', driveErr.message);
+          console.warn('Google Drive payment screenshot upload failed, saving locally/GridFS:', driveErr.message);
         }
       }
       if (!uploadedToDrive) {
@@ -2106,6 +2335,8 @@ app.post('/api/staff/students', upload.array('documents', 10), async (req, res) 
     const documents = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
+        // Save to MongoDB GridFS for persistent cloud storage
+        await saveFileToGridFS(file.path, file.filename, file.mimetype, { originalname: file.originalname });
         let uploadedToDrive = false;
         if (isAuthenticated()) {
           try {
@@ -2120,7 +2351,7 @@ app.post('/api/staff/students', upload.array('documents', 10), async (req, res) 
             try { fs.unlinkSync(file.path); } catch (e) {}
             uploadedToDrive = true;
           } catch (driveErr) {
-            console.warn('Google Drive upload failed for staff student document, saving locally:', driveErr.message);
+            console.warn('Google Drive upload failed for staff student document, saving locally/GridFS:', driveErr.message);
           }
         }
         if (!uploadedToDrive) {
@@ -2243,6 +2474,8 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), async (req, re
     if (req.files && req.files.length > 0) {
       if (!student.documents) student.documents = [];
       for (const file of req.files) {
+        // Save to MongoDB GridFS for persistent cloud storage
+        await saveFileToGridFS(file.path, file.filename, file.mimetype, { originalname: file.originalname });
         let uploadedToDrive = false;
         if (isAuthenticated()) {
           try {
@@ -2258,7 +2491,7 @@ app.put('/api/staff/students/:id', upload.array('documents', 10), async (req, re
             try { fs.unlinkSync(file.path); } catch (e) {}
             uploadedToDrive = true;
           } catch (driveErr) {
-            console.warn('Google Drive upload failed during staff student edit, saving locally:', driveErr.message);
+            console.warn('Google Drive upload failed during staff student edit, saving locally/GridFS:', driveErr.message);
           }
         }
         if (!uploadedToDrive) {
@@ -2567,6 +2800,8 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), a
     const files = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
+        // Save to MongoDB GridFS for persistent cloud storage
+        await saveFileToGridFS(file.path, file.filename, file.mimetype, { originalname: file.originalname });
         let uploadedToDrive = false;
         if (adminDocsFolderId && isAuthenticated()) {
           try {
@@ -2575,7 +2810,7 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), a
             try { fs.unlinkSync(file.path); } catch (e) {}
             uploadedToDrive = true;
           } catch (driveErr) {
-            console.warn('Google Drive upload failed for admin file, saving locally:', driveErr.message);
+            console.warn('Google Drive upload failed for admin file, saving locally/GridFS:', driveErr.message);
           }
         }
         if (!uploadedToDrive) {
@@ -2658,10 +2893,12 @@ app.delete('/api/staff-admin/students/:studentId/documents/:docId', async (req, 
       }
       docToDelete.files.forEach(f => {
         if (f && typeof f === 'object' && f.path && typeof f.path === 'string' && f.path.startsWith('/uploads/')) {
-          const localPath = path.join(uploadsDir, path.basename(f.path));
+          const filename = path.basename(f.path);
+          const localPath = path.join(uploadsDir, filename);
           if (fs.existsSync(localPath)) {
             try { fs.unlinkSync(localPath); } catch (e) {}
           }
+          deleteFileFromGridFS(filename).catch(() => {});
         }
       });
     }
