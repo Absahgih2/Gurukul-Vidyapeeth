@@ -244,7 +244,7 @@ function ensureInitialData() {
 ensureInitialData();
 
 // MongoDB cloud database sync configuration
-const MONGODB_URI = process.env.MONGODB_URI || ''; 
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGODB_URL || process.env.MONGO_URL || process.env.MONGO_URI || process.env.DATABASE_URL || ''; 
 let mongoClient = null;
 let mongoDb = null;
 let gridFSBucket = null;
