@@ -12,7 +12,7 @@ import { getOrCreateSubfolder, uploadFileToDrive, deleteFilesFromDrive, ROOT_FOL
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, '.env'), override: true });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -369,23 +369,35 @@ async function syncLocalUploadsToGridFS() {
 // Connect to MongoDB Atlas
 async function connectMongo() {
   ensureInitialData();
-  if (!MONGODB_URI || MONGODB_URI.includes('<db_username>')) {
-    console.log('MongoDB URI is not configured or contains placeholder. Running in local filesystem database mode.');
+  const uri = process.env.MONGODB_URI || process.env.MONGODB_URL || process.env.MONGO_URL || process.env.MONGO_URI || process.env.DATABASE_URL || ''; 
+  const placeholders = ['<username>', '<db_username>', '<password>', '<db_password>', '<PASSWORD>', '<cluster>'];
+  const hasPlaceholder = placeholders.some(p => uri.includes(p));
+
+  if (!uri || hasPlaceholder) {
+    if (hasPlaceholder) {
+      console.warn(`[MongoDB Atlas] URI contains placeholder text: ${placeholders.filter(p => uri.includes(p)).join(', ')}. Running in local filesystem mode.`);
+    } else {
+      console.log('MongoDB URI is not configured. Running in local filesystem database mode.');
+    }
     isSynced = true;
     return;
   }
   try {
-    mongoClient = new MongoClient(MONGODB_URI);
+    mongoClient = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 });
     await mongoClient.connect();
-    mongoDb = mongoClient.db('gurukul');
+    let db = mongoClient.db();
+    if (!db.databaseName || db.databaseName === 'test') {
+      db = mongoClient.db('gurukul');
+    }
+    mongoDb = db;
     gridFSBucket = new GridFSBucket(mongoDb, { bucketName: 'uploads' });
     isMongoConnected = true;
-    console.log('Successfully connected to MongoDB Atlas cloud database & initialized GridFS.');
+    console.log(`Successfully connected to MongoDB Atlas cloud database "${mongoDb.databaseName}" & initialized GridFS.`);
     await syncFromMongo();
     await syncLocalUploadsToGridFS();
     isSynced = true;
   } catch (err) {
-    console.error('Failed to connect to MongoDB Atlas:', err);
+    console.error('Failed to connect to MongoDB Atlas:', err.message);
     isSynced = true;
   }
 }
@@ -394,8 +406,21 @@ async function connectMongo() {
 async function syncFromMongo() {
   if (!isMongoConnected) return;
   try {
-    const col = mongoDb.collection('state');
+    let col = mongoDb.collection('state');
     let doc = await col.findOne({ _id: 'main_db' });
+    
+    if (!doc && mongoDb.databaseName !== 'gurukul') {
+      try {
+        const altCol = mongoClient.db('gurukul').collection('state');
+        const altDoc = await altCol.findOne({ _id: 'main_db' });
+        if (altDoc) {
+          doc = altDoc;
+          col = altCol;
+          mongoDb = mongoClient.db('gurukul');
+          gridFSBucket = new GridFSBucket(mongoDb, { bucketName: 'uploads' });
+        }
+      } catch (e) {}
+    }
     
     // Check if restore file exists
     const hasRestoreFile = fs.existsSync(restorePath);
@@ -418,8 +443,18 @@ async function syncFromMongo() {
 
     if (doc) {
       const { _id, ...cleanData } = doc;
+      // Preserve local Google Drive authentication tokens if present
+      if (fs.existsSync(dbPath)) {
+        try {
+          const cur = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+          if (cur.googleAuth && cur.googleAuth.tokens && (!cleanData.googleAuth || !cleanData.googleAuth.tokens)) {
+            cleanData.googleAuth = cur.googleAuth;
+          }
+        } catch (e) {}
+      }
       fs.writeFileSync(dbPath, JSON.stringify(cleanData, null, 2), 'utf8');
-      console.log('Synced local database file with latest cloud data.');
+      fs.writeFileSync(restorePath, JSON.stringify(cleanData, null, 2), 'utf8');
+      console.log(`Synced local database file with latest cloud data (${(cleanData.students || []).length} students, ${(cleanData.staff || []).length} staff, ${(cleanData.staffStudents || []).length} staff students).`);
     } else {
       console.log('No cloud database state found. Syncing local data to MongoDB Atlas.');
       const localData = readDB();
