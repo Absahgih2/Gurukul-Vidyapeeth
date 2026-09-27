@@ -4,7 +4,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://bytes-pennsylvania-silk-wed.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://bytes-pennsylvania-silk-wed.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://casey-aimed-teddy-activated.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://casey-aimed-teddy-activated.trycloudflare.com/api/:path*" }
   ]
 }
