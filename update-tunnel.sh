@@ -24,14 +24,15 @@ fi
 get_url() {
     local url=""
     if compgen -G "$HOME/.pm2/logs/${PM2_NAME}*.log" > /dev/null; then
-        url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' ~/.pm2/logs/${PM2_NAME}*.log 2>/dev/null | tail -n 1 | awk -F: '{print $NF}' | tr -d ' ' || true)
+        url=$(grep -a -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' ~/.pm2/logs/${PM2_NAME}*.log 2>/dev/null | tail -n 1 | awk -F: '{print $NF}' | tr -d ' ' || true)
     fi
     if [ -z "$url" ]; then
-        url=$(pm2 logs "$PM2_NAME" --lines 100 --nostream 2>/dev/null | grep -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
+        url=$(pm2 logs "$PM2_NAME" --lines 100 --nostream 2>/dev/null | grep -a -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
     fi
     echo "$url"
 }
 
+echo "Searching for active trycloudflare.com URL..."
 NEW_URL=$(get_url)
 
 # Test if the found URL is actually online and responding
@@ -76,7 +77,7 @@ fi
 echo "[OK] Active Live Tunnel Verified: $NEW_URL"
 
 # Read current URL in vercel.json
-CURRENT_URL=$(grep -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' vercel.json | head -n 1 || true)
+CURRENT_URL=$(grep -a -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' vercel.json | head -n 1 || true)
 
 if [ "$NEW_URL" == "$CURRENT_URL" ]; then
     echo "[OK] vercel.json is already up to date with: $NEW_URL"
