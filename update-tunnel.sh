@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# Resolve repository directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -9,27 +8,58 @@ echo "=========================================================="
 echo "    Cloudflare Tunnel to Vercel Auto-Sync Utility        "
 echo "=========================================================="
 
-# 1. Ensure PM2 tunnel process is running
-if ! pm2 describe tunnel > /dev/null 2>&1; then
-    echo "PM2 process 'tunnel' is not running. Starting it..."
-    pm2 start "cloudflared tunnel --url http://localhost:5000" --name "tunnel"
-    pm2 save
+# 1. Identify PM2 process name (search for tunnel or cloudflared)
+PM2_NAME="tunnel"
+if ! pm2 describe "$PM2_NAME" > /dev/null 2>&1; then
+    if pm2 describe cloudflared > /dev/null 2>&1; then
+        PM2_NAME="cloudflared"
+    else
+        echo "Starting PM2 tunnel process..."
+        pm2 start "cloudflared tunnel --url http://localhost:5000" --name "tunnel"
+        pm2 save
+        sleep 5
+    fi
 fi
 
-# 2. Poll PM2 logs for active trycloudflare.com URL (up to 60s)
-echo "Waiting for Cloudflare Tunnel URL to appear in logs..."
-NEW_URL=""
-for i in {1..30}; do
-    NEW_URL=$(pm2 logs tunnel --lines 60 --nostream 2>/dev/null | grep -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' | tail -n 1 || true)
-    if [ -n "$NEW_URL" ]; then
-        break
+echo "Searching for active trycloudflare.com URL..."
+
+# Helper function to find URL from PM2 log files or command
+get_url() {
+    local url=""
+    # Check ~/.pm2/logs files directly (searches entire log history, both stdout and stderr)
+    if compgen -G "$HOME/.pm2/logs/${PM2_NAME}*.log" > /dev/null; then
+        url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' ~/.pm2/logs/${PM2_NAME}*.log 2>/dev/null | tail -n 1 | awk -F: '{print $NF}' | tr -d ' ' || true)
     fi
-    sleep 2
-done
+    # Fallback to pm2 logs command
+    if [ -z "$url" ]; then
+        url=$(pm2 logs "$PM2_NAME" --lines 300 --nostream 2>/dev/null | grep -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
+    fi
+    echo "$url"
+}
+
+NEW_URL=$(get_url)
+
+# If no URL found, the logs might have been flushed or tunnel needs a fresh restart
+if [ -z "$NEW_URL" ]; then
+    echo "URL not found in past logs. Restarting PM2 process '$PM2_NAME' to generate a fresh URL..."
+    pm2 restart "$PM2_NAME"
+    for i in {1..20}; do
+        sleep 2
+        NEW_URL=$(get_url)
+        if [ -n "$NEW_URL" ]; then
+            break
+        fi
+    done
+fi
 
 if [ -z "$NEW_URL" ]; then
-    echo "[ERROR] Could not detect a valid trycloudflare.com URL from PM2 logs."
-    echo "Please check 'pm2 logs tunnel' manually."
+    echo ""
+    echo "[ERROR] Could not detect a valid trycloudflare.com URL."
+    echo "Here is the status of your PM2 processes:"
+    pm2 list
+    echo ""
+    echo "Here are the last 20 lines of your tunnel logs:"
+    pm2 logs "$PM2_NAME" --lines 20 --nostream
     exit 1
 fi
 
