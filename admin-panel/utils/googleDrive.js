@@ -13,10 +13,12 @@ function getConfig() {
   };
 }
 
-function getRedirectUri() {
-  return process.env.RENDER_EXTERNAL_URL
-    ? `${process.env.RENDER_EXTERNAL_URL}/api/auth/google/callback`
-    : 'http://localhost:5000/api/auth/google/callback';
+function getRedirectUri(customUri) {
+  if (customUri) return customUri;
+  if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI;
+  if (process.env.APP_URL) return `${process.env.APP_URL}/api/auth/google/callback`;
+  if (process.env.RENDER_EXTERNAL_URL) return `${process.env.RENDER_EXTERNAL_URL}/api/auth/google/callback`;
+  return 'https://www.gurukulvidhyapeethuniversity.com/api/auth/google/callback';
 }
 const ROOT_FOLDER_ID = '101NKmietQmzHAH10A4nHlfhsOdxUtdKA';
 
@@ -25,20 +27,18 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 let oauth2Client = null;
 let driveClient = null;
 
-function getOAuth2Client() {
+function getOAuth2Client(customUri) {
   const config = getConfig();
-  if (!oauth2Client) {
-    oauth2Client = new google.auth.OAuth2(
-      config.clientId,
-      config.clientSecret,
-      getRedirectUri()
-    );
-  }
-  return oauth2Client;
+  const uri = getRedirectUri(customUri);
+  return new google.auth.OAuth2(
+    config.clientId,
+    config.clientSecret,
+    uri
+  );
 }
 
-function getAuthUrl() {
-  const client = getOAuth2Client();
+function getAuthUrl(customUri) {
+  const client = getOAuth2Client(customUri);
   return client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
@@ -73,8 +73,8 @@ async function loadTokensFromDB(dbReadFn, dbWriteFn) {
   return false;
 }
 
-async function exchangeCode(code, dbReadFn, dbWriteFn) {
-  const client = getOAuth2Client();
+async function exchangeCode(code, dbReadFn, dbWriteFn, customUri) {
+  const client = getOAuth2Client(customUri);
   const { tokens } = await client.getToken(code);
   await setTokens(tokens, dbReadFn, dbWriteFn);
   return tokens;

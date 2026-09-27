@@ -3009,7 +3009,10 @@ app.get('/api/auth/google/status', (req, res) => {
 
 // Start Google OAuth2 flow
 app.get('/api/auth/google/login', (req, res) => {
-  const url = getAuthUrl();
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+  const redirectUri = host ? `${proto}://${host}/api/auth/google/callback` : undefined;
+  const url = getAuthUrl(redirectUri);
   res.json({ url });
 });
 
@@ -3018,7 +3021,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
   const { code } = req.query;
   if (!code) return res.status(400).send('No authorization code provided');
   try {
-    await exchangeCode(code, readDB, writeDB);
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+    const redirectUri = host ? `${proto}://${host}/api/auth/google/callback` : undefined;
+    await exchangeCode(code, readDB, writeDB, redirectUri);
     startBackupScheduler();
     res.redirect('/admin/');
   } catch (err) {
