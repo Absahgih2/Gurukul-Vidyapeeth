@@ -4,7 +4,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://roulette-year-bunch-poultry.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://roulette-year-bunch-poultry.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://deaf-image-cayman-badge.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://deaf-image-cayman-badge.trycloudflare.com/api/:path*" }
   ]
 }
