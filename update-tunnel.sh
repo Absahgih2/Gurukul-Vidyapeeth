@@ -16,33 +16,27 @@ if [ -z "$(git config user.name 2>/dev/null)" ]; then
     git config user.name "Gurukul Vidyapeeth"
 fi
 
-# 2. Ensure runner script exists for PM2 to run cloudflared without crashing
+# 2. Write permanent stable runner script
 RUNNER_SCRIPT="$HOME/run-tunnel.sh"
-if [ ! -f "$RUNNER_SCRIPT" ]; then
-    cat << 'EOF' > "$RUNNER_SCRIPT"
+cat << 'EOF' > "$RUNNER_SCRIPT"
 #!/bin/bash
-exec cloudflared tunnel --url http://localhost:5000
+exec cloudflared tunnel --url http://127.0.0.1:5000
 EOF
-    chmod +x "$RUNNER_SCRIPT"
-fi
+chmod +x "$RUNNER_SCRIPT"
 
-# 3. Check and clean duplicate PM2 tunnel processes if present
-TUNNEL_COUNT=$(pm2 jlist 2>/dev/null | grep -o '"name":"tunnel"' | wc -l || true)
-if [ "$TUNNEL_COUNT" -gt 1 ]; then
-    echo "Found duplicate PM2 tunnel instances. Cleaning up..."
+# 3. Ensure PM2 runs ~/run-tunnel.sh directly (prevents crash/restart loop)
+PM2_INFO=$(pm2 jlist 2>/dev/null || echo "[]")
+if ! echo "$PM2_INFO" | grep -q '"pm_exec_path":".*run-tunnel\.sh"'; then
+    echo "Replacing legacy PM2 tunnel with stable runner..."
     pm2 delete tunnel > /dev/null 2>&1 || true
+    pm2 delete cloudflared > /dev/null 2>&1 || true
     pm2 start "$RUNNER_SCRIPT" --name "tunnel"
     pm2 save
-    sleep 5
+    echo "Waiting for tunnel connections to establish..."
+    sleep 8
 fi
 
 PM2_NAME="tunnel"
-if ! pm2 describe "$PM2_NAME" > /dev/null 2>&1; then
-    echo "Starting PM2 tunnel process..."
-    pm2 start "$RUNNER_SCRIPT" --name "tunnel"
-    pm2 save
-    sleep 5
-fi
 
 # 4. Helper to extract real tunnel URL (ignoring api.trycloudflare.com)
 get_url() {
@@ -59,32 +53,15 @@ get_url() {
 echo "Searching for active trycloudflare.com URL..."
 NEW_URL=$(get_url)
 
-# 5. Test if the found URL is actually online and responding
-is_alive=false
-if [ -n "$NEW_URL" ]; then
-    echo "Checking if detected URL is currently active: $NEW_URL"
-    if curl -s --connect-timeout 4 -I "$NEW_URL" > /dev/null 2>&1; then
-        is_alive=true
-    fi
-fi
-
-# If no URL or the URL is dead, restart tunnel with fresh logs
-if [ -z "$NEW_URL" ] || [ "$is_alive" = false ]; then
-    echo "[!] Tunnel is offline or URL has expired ($NEW_URL)."
-    echo "Flushing old logs and generating a fresh Cloudflare Tunnel..."
-    pm2 flush "$PM2_NAME"
-    pm2 restart "$PM2_NAME"
-    
-    for i in {1..20}; do
+# 5. Check if URL is detected, if not wait a few seconds
+if [ -z "$NEW_URL" ]; then
+    echo "Waiting for URL in PM2 logs..."
+    for i in {1..15}; do
         sleep 2
         NEW_URL=$(get_url)
         if [ -n "$NEW_URL" ]; then
-            if curl -s --connect-timeout 4 -I "$NEW_URL" > /dev/null 2>&1; then
-                is_alive=true
-                break
-            fi
+            break
         fi
-        echo "Waiting for tunnel connection ($i/20)..."
     done
 fi
 
@@ -98,7 +75,7 @@ if [ -z "$NEW_URL" ]; then
     exit 1
 fi
 
-echo "[OK] Active Live Tunnel Verified: $NEW_URL"
+echo "[OK] Active Live Tunnel Detected: $NEW_URL"
 
 # 6. Read current URL in vercel.json
 CURRENT_URL=$(grep -a -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' vercel.json | head -n 1 || true)
