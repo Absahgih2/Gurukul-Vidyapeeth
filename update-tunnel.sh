@@ -77,6 +77,10 @@ fi
 
 echo "[OK] Active Live Tunnel Detected: $NEW_URL"
 
+# Sync latest changes from remote before updating
+git fetch origin main > /dev/null 2>&1 || true
+git merge origin/main --ff-only > /dev/null 2>&1 || true
+
 # 6. Read current URL in vercel.json
 CURRENT_URL=$(grep -a -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' vercel.json | head -n 1 || true)
 
@@ -96,6 +100,7 @@ git add vercel.json
 git commit -m "chore: auto-sync tunnel url to $NEW_URL [skip ci]"
 
 echo "Pushing changes to GitHub to trigger Vercel auto-deploy..."
+git pull --rebase origin main > /dev/null 2>&1 || true
 git push origin main
 
 echo ""
