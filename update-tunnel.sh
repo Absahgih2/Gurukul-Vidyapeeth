@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
+# Export standard environment paths so cron has access to pm2, cloudflared, git, etc.
+export HOME="${HOME:-/home/gurukul}"
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$HOME/.npm-global/bin:$PATH"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -41,11 +45,12 @@ PM2_NAME="tunnel"
 # 4. Helper to extract real tunnel URL (ignoring api.trycloudflare.com)
 get_url() {
     local url=""
-    if compgen -G "$HOME/.pm2/logs/${PM2_NAME}*.log" > /dev/null; then
-        url=$(grep -h -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' $HOME/.pm2/logs/${PM2_NAME}*.log 2>/dev/null | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
-    fi
-    if [ -z "$url" ]; then
-        url=$(pm2 logs "$PM2_NAME" --lines 100 --nostream 2>/dev/null | grep -h -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
+    # First priority: live PM2 stream (last 100 lines of current process)
+    url=$(pm2 logs "$PM2_NAME" --lines 100 --nostream 2>/dev/null | grep -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
+    
+    # Second priority: direct error log where cloudflared outputs
+    if [ -z "$url" ] && [ -f "$HOME/.pm2/logs/${PM2_NAME}-error.log" ]; then
+        url=$(grep -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' "$HOME/.pm2/logs/${PM2_NAME}-error.log" 2>/dev/null | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
     fi
     echo "$url"
 }
