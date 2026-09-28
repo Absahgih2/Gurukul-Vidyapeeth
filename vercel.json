@@ -4,7 +4,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://knit-interaction-batch-second.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://knit-interaction-batch-second.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://statement-vbulletin-shall-loaded.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://statement-vbulletin-shall-loaded.trycloudflare.com/api/:path*" }
   ]
 }
