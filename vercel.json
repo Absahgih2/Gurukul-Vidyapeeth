@@ -4,7 +4,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://costume-considering-affecting-aids.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://costume-considering-affecting-aids.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://council-revenue-serious-fully.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://council-revenue-serious-fully.trycloudflare.com/api/:path*" }
   ]
 }
