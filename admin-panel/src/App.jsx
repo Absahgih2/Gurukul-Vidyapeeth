@@ -5,7 +5,7 @@ import {
   Printer, ArrowLeft, User, Image, BookOpen, 
   RefreshCw, X, AlertCircle, Wallet, CreditCard, 
   FileDown, Building2, Download, Lock, EyeOff, Bell, BellOff, Key, MessageSquare,
-  Smartphone, ExternalLink, ZoomIn, ZoomOut, RotateCw
+  Smartphone
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -313,90 +313,6 @@ export default function App() {
     });
   };
 
-  // ---- DOCUMENT PREVIEW & DOWNLOAD STATES & HELPERS ----
-  const [activePreviewDoc, setActivePreviewDoc] = useState(null);
-  const [previewZoom, setPreviewZoom] = useState(1);
-  const [previewRotation, setPreviewRotation] = useState(0);
-
-  const getDirectDownloadUrl = (file) => {
-    if (!file) return '#';
-    const url = typeof file === 'string' ? file : (file.path || file.url || '');
-    const name = typeof file === 'string' ? '' : (file.originalname || file.name || '');
-    
-    if (!url) return '#';
-    if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
-      const clean = url.startsWith('/') ? url : '/' + url;
-      return `${clean}${clean.includes('?') ? '&' : '?'}download=1${name ? '&name=' + encodeURIComponent(name) : ''}`;
-    }
-    if (url.includes('drive.google.com')) {
-      return `/api/proxy-download?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name || 'document')}`;
-    }
-    return `/api/proxy-download?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name || 'document')}`;
-  };
-
-  const isImageFile = (fileName = '', fileUrl = '') => {
-    const str = (String(fileName) + ' ' + String(fileUrl)).toLowerCase();
-    return str.includes('.jpg') || str.includes('.jpeg') || str.includes('.png') || str.includes('.webp') || str.includes('.gif') || str.includes('.svg') || str.startsWith('data:image/');
-  };
-
-  const isPdfFile = (fileName = '', fileUrl = '') => {
-    const str = (String(fileName) + ' ' + String(fileUrl)).toLowerCase();
-    return str.includes('.pdf');
-  };
-
-  const handleFileDownload = async (file, e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    const url = typeof file === 'string' ? file : (file.path || file.url || '');
-    const fileName = typeof file === 'string' ? 'download' : (file.originalname || file.name || 'document');
-    if (!url) return;
-
-    const downloadUrl = getDirectDownloadUrl(file);
-
-    // 1. Android Native APK Download Bridge
-    if (window.AndroidBridge && typeof window.AndroidBridge.downloadFile === 'function') {
-      const absoluteUrl = downloadUrl.startsWith('http') ? downloadUrl : window.location.origin + downloadUrl;
-      window.AndroidBridge.downloadFile(absoluteUrl, fileName);
-      return;
-    }
-
-    // 2. Web / PWA Blob fetch download
-    try {
-      const res = await fetch(downloadUrl);
-      if (!res.ok) throw new Error('Download failed');
-      const blob = await res.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
-    } catch (err) {
-      // Direct link fallback
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = fileName;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-  };
-
-  const handleDownloadAllFiles = async (filesList = []) => {
-    if (!filesList || filesList.length === 0) return;
-    for (let i = 0; i < filesList.length; i++) {
-      const f = filesList[i];
-      setTimeout(() => {
-        handleFileDownload(f);
-      }, i * 400);
-    }
-  };
 
   // ---- STAFF ADMIN STATES ----
   const [staffAdminView, setStaffAdminView] = useState('login');
@@ -3062,53 +2978,22 @@ export default function App() {
 
                 {/* Staff Submitted Documents */}
                 <div className="glass-panel" style={{ padding: '24px', marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                    <h3 style={{ margin: 0, fontSize: '16px' }}>Documents Submitted by Staff</h3>
-                    {staffAdminSelectedStudent.documents && staffAdminSelectedStudent.documents.length > 1 && (
-                      <button 
-                        type="button" 
-                        className="btn btn-outline btn-sm"
-                        onClick={() => handleDownloadAllFiles(staffAdminSelectedStudent.documents)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <Download size={14} /> Download All ({staffAdminSelectedStudent.documents.length})
-                      </button>
-                    )}
-                  </div>
+                  <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Documents Submitted by Staff</h3>
                   {(!staffAdminSelectedStudent.documents || staffAdminSelectedStudent.documents.length === 0) ? (
                     <p style={{ color: 'var(--text-muted)' }}>No documents submitted by staff.</p>
                   ) : (
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                       {staffAdminSelectedStudent.documents.map((doc, idx) => (
-                        <div key={idx} className="doc-item-card">
-                          <div className="doc-item-info">
-                            <div className="doc-item-icon">
-                              {isImageFile(doc.originalname, doc.path) ? <Image size={18} /> : <FileText size={18} />}
-                            </div>
-                            <div className="doc-item-meta">
-                              <span className="doc-item-name" title={doc.originalname || `Document ${idx + 1}`}>{doc.originalname || `Document ${idx + 1}`}</span>
-                              <span className="doc-item-badge">{isImageFile(doc.originalname, doc.path) ? 'Image' : isPdfFile(doc.originalname, doc.path) ? 'PDF' : 'Document'}</span>
-                            </div>
-                          </div>
-                          <div className="doc-item-buttons">
-                            <button 
-                              type="button"
-                              className="btn btn-outline btn-sm" 
-                              onClick={() => { setActivePreviewDoc(doc); setPreviewZoom(1); setPreviewRotation(0); }}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                            >
-                              <Eye size={13} /> View
-                            </button>
-                            <button 
-                              type="button"
-                              className="btn btn-primary btn-sm" 
-                              onClick={(e) => handleFileDownload(doc, e)}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}
-                            >
-                              <Download size={13} /> Download
-                            </button>
-                          </div>
-                        </div>
+                        <a 
+                          key={idx} 
+                          href={doc.path} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-outline btn-sm" 
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Download size={14} /> {doc.originalname || `Document ${idx + 1}`}
+                        </a>
                       ))}
                     </div>
                   )}
@@ -3117,31 +3002,22 @@ export default function App() {
                 {/* Payment Screenshot */}
                 {staffAdminSelectedStudent.paymentScreenshot && (
                   <div className="glass-panel" style={{ padding: '24px', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                      <h3 style={{ margin: 0, fontSize: '16px' }}>Payment Screenshot</h3>
-                      <button 
-                        type="button" 
-                        className="btn btn-primary btn-sm" 
-                        onClick={(e) => handleFileDownload({ path: staffAdminSelectedStudent.paymentScreenshot, originalname: `payment_${staffAdminSelectedStudent.name}.jpg` }, e)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <Download size={14} /> Download Screenshot
-                      </button>
-                    </div>
-                    <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Payment Screenshot</h3>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
                       <img 
                         src={staffAdminSelectedStudent.paymentScreenshot} 
                         alt="Payment Screenshot" 
-                        onClick={() => {
-                          setActivePreviewDoc({
-                            path: staffAdminSelectedStudent.paymentScreenshot,
-                            originalname: `Payment Screenshot - ${staffAdminSelectedStudent.name}.jpg`
-                          });
-                          setPreviewZoom(1);
-                          setPreviewRotation(0);
-                        }}
-                        style={{ maxHeight: '160px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'zoom-in', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} 
+                        onClick={() => showAlert(
+                          <div style={{ textAlign: 'center' }}>
+                            <img src={staffAdminSelectedStudent.paymentScreenshot} alt="Payment Screenshot" style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }} />
+                          </div>,
+                          `Payment Screenshot - ${staffAdminSelectedStudent.name}`
+                        )}
+                        style={{ maxHeight: '150px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'zoom-in' }} 
                       />
+                      <a href={staffAdminSelectedStudent.paymentScreenshot} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Download size={14} /> Download
+                      </a>
                     </div>
                   </div>
                 )}
@@ -3154,55 +3030,15 @@ export default function App() {
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {staffAdminSelectedStudent.adminDocuments.map(doc => (
-                        <div key={doc.id} style={{ padding: '14px', border: '1px solid var(--border-color)', borderRadius: '10px', background: 'var(--bg-card)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                            <div>
-                              <span style={{ fontWeight: '700', fontSize: '13px' }}>{doc.correctionRound === 0 ? 'Initial Upload' : `Round ${doc.correctionRound}`}</span>
-                              <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>{new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
-                              {doc.note && <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>({doc.note})</span>}
-                            </div>
-                            {doc.files && doc.files.length > 1 && (
-                              <button 
-                                type="button" 
-                                className="btn btn-outline btn-sm"
-                                onClick={() => handleDownloadAllFiles(doc.files)}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}
-                              >
-                                <Download size={12} /> Download All ({doc.files.length})
-                              </button>
-                            )}
+                        <div key={doc.id} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                          <div style={{ marginBottom: '8px' }}>
+                            <span style={{ fontWeight: '600', fontSize: '13px' }}>{doc.correctionRound === 0 ? 'Initial Upload' : `Round ${doc.correctionRound}`}</span>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>{new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
+                            {doc.note && <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>({doc.note})</span>}
                           </div>
-                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                             {doc.files.map((f, i) => (
-                              <div key={i} className="doc-item-card">
-                                <div className="doc-item-info">
-                                  <div className="doc-item-icon">
-                                    {isImageFile(f.originalname, f.path) ? <Image size={18} /> : <FileText size={18} />}
-                                  </div>
-                                  <div className="doc-item-meta">
-                                    <span className="doc-item-name" title={f.originalname}>{f.originalname}</span>
-                                    <span className="doc-item-badge">{isImageFile(f.originalname, f.path) ? 'Image' : isPdfFile(f.originalname, f.path) ? 'PDF' : 'Document'}</span>
-                                  </div>
-                                </div>
-                                <div className="doc-item-buttons">
-                                  <button 
-                                    type="button"
-                                    className="btn btn-outline btn-sm" 
-                                    onClick={() => { setActivePreviewDoc(f); setPreviewZoom(1); setPreviewRotation(0); }}
-                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                                  >
-                                    <Eye size={13} /> View
-                                  </button>
-                                  <button 
-                                    type="button"
-                                    className="btn btn-primary btn-sm" 
-                                    onClick={(e) => handleFileDownload(f, e)}
-                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}
-                                  >
-                                    <Download size={13} /> Download
-                                  </button>
-                                </div>
-                              </div>
+                              <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm"><Download size={14} /> {f.originalname}</a>
                             ))}
                           </div>
                         </div>
@@ -3626,53 +3462,15 @@ export default function App() {
 
                 {/* Submitted Documents section */}
                 <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0, color: 'var(--text-main)' }}>Submitted Student Documents</h3>
-                    {staffSelectedStudentDocs.student.documents && staffSelectedStudentDocs.student.documents.length > 1 && (
-                      <button 
-                        type="button" 
-                        className="btn btn-outline btn-sm"
-                        onClick={() => handleDownloadAllFiles(staffSelectedStudentDocs.student.documents)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
-                      >
-                        <Download size={14} /> Download All ({staffSelectedStudentDocs.student.documents.length})
-                      </button>
-                    )}
-                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '16px', color: 'var(--text-main)' }}>Submitted Student Documents</h3>
                   {(!staffSelectedStudentDocs.student.documents || staffSelectedStudentDocs.student.documents.length === 0) ? (
                     <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No documents uploaded during registration.</p>
                   ) : (
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       {staffSelectedStudentDocs.student.documents.map((f, i) => (
-                        <div key={i} className="doc-item-card">
-                          <div className="doc-item-info">
-                            <div className="doc-item-icon">
-                              {isImageFile(f.originalname, f.path) ? <Image size={18} /> : <FileText size={18} />}
-                            </div>
-                            <div className="doc-item-meta">
-                              <span className="doc-item-name" title={f.originalname}>{f.originalname}</span>
-                              <span className="doc-item-badge">{isImageFile(f.originalname, f.path) ? 'Image' : isPdfFile(f.originalname, f.path) ? 'PDF' : 'Document'}</span>
-                            </div>
-                          </div>
-                          <div className="doc-item-buttons">
-                            <button 
-                              type="button"
-                              className="btn btn-outline btn-sm" 
-                              onClick={() => { setActivePreviewDoc(f); setPreviewZoom(1); setPreviewRotation(0); }}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                            >
-                              <Eye size={13} /> View
-                            </button>
-                            <button 
-                              type="button"
-                              className="btn btn-primary btn-sm" 
-                              onClick={(e) => handleFileDownload(f, e)}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}
-                            >
-                              <Download size={13} /> Download
-                            </button>
-                          </div>
-                        </div>
+                        <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+                          <Download size={14} /> {f.originalname}
+                        </a>
                       ))}
                     </div>
                   )}
@@ -3688,67 +3486,25 @@ export default function App() {
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       {staffSelectedStudentDocs.documents.map(doc => (
-                        <div key={doc.id} style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-card)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div key={doc.id} style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                             <div>
-                              <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-main)' }}>{doc.correctionRound === 0 ? 'Initial Upload' : `Correction Round ${doc.correctionRound}`}</span>
+                              <span style={{ fontWeight: '700', fontSize: '14px' }}>{doc.correctionRound === 0 ? 'Initial Upload' : `Correction Round ${doc.correctionRound}`}</span>
                               <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>Uploaded: {new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {doc.isAvailable ? (
-                                <>
-                                  <span className="payment-status completed">Available</span>
-                                  {doc.files && doc.files.length > 1 && (
-                                    <button 
-                                      type="button" 
-                                      className="btn btn-outline btn-sm"
-                                      onClick={() => handleDownloadAllFiles(doc.files)}
-                                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}
-                                    >
-                                      <Download size={12} /> Download All ({doc.files.length})
-                                    </button>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="payment-status pending">Available after {new Date(doc.availableAt).toLocaleDateString('en-IN')}</span>
-                              )}
-                            </div>
+                            {doc.isAvailable ? (
+                              <span className="payment-status completed">Available</span>
+                            ) : (
+                              <span className="payment-status pending">Available after {new Date(doc.availableAt).toLocaleDateString('en-IN')}</span>
+                            )}
                           </div>
-                          {doc.note && <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px', padding: '6px 10px', background: 'var(--bg-main)', borderRadius: '6px' }}>Note: {doc.note}</p>}
-                          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          {doc.note && <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Note: {doc.note}</p>}
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             {doc.files.map((f, i) => (
                               doc.isAvailable ? (
-                                <div key={i} className="doc-item-card">
-                                  <div className="doc-item-info">
-                                    <div className="doc-item-icon">
-                                      {isImageFile(f.originalname, f.path) ? <Image size={18} /> : <FileText size={18} />}
-                                    </div>
-                                    <div className="doc-item-meta">
-                                      <span className="doc-item-name" title={f.originalname}>{f.originalname}</span>
-                                      <span className="doc-item-badge">{isImageFile(f.originalname, f.path) ? 'Image' : isPdfFile(f.originalname, f.path) ? 'PDF' : 'Document'}</span>
-                                    </div>
-                                  </div>
-                                  <div className="doc-item-buttons">
-                                    <button 
-                                      type="button"
-                                      className="btn btn-outline btn-sm" 
-                                      onClick={() => { setActivePreviewDoc(f); setPreviewZoom(1); setPreviewRotation(0); }}
-                                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                                    >
-                                      <Eye size={13} /> View
-                                    </button>
-                                    <button 
-                                      type="button"
-                                      className="btn btn-primary btn-sm" 
-                                      onClick={(e) => handleFileDownload(f, e)}
-                                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}
-                                    >
-                                      <Download size={13} /> Download
-                                    </button>
-                                  </div>
-                                </div>
+                                <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm"><Download size={14} /> {f.originalname}</a>
                               ) : (
-                                <span key={i} className="btn btn-outline btn-sm" style={{ opacity: 0.5, cursor: 'not-allowed', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Lock size={14} /> {f.originalname}</span>
+                                <span key={i} className="btn btn-outline btn-sm" style={{ opacity: 0.5, cursor: 'not-allowed' }}><Lock size={14} /> {f.originalname}</span>
                               )
                             ))}
                           </div>
@@ -4332,53 +4088,22 @@ export default function App() {
 
                 {/* Documents Submitted by Staff */}
                 <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                    <h3 style={{ margin: 0, fontSize: '16px' }}>Documents Submitted by Staff</h3>
-                    {staffAdminSelectedStudent.documents && staffAdminSelectedStudent.documents.length > 1 && (
-                      <button 
-                        type="button" 
-                        className="btn btn-outline btn-sm"
-                        onClick={() => handleDownloadAllFiles(staffAdminSelectedStudent.documents)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <Download size={14} /> Download All ({staffAdminSelectedStudent.documents.length})
-                      </button>
-                    )}
-                  </div>
+                  <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Documents Submitted by Staff</h3>
                   {(!staffAdminSelectedStudent.documents || staffAdminSelectedStudent.documents.length === 0) ? (
                     <p style={{ color: 'var(--text-muted)' }}>No documents submitted by staff.</p>
                   ) : (
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                       {staffAdminSelectedStudent.documents.map((doc, idx) => (
-                        <div key={idx} className="doc-item-card">
-                          <div className="doc-item-info">
-                            <div className="doc-item-icon">
-                              {isImageFile(doc.originalname, doc.path) ? <Image size={18} /> : <FileText size={18} />}
-                            </div>
-                            <div className="doc-item-meta">
-                              <span className="doc-item-name" title={doc.originalname || `Document ${idx + 1}`}>{doc.originalname || `Document ${idx + 1}`}</span>
-                              <span className="doc-item-badge">{isImageFile(doc.originalname, doc.path) ? 'Image' : isPdfFile(doc.originalname, doc.path) ? 'PDF' : 'Document'}</span>
-                            </div>
-                          </div>
-                          <div className="doc-item-buttons">
-                            <button 
-                              type="button"
-                              className="btn btn-outline btn-sm" 
-                              onClick={() => { setActivePreviewDoc(doc); setPreviewZoom(1); setPreviewRotation(0); }}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                            >
-                              <Eye size={13} /> View
-                            </button>
-                            <button 
-                              type="button"
-                              className="btn btn-primary btn-sm" 
-                              onClick={(e) => handleFileDownload(doc, e)}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}
-                            >
-                              <Download size={13} /> Download
-                            </button>
-                          </div>
-                        </div>
+                        <a 
+                          key={idx} 
+                          href={doc.path} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-outline btn-sm" 
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Download size={14} /> {doc.originalname || `Document ${idx + 1}`}
+                        </a>
                       ))}
                     </div>
                   )}
@@ -4429,27 +4154,17 @@ export default function App() {
                         const availableAt = new Date(uploadedAt.getTime() + delayDays * 24 * 60 * 60 * 1000);
                         const isAvailable = doc.forceAvailable || now >= availableAt;
                         return (
-                          <div key={doc.id} style={{ padding: '14px', border: '1px solid var(--border-color)', borderRadius: '10px', background: 'var(--bg-card)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                          <div key={doc.id} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                               <div>
-                                <span style={{ fontWeight: '700', fontSize: '13px' }}>{doc.correctionRound === 0 ? 'Initial Upload' : `Round ${doc.correctionRound}`}</span>
+                                <span style={{ fontWeight: '600' }}>{doc.correctionRound === 0 ? 'Initial Upload' : `Round ${doc.correctionRound}`}</span>
                                 <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>{new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</span>
                                 {doc.note && <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>({doc.note})</span>}
                               </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <div style={{ display: 'flex', gap: '6px' }}>
                                 {!isAvailable && (
                                   <button className="center-action-btn" onClick={() => handleStaffAdminForceAvailable(staffAdminSelectedStudent.id, doc.id)} style={{ color: 'var(--secondary)', borderColor: 'var(--secondary)' }}>
                                     <Eye size={12} /> Make Available Now
-                                  </button>
-                                )}
-                                {doc.files && doc.files.length > 1 && (
-                                  <button 
-                                    type="button" 
-                                    className="btn btn-outline btn-sm"
-                                    onClick={() => handleDownloadAllFiles(doc.files)}
-                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}
-                                  >
-                                    <Download size={12} /> Download All ({doc.files.length})
                                   </button>
                                 )}
                                 <button className="center-action-btn" onClick={() => handleStaffAdminDeleteDoc(staffAdminSelectedStudent.id, doc.id)} style={{ color: 'var(--danger)' }}>
@@ -4457,37 +4172,9 @@ export default function App() {
                                 </button>
                               </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                               {doc.files.map((f, i) => (
-                                <div key={i} className="doc-item-card">
-                                  <div className="doc-item-info">
-                                    <div className="doc-item-icon">
-                                      {isImageFile(f.originalname, f.path) ? <Image size={18} /> : <FileText size={18} />}
-                                    </div>
-                                    <div className="doc-item-meta">
-                                      <span className="doc-item-name" title={f.originalname}>{f.originalname}</span>
-                                      <span className="doc-item-badge">{isImageFile(f.originalname, f.path) ? 'Image' : isPdfFile(f.originalname, f.path) ? 'PDF' : 'Document'}</span>
-                                    </div>
-                                  </div>
-                                  <div className="doc-item-buttons">
-                                    <button 
-                                      type="button"
-                                      className="btn btn-outline btn-sm" 
-                                      onClick={() => { setActivePreviewDoc(f); setPreviewZoom(1); setPreviewRotation(0); }}
-                                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                                    >
-                                      <Eye size={13} /> View
-                                    </button>
-                                    <button 
-                                      type="button"
-                                      className="btn btn-primary btn-sm" 
-                                      onClick={(e) => handleFileDownload(f, e)}
-                                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}
-                                    >
-                                      <Download size={13} /> Download
-                                    </button>
-                                  </div>
-                                </div>
+                                <a key={i} href={f.path} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm"><Download size={14} /> {f.originalname}</a>
                               ))}
                             </div>
                           </div>
@@ -5798,167 +5485,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ----------------- DOCUMENT PREVIEW & DOWNLOAD LIGHTBOX MODAL ----------------- */}
-      {activePreviewDoc && (
-        <div 
-          className="doc-preview-modal-backdrop no-print animate-fade-in"
-          onClick={() => { setActivePreviewDoc(null); setPreviewZoom(1); setPreviewRotation(0); }}
-        >
-          <div 
-            className="doc-preview-modal-card"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="doc-preview-header">
-              <div className="doc-preview-title-box">
-                <div className="doc-item-icon" style={{ width: '32px', height: '32px' }}>
-                  {isImageFile(activePreviewDoc.originalname || activePreviewDoc.name, activePreviewDoc.path || activePreviewDoc.url) ? (
-                    <Image size={16} />
-                  ) : (
-                    <FileText size={16} />
-                  )}
-                </div>
-                <div className="doc-preview-filename" title={activePreviewDoc.originalname || activePreviewDoc.name || 'Document Preview'}>
-                  {activePreviewDoc.originalname || activePreviewDoc.name || 'Document Preview'}
-                </div>
-              </div>
-              <div className="doc-preview-actions">
-                <a 
-                  href={getDirectDownloadUrl(activePreviewDoc)} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="btn btn-outline btn-sm"
-                  title="Open in new window"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <ExternalLink size={14} /> Open Tab
-                </a>
-                <button 
-                  type="button" 
-                  className="btn btn-primary btn-sm"
-                  onClick={(e) => handleFileDownload(activePreviewDoc, e)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '700' }}
-                >
-                  <Download size={14} /> Save / Download
-                </button>
-                <button 
-                  type="button" 
-                  className="btn btn-outline btn-sm"
-                  onClick={() => { setActivePreviewDoc(null); setPreviewZoom(1); setPreviewRotation(0); }}
-                  style={{ padding: '6px', minWidth: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
 
-            {/* Modal Body / Viewer */}
-            <div className="doc-preview-body">
-              {isImageFile(activePreviewDoc.originalname || activePreviewDoc.name, activePreviewDoc.path || activePreviewDoc.url) ? (
-                <div className="doc-preview-img-container">
-                  <img 
-                    src={typeof activePreviewDoc === 'string' ? activePreviewDoc : (activePreviewDoc.path || activePreviewDoc.url)} 
-                    alt={activePreviewDoc.originalname || 'Document'}
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: 'calc(92vh - 220px)',
-                      objectFit: 'contain',
-                      borderRadius: '8px',
-                      transform: `scale(${previewZoom}) rotate(${previewRotation}deg)`,
-                      transition: 'transform 0.2s ease',
-                      boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
-                    }}
-                  />
-                  <div className="doc-preview-zoom-bar">
-                    <button 
-                      type="button"
-                      className="btn btn-outline btn-sm" 
-                      onClick={() => setPreviewZoom(z => Math.max(0.5, +(z - 0.25).toFixed(2)))}
-                      style={{ padding: '4px 8px', fontSize: '12px' }}
-                      title="Zoom Out"
-                    >
-                      <ZoomOut size={14} />
-                    </button>
-                    <span style={{ fontSize: '11px', fontWeight: '700', minWidth: '42px', textAlign: 'center', color: '#0f172a' }}>
-                      {Math.round(previewZoom * 100)}%
-                    </span>
-                    <button 
-                      type="button"
-                      className="btn btn-outline btn-sm" 
-                      onClick={() => setPreviewZoom(z => Math.min(3, +(z + 0.25).toFixed(2)))}
-                      style={{ padding: '4px 8px', fontSize: '12px' }}
-                      title="Zoom In"
-                    >
-                      <ZoomIn size={14} />
-                    </button>
-                    <button 
-                      type="button"
-                      className="btn btn-outline btn-sm" 
-                      onClick={() => setPreviewRotation(r => (r + 90) % 360)}
-                      style={{ padding: '4px 8px', fontSize: '12px', marginLeft: '4px' }}
-                      title="Rotate 90°"
-                    >
-                      <RotateCw size={14} />
-                    </button>
-                    <button 
-                      type="button"
-                      className="btn btn-outline btn-sm" 
-                      onClick={() => { setPreviewZoom(1); setPreviewRotation(0); }}
-                      style={{ padding: '4px 8px', fontSize: '11px', marginLeft: '4px' }}
-                    >
-                      Reset
-                    </button>
-                  </div>
-                </div>
-              ) : isPdfFile(activePreviewDoc.originalname || activePreviewDoc.name, activePreviewDoc.path || activePreviewDoc.url) ? (
-                <div style={{ width: '100%', height: 'calc(92vh - 200px)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <iframe 
-                    src={typeof activePreviewDoc === 'string' ? activePreviewDoc : (activePreviewDoc.path || activePreviewDoc.url)}
-                    title={activePreviewDoc.originalname || 'PDF Viewer'}
-                    style={{ width: '100%', height: '100%', border: 'none', borderRadius: '8px', background: '#fff' }}
-                  />
-                </div>
-              ) : (
-                <div style={{ textAlign: 'center', color: '#fff', padding: '40px 20px' }}>
-                  <FileText size={64} style={{ color: '#60a5fa', marginBottom: '16px' }} />
-                  <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#fff' }}>{activePreviewDoc.originalname || 'Document'}</h3>
-                  <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '24px' }}>This file type cannot be previewed directly inline.</p>
-                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                    <button 
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={(e) => handleFileDownload(activePreviewDoc, e)}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontWeight: '700' }}
-                    >
-                      <Download size={16} /> Save / Download File
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="doc-preview-footer">
-              <button 
-                type="button"
-                className="btn btn-outline" 
-                style={{ flex: 1 }}
-                onClick={() => { setActivePreviewDoc(null); setPreviewZoom(1); setPreviewRotation(0); }}
-              >
-                Close
-              </button>
-              <button 
-                type="button"
-                className="btn btn-primary" 
-                style={{ flex: 2, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: '700' }}
-                onClick={(e) => handleFileDownload(activePreviewDoc, e)}
-              >
-                <Download size={16} /> Save / Download to Device
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* CUSTOM PREMIUM MODAL */}
       {customModal.open && (
