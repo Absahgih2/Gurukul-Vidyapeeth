@@ -4,7 +4,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://arizona-services-permissions-skip.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://arizona-services-permissions-skip.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://inexpensive-buck-passengers-buf.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://inexpensive-buck-passengers-buf.trycloudflare.com/api/:path*" }
   ]
 }
