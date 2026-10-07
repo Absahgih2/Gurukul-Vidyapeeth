@@ -102,7 +102,7 @@ sed -i -E "s|https://[a-zA-Z0-9.-]+\.trycloudflare\.com|$NEW_URL|g" vercel.json
 
 # 8. Commit and push
 git add vercel.json
-git commit -m "chore: auto-sync tunnel url to $NEW_URL [skip ci]"
+git commit -m "chore: auto-sync tunnel url to $NEW_URL"
 
 echo "Pushing changes to GitHub to trigger Vercel auto-deploy..."
 git pull --rebase origin main > /dev/null 2>&1 || true
