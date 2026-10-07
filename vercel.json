@@ -4,7 +4,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://approaches-jewish-surrounding-discussing.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://approaches-jewish-surrounding-discussing.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://hamilton-initially-generations-sponsored.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://hamilton-initially-generations-sponsored.trycloudflare.com/api/:path*" }
   ]
 }
