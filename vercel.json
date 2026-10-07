@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://tucson-wallet-jacket-collectibles.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://tucson-wallet-jacket-collectibles.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://installed-trinity-employer-mel.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://installed-trinity-employer-mel.trycloudflare.com/api/:path*" }
   ]
 }
