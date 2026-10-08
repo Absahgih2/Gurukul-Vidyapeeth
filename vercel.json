@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://parks-often-stan-shoot.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://parks-often-stan-shoot.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://minolta-hundreds-moved-growing.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://minolta-hundreds-moved-growing.trycloudflare.com/api/:path*" }
   ]
 }
