@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://newton-burke-tank-methods.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://newton-burke-tank-methods.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://beer-yacht-concord-april.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://beer-yacht-concord-april.trycloudflare.com/api/:path*" }
   ]
 }
