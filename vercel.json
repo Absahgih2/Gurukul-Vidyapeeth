@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://files-epa-longest-prairie.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://files-epa-longest-prairie.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://custody-stats-revision-carnival.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://custody-stats-revision-carnival.trycloudflare.com/api/:path*" }
   ]
 }
