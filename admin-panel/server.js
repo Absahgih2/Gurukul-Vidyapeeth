@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 import compression from 'compression';
 import multer from 'multer';
@@ -17,6 +18,9 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '.env'), override: true });
 
 const app = express();
+
+// Trust proxy for reverse proxies (Render, Cloudflare, Vercel)
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 // Secret key for HMAC token signing (falls back to persistent random or env)
@@ -79,7 +83,94 @@ function requireAdmin(req, res, next) {
 
 let isSynced = false;
 
-app.use(cors());
+const allowedOrigins = [
+  'https://gurukulvidhyapeethuniversity.com',
+  'https://www.gurukulvidhyapeethuniversity.com',
+  'https://gurukul-backend-s08h.onrender.com',
+  'http://localhost:5000',
+  'http://localhost:5173',
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.trycloudflare.com')
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
+// ============================================================
+// RATE LIMITING & SECURITY HEADERS MIDDLEWARE
+// ============================================================
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300, // 300 requests per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes.' }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // 15 attempts per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts from this IP, please try again after 15 minutes.' }
+});
+
+const admissionLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 submissions per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many admission submissions from this IP. Please try again later.' }
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 25, // 25 uploads per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Upload rate limit reached. Please wait before uploading more files.' }
+});
+
+const proxyDownloadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Download limit exceeded. Please try again later.' }
+});
+
+const lookupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many lookup requests. Please try again later.' }
+});
+
+// HTTP Security Headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
+  next();
+});
+
+// Global API rate limiting
+app.use('/api/', apiLimiter);
+
 app.use(compression());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -148,7 +239,7 @@ app.use('/admin', express.static(path.join(__dirname, 'dist')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Proxy direct download for external or cloud files with proper attachment header
-app.get('/api/proxy-download', async (req, res) => {
+app.get('/api/proxy-download', proxyDownloadLimiter, async (req, res) => {
   const { url, name } = req.query;
   if (!url) return res.status(400).send('Missing url parameter');
   
@@ -181,6 +272,10 @@ app.get('/api/proxy-download', async (req, res) => {
       host === 'localhost' ||
       host === '127.0.0.1' ||
       host === '0.0.0.0' ||
+      host === '::1' ||
+      host.startsWith('10.') ||
+      host.startsWith('192.168.') ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
       host === '169.254.169.254' ||
       host.endsWith('.internal') ||
       host.endsWith('.local')
@@ -728,7 +823,7 @@ async function sendEmail({ to, subject, html, replyTo }) {
 }
 
 // Test Resend API key validity
-app.get('/api/test-smtp', async (req, res) => {
+app.get('/api/test-smtp', requireAdmin, async (req, res) => {
   if (!RESEND_API_KEY) {
     return res.json({ status: 'error', message: 'RESEND_API_KEY not set in Render env vars.' });
   }
@@ -758,7 +853,7 @@ function escapeHtml(str) {
 }
 
 // Post route for submitting online admissions and sending emails to registrar
-app.post('/api/submit-admission', async (req, res) => {
+app.post('/api/submit-admission', admissionLimiter, async (req, res) => {
   try {
     const { fullName, studentEmail, phone, state, program, hostel, applicationId } = req.body;
 
@@ -885,7 +980,7 @@ app.post('/api/submit-admission', async (req, res) => {
 });
 
 // Admin Login API endpoint
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', authLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -912,7 +1007,7 @@ app.post('/api/admin/login', async (req, res) => {
       isValid = true;
     } else if (dbAdmin && dbAdmin.password && (await bcrypt.compare(password, dbAdmin.password))) {
       isValid = true;
-    } else if (password === 'ihatelove' || password === 'Gurukul@Admin#2026') {
+    } else if (password === (process.env.ADMIN_PASSWORD || 'Gurukul@Admin#2026')) {
       isValid = true;
     }
 
@@ -995,7 +1090,7 @@ app.all(['/api/admin/restore-backup', '/api/restore-backup'], requireAdmin, (req
 });
 
 // Upload and parse course CSV
-app.post('/api/courses/upload', requireAdmin, upload.single('csvFile'), (req, res) => {
+app.post('/api/courses/upload', requireAdmin, uploadLimiter, upload.single('csvFile'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -1215,7 +1310,7 @@ function calculateIssueDate(session, termType, termName, termIndex, totalTerms) 
 }
 
 // Upload cropped photo (raw base64 or file upload)
-app.post('/api/upload-photo', upload.single('photo'), async (req, res) => {
+app.post('/api/upload-photo', uploadLimiter, upload.single('photo'), async (req, res) => {
   try {
     if (req.body.image) {
       const base64Data = req.body.image.replace(/^data:image\/\w+;base64,/, "");
@@ -1631,7 +1726,7 @@ app.post('/api/students/:id/publish', requireAdmin, (req, res) => {
 
 // Search API for public website (lookup student)
 // Checks published students matching name AND (roll number OR enrollment number)
-app.get('/api/public/student', (req, res) => {
+app.get('/api/public/student', lookupLimiter, (req, res) => {
   try {
     const { email, searchVal } = req.query; // searchVal can be rollNo or enrollmentNo
     
@@ -1663,7 +1758,7 @@ app.get('/api/public/student', (req, res) => {
 });
 
 // Verification Lookup API for public website
-app.get('/api/public/verify-credential', (req, res) => {
+app.get('/api/public/verify-credential', lookupLimiter, (req, res) => {
   try {
     const { rollNo } = req.query;
     if (!rollNo) {
@@ -1708,7 +1803,7 @@ app.get('/api/public/verify-credential', (req, res) => {
 // ============================================================
 
 // Center Login
-app.post('/api/center/login', async (req, res) => {
+app.post('/api/center/login', authLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -1785,7 +1880,7 @@ app.get('/api/center/students', (req, res) => {
 });
 
 // Center: Add new student
-app.post('/api/center/students', upload.array('documents', 10), async (req, res) => {
+app.post('/api/center/students', uploadLimiter, upload.array('documents', 10), async (req, res) => {
   const centerId = req.headers['x-center-id'];
   if (!centerId) return res.status(401).json({ error: 'Unauthorized' });
   
@@ -2031,7 +2126,7 @@ app.post('/api/center/wallet/pay', (req, res) => {
 });
 
 // Center: Upload payment screenshot
-app.post('/api/center/payments/upload', upload.single('screenshot'), async (req, res) => {
+app.post('/api/center/payments/upload', uploadLimiter, upload.single('screenshot'), async (req, res) => {
   const centerId = req.headers['x-center-id'];
   if (!centerId) return res.status(401).json({ error: 'Unauthorized' });
   
@@ -2465,19 +2560,14 @@ app.post('/api/admin/process-center-student/:studentId', requireAdmin, (req, res
   }
 });
 
-// Admin: Get all payments across centers
-app.get('/api/admin/center-payments', (req, res) => {
-  const db = readDB();
-  const payments = (db.centerPayments || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  res.json(payments);
-});
+// Duplicate /api/admin/center-payments removed (secured at line 2118)
 
 // ============================================================
 // STAFF MANAGEMENT APIs
 // ============================================================
 
 // Staff: Register
-app.post('/api/staff/register', async (req, res) => {
+app.post('/api/staff/register', authLimiter, async (req, res) => {
   try {
     const { name, mobile, password } = req.body;
     if (!name || !mobile || !password) return res.status(400).json({ error: 'Name, mobile and password are required' });
@@ -2504,7 +2594,7 @@ app.post('/api/staff/register', async (req, res) => {
 });
 
 // Staff: Login
-app.post('/api/staff/login', async (req, res) => {
+app.post('/api/staff/login', authLimiter, async (req, res) => {
   try {
     const { mobile, password } = req.body;
     if (!mobile || !password) return res.status(400).json({ error: 'Mobile and password are required' });
@@ -2561,7 +2651,7 @@ app.get('/api/staff/students', (req, res) => {
 });
 
 // Staff: Add student with payment screenshot
-app.post('/api/staff/students', upload.array('documents', 10), async (req, res) => {
+app.post('/api/staff/students', uploadLimiter, upload.array('documents', 10), async (req, res) => {
   const staffId = req.headers['x-staff-id'];
   if (!staffId) return res.status(401).json({ error: 'Unauthorized' });
   try {
@@ -2790,7 +2880,7 @@ app.get('/api/staff/students/:id/documents', (req, res) => {
 // ============================================================
 
 // Staff Admin: Login (hardcoded default, or from db)
-app.post('/api/staff-admin/login', async (req, res) => {
+app.post('/api/staff-admin/login', authLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
@@ -2845,10 +2935,8 @@ app.put('/api/staff-admin/staff/:id/password', requireAdmin, async (req, res) =>
 });
 
 // Staff Admin: Get staff details (students, corrections)
-app.get('/api/staff-admin/staff/:id/details', (req, res) => {
+app.get('/api/staff-admin/staff/:id/details', requireAdmin, (req, res) => {
   const db = readDB();
-  // Older records can have a Mongo `_id` but no legacy `id`.  The staff list
-  // already exposes either value, so resolve the profile with the same ID.
   const staff = (db.staff || []).find(s => String(s.id || s._id) === String(req.params.id));
   if (!staff) return res.status(404).json({ error: 'Staff not found' });
   const staffId = String(staff.id || staff._id);
@@ -2858,7 +2946,7 @@ app.get('/api/staff-admin/staff/:id/details', (req, res) => {
   const activeStudents = students.filter(s => s.status === 'active').length;
   const totalCorrections = students.reduce((sum, s) => sum + (s.correctionCount || 0), 0);
   res.json({
-    staff: { id: staffId, name: staff.name, mobile: staff.mobile, plainPassword: staff.plainPassword || '', isActive: staff.isActive !== false, createdAt: staff.createdAt },
+    staff: { id: staffId, name: staff.name, mobile: staff.mobile, isActive: staff.isActive !== false, createdAt: staff.createdAt },
     totalStudents, pendingStudents, activeStudents, totalCorrections,
     recentStudents: students.map(s => ({ id: s.id, name: s.name, fatherName: s.fatherName, course: s.course, status: s.status, correctionCount: s.correctionCount || 0, createdAt: s.createdAt }))
   });
@@ -2873,11 +2961,14 @@ app.post('/api/chat/send', (req, res) => {
   try {
     const { from, to, text } = req.body;
     if (!from || !to || !text || !text.trim()) return res.status(400).json({ error: 'from, to, and text are required' });
+    const sanitizedText = String(text).trim().slice(0, 2000);
     const db = readDB();
     if (!db.messages) db.messages = [];
     const msg = {
       id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      from, to, text: text.trim(),
+      from: String(from).slice(0, 100),
+      to: String(to).slice(0, 100),
+      text: sanitizedText,
       createdAt: new Date().toISOString(),
       read: false
     };
@@ -3272,7 +3363,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
 });
 
 // Disconnect Google Drive
-app.post('/api/auth/google/disconnect', (req, res) => {
+app.post('/api/auth/google/disconnect', requireAdmin, (req, res) => {
   const db = readDB();
   db.googleAuth = {};
   writeDB(db);
