@@ -322,7 +322,9 @@ function initProgramFilters() {
       const filter = tab.getAttribute('data-filter');
 
       cards.forEach(card => {
-        if (filter === 'all' || card.getAttribute('data-category') === filter) {
+        const cat = card.getAttribute('data-category') || '';
+        const cats = cat.split(' ');
+        if (filter === 'all' || cats.includes(filter)) {
           card.style.display = 'flex';
           card.style.animation = 'fadeIn 0.3s ease';
         } else {
@@ -425,6 +427,62 @@ function openProgramDetail(programKey) {
       eligibility: "Bachelor's Degree in any discipline",
       description: 'Comprehensive study of Indian labour legislation including Industrial Disputes Act, Factories Act, Employees Provident Fund, Maternity Benefit Act, and other key employment and industrial relations laws.',
       careers: 'Labour Law Consultant, HR Compliance Officer, Industrial Relations Manager, Legal Advisor, Employment Law Specialist'
+    },
+    'bsc-industrial-safety': {
+      title: 'Bachelor of Science (B.Sc.) in Industrial Safety',
+      duration: '3 Years (6 Semesters)',
+      eligibility: '10+2 with Science stream (PCM/PCB) or equivalent (Min 50% Marks)',
+      description: 'Comprehensive scientific and applied education in workplace hazard recognition, industrial hygiene monitoring, hazardous substances management, and regulatory compliance under the Factories Act and ISO 45001.',
+      careers: 'Industrial Safety Officer, HSE Specialist, Safety Auditor, Risk Assessor, Compliance Officer'
+    },
+    'btech-industrial-safety': {
+      title: 'Bachelor of Technology (B.Tech.) in Industrial Safety',
+      duration: '4 Years (8 Semesters)',
+      eligibility: '10+2 with Physics, Mathematics & Chemistry (Min 50% Marks)',
+      description: 'Advanced 4-year engineering curriculum covering mechanical reliability, chemical reactor safety, quantitative risk analysis (QRA), HAZOP, and automated safety instrumented systems (SIS/SIL).',
+      careers: 'Industrial Safety Engineer, Process Safety Lead, Plant HSE Manager, Loss Prevention Specialist, Safety Systems Consultant'
+    },
+    'bsc-health-and-safety': {
+      title: 'Bachelor of Science (B.Sc.) in Health and Safety',
+      duration: '3 Years (6 Semesters)',
+      eligibility: '10+2 with Science stream (PCB/PCM) or equivalent (Min 50% Marks)',
+      description: 'Undergraduate science degree focusing on occupational health surveillance, ergonomics, physical & biological hazard mitigation, workplace pollution control, and emergency trauma healthcare.',
+      careers: 'Health & Safety Officer, Workplace Wellness Coordinator, Environmental Health Inspector, HSE Coordinator, Safety Advisor'
+    },
+    'btech-health-and-safety': {
+      title: 'Bachelor of Technology (B.Tech.) in Health and Safety',
+      duration: '4 Years (8 Semesters)',
+      eligibility: '10+2 with Physics, Mathematics & Chemistry (Min 50% Marks)',
+      description: 'Rigorous engineering training in industrial ventilation, biohazard containment facility design (BSL-1 to 4), acoustic damping, ergonomic tooling design, and corporate EHS system management.',
+      careers: 'Health & Safety Engineer, Corporate EHS Specialist, Industrial Ergonomist, Biosafety Officer, EHS Compliance Consultant'
+    },
+    'bsc-fire-and-safety': {
+      title: 'Bachelor of Science (B.Sc.) in Fire and Safety',
+      duration: '3 Years (6 Semesters)',
+      eligibility: '10+2 with Science stream (PCM/PCB) or equivalent (Min 50% Marks)',
+      description: 'Practical and theoretical program covering combustion chemistry, automatic sprinkler and hydrant installations, smoke management, disaster rescue techniques, paramedic first aid, and fire auditing.',
+      careers: 'Fire and Safety Officer, Station Fire Officer, Fire Protection Specialist, Safety Inspector, Fire Risk Assessor'
+    },
+    'btech-fire-and-safety': {
+      title: 'Bachelor of Technology (B.Tech.) in Fire and Safety',
+      duration: '4 Years (8 Semesters)',
+      eligibility: '10+2 with Physics, Mathematics & Chemistry (Min 50% Marks)',
+      description: 'Premier 4-year engineering program delivering high-level expertise in computational fire dynamics, hydraulic fire protection networks, structural fire engineering, explosion mitigation, and refinery safety.',
+      careers: 'Fire Safety Engineer, Fire Protection System Designer, Refinery Fire Chief, Fire Risk Consultant, Loss Prevention Specialist'
+    },
+    'bsc-occupational-health-and-safety': {
+      title: 'Bachelor of Science (B.Sc.) in Occupational Health and Safety',
+      duration: '3 Years (6 Semesters)',
+      eligibility: '10+2 with Science stream (PCB/PCM) or equivalent (Min 50% Marks)',
+      description: 'Specialized study in occupational diseases, workplace epidemiology, industrial hygiene sampling, ergonomic assessments, psychological safety, and ILO/OSHA regulatory frameworks.',
+      careers: 'Occupational Health and Safety Officer, Industrial Hygienist, Ergonomics Specialist, Corporate OHS Auditor, Risk Analyst'
+    },
+    'btech-fire-and-industrial-safety': {
+      title: 'Bachelor of Technology (B.Tech.) in Fire and Industrial Safety',
+      duration: '4 Years (8 Semesters)',
+      eligibility: '10+2 with Physics, Mathematics & Chemistry (Min 50% Marks)',
+      description: 'Dual-discipline engineering track blending structural fire engineering, fixed suppression design, machine safeguarding, process hazard analysis, and total plant loss prevention across major industries.',
+      careers: 'Fire & Industrial Safety Engineer, Process Safety Lead, Plant HSE Manager, Fire & Safety Operations Head, Loss Prevention Engineer'
     }
   };
 
@@ -529,6 +587,8 @@ function calculateFee() {
   else if (program === 'allied-health') baseTuition = 30000;
   else if (program === 'vocational') baseTuition = 17500;
   else if (program === 'vlda') baseTuition = 75000;
+  else if (program === 'btech-safety') baseTuition = 45000;
+  else if (program === 'bsc-safety') baseTuition = 30000;
 
   // Domicile Grant
   let grantPercent = 0;

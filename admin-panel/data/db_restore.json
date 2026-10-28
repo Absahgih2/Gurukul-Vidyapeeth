@@ -411,6 +411,1750 @@
           }
         ]
       }
+    },
+    {
+      "name": "Bachelor of Science (B.Sc.) in Industrial Safety",
+      "type": "semester",
+      "terms": {
+        "1st Semester": [
+          {
+            "code": "BIS 101",
+            "name": "PRINCIPLES OF INDUSTRIAL SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 102",
+            "name": "INDUSTRIAL HAZARD IDENTIFICATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 103",
+            "name": "SAFETY MANAGEMENT & POLICIES",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 104",
+            "name": "BASICS OF INDUSTRIAL PSYCHOLOGY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 105",
+            "name": "APPLIED SCIENCES FOR SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "2nd Semester": [
+          {
+            "code": "BIS 201",
+            "name": "MECHANICAL SAFETY & SAFEGUARDING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 202",
+            "name": "ELECTRICAL SYSTEMS & ARC SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 203",
+            "name": "CHEMICAL HAZARDS & STORAGE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 204",
+            "name": "PERSONAL PROTECTIVE EQUIPMENT (PPE)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 205",
+            "name": "SAFETY WORKSHOP PRACTICAL",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "3rd Semester": [
+          {
+            "code": "BIS 301",
+            "name": "INDUSTRIAL HYGIENE & MONITORING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 302",
+            "name": "INDUSTRIAL TOXICOLOGY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 303",
+            "name": "ERGONOMICS & BIOMECHANICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 304",
+            "name": "ENVIRONMENTAL POLLUTION & WASTE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 305",
+            "name": "HYGIENE MEASUREMENT LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "4th Semester": [
+          {
+            "code": "BIS 401",
+            "name": "QUANTITATIVE RISK ASSESSMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 402",
+            "name": "HAZOP & FAILURE MODE ANALYSIS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 403",
+            "name": "PLANT SAFETY INSPECTION PROTOCOLS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 404",
+            "name": "FIRE PREVENTION & PROTECTION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 405",
+            "name": "AUDITING WORKSHOP",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "5th Semester": [
+          {
+            "code": "BIS 501",
+            "name": "FACTORIES ACT & SAFETY LEGISLATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 502",
+            "name": "ISO 45001 SAFETY MANAGEMENT SYSTEMS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 503",
+            "name": "DISASTER PLANNING & EMERGENCY DRILLS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 504",
+            "name": "CONSTRUCTION & MINING SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 505",
+            "name": "SAFETY SEMINAR & CASE STUDIES",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "6th Semester": [
+          {
+            "code": "BIS 601",
+            "name": "FIELD INDUSTRIAL SAFETY AUDIT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 602",
+            "name": "MAJOR SAFETY CAPSTONE PROJECT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BIS 603",
+            "name": "COMPREHENSIVE VIVA VOCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ]
+      }
+    },
+    {
+      "name": "Bachelor of Technology (B.Tech.) in Industrial Safety",
+      "type": "semester",
+      "terms": {
+        "1st Semester": [
+          {
+            "code": "BTIS 101",
+            "name": "ENGINEERING MATHEMATICS - I",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 102",
+            "name": "APPLIED PHYSICS FOR ENGINEERS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 103",
+            "name": "ENGINEERING CHEMISTRY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 104",
+            "name": "INTRODUCTION TO SAFETY ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 105",
+            "name": "ENGINEERING GRAPHICS & CAD",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "2nd Semester": [
+          {
+            "code": "BTIS 201",
+            "name": "ENGINEERING MATHEMATICS - II",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 202",
+            "name": "STRENGTH OF MATERIALS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 203",
+            "name": "ELECTRICAL & ELECTRONICS SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 204",
+            "name": "ENGINEERING WORKSHOP PRACTICE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 205",
+            "name": "COMPUTER PROGRAMMING FOR SIMULATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "3rd Semester": [
+          {
+            "code": "BTIS 301",
+            "name": "FLUID DYNAMICS & THERMAL ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 302",
+            "name": "CHEMICAL REACTION ENGINEERING HAZARDS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 303",
+            "name": "INDUSTRIAL HYGIENE & ERGONOMICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 304",
+            "name": "TOXIC DISPERSION & GAS MODELING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 305",
+            "name": "PROCESS SAFETY LABORATORY",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "4th Semester": [
+          {
+            "code": "BTIS 401",
+            "name": "PRESSURE VESSEL & BOILER SAFETY DESIGN",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 402",
+            "name": "STRUCTURAL RELIABILITY & FAILURE ANALYSIS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 403",
+            "name": "MACHINE GUARDING & AUTOMATION SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 404",
+            "name": "FIRE PROTECTION SYSTEMS ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 405",
+            "name": "MECHANICAL SAFETY LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "5th Semester": [
+          {
+            "code": "BTIS 501",
+            "name": "SAFETY INSTRUMENTATION SYSTEMS (SIS/SIL)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 502",
+            "name": "QUANTITATIVE RISK ANALYSIS (QRA)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 503",
+            "name": "HAZOP & FAULT TREE MODELING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 504",
+            "name": "INDUSTRIAL NOISE & RADIATION CONTROL",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 505",
+            "name": "SAFETY INSTRUMENTATION LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "6th Semester": [
+          {
+            "code": "BTIS 601",
+            "name": "EXPLOSION VENTING & BLAST DESIGN",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 602",
+            "name": "HAZARDOUS AREA CLASSIFICATION (ATEX/NEC)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 603",
+            "name": "PLANT LAYOUT & SITING OPTIMIZATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 604",
+            "name": "OFFSHORE & MARINE SAFETY ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 605",
+            "name": "RISK MODELING SIMULATION LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "7th Semester": [
+          {
+            "code": "BTIS 701",
+            "name": "ISO 45001 & ISO 14001 HSE AUDITING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 702",
+            "name": "ENVIRONMENTAL IMPACT & WASTE MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 703",
+            "name": "LEGAL STATUTES & SAFETY JURISPRUDENCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 704",
+            "name": "DISASTER MITIGATION & RESCUE ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 705",
+            "name": "PRE-PROJECT DISSERTATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "8th Semester": [
+          {
+            "code": "BTIS 801",
+            "name": "CORE INDUSTRIAL APPRENTICESHIP",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 802",
+            "name": "CAPSTONE SAFETY ENGINEERING PROJECT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTIS 803",
+            "name": "TECHNICAL DEFENSE & VIVA VOCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ]
+      }
+    },
+    {
+      "name": "Bachelor of Science (B.Sc.) in Health and Safety",
+      "type": "semester",
+      "terms": {
+        "1st Semester": [
+          {
+            "code": "BHS 101",
+            "name": "FOUNDATIONS OF HEALTH & SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 102",
+            "name": "HUMAN BIOLOGY & PHYSIOLOGY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 103",
+            "name": "WORKPLACE HYGIENE PRINCIPLES",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 104",
+            "name": "ENVIRONMENTAL HEALTH SCIENCES",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 105",
+            "name": "BASIC HEALTH SCIENCES LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "2nd Semester": [
+          {
+            "code": "BHS 201",
+            "name": "BIOLOGICAL HAZARDS & INFECTION CONTROL",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 202",
+            "name": "CHEMICAL EXPOSURE & OCCUPATIONAL TOXICOLOGY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 203",
+            "name": "PHYSICAL AGENTS & RADIATION HAZARDS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 204",
+            "name": "WORKPLACE HAZARD RECOGNITION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 205",
+            "name": "BIOMEDICAL SAFETY LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "3rd Semester": [
+          {
+            "code": "BHS 301",
+            "name": "WORKPLACE ERGONOMICS & ANTHROPOMETRY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 302",
+            "name": "INDOOR AIR QUALITY & VENTILATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 303",
+            "name": "NOISE MEASUREMENT & HEARING CONSERVATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 304",
+            "name": "HEALTH SURVEILLANCE SYSTEMS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 305",
+            "name": "ERGONOMIC EVALUATION PRACTICAL",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "4th Semester": [
+          {
+            "code": "BHS 401",
+            "name": "EMERGENCY FIRST AID & TRAUMA MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 402",
+            "name": "INCIDENT INVESTIGATION & REPORTING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 403",
+            "name": "OCCUPATIONAL EPIDEMIOLOGY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 404",
+            "name": "HAZARDOUS WASTE & EFFLUENT SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 405",
+            "name": "EMERGENCY RESPONSE DRILLS LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "5th Semester": [
+          {
+            "code": "BHS 501",
+            "name": "HEALTH & SAFETY LEGISLATION (ILO/STATUTES)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 502",
+            "name": "WORKPLACE WELLNESS & MENTAL HEALTH",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 503",
+            "name": "HEALTH & SAFETY AUDIT PROTOCOLS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 504",
+            "name": "HOSPITAL & CLINICAL FACILITY SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 505",
+            "name": "COMMUNITY HEALTH SEMINAR",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "6th Semester": [
+          {
+            "code": "BHS 601",
+            "name": "HEALTHCARE & INDUSTRIAL INTERNSHIP",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 602",
+            "name": "MAJOR FIELD HEALTH & SAFETY PROJECT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BHS 603",
+            "name": "COMPREHENSIVE PROJECT VIVA",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ]
+      }
+    },
+    {
+      "name": "Bachelor of Technology (B.Tech.) in Health and Safety",
+      "type": "semester",
+      "terms": {
+        "1st Semester": [
+          {
+            "code": "BTHS 101",
+            "name": "MATHEMATICS - I (CALCULUS & ALGEBRA)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 102",
+            "name": "ENGINEERING PHYSICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 103",
+            "name": "ENVIRONMENTAL CHEMISTRY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 104",
+            "name": "INTRODUCTION TO HEALTH & SAFETY ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 105",
+            "name": "ENGINEERING GRAPHICS LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "2nd Semester": [
+          {
+            "code": "BTHS 201",
+            "name": "MATHEMATICS - II (DIFFERENTIAL EQUATIONS)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 202",
+            "name": "BIOMECHANICS FOR ENGINEERS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 203",
+            "name": "MATERIALS SCIENCE & BIO-COMPATIBILITY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 204",
+            "name": "ELECTRICAL HAZARDS & BIOPOTENTIAL SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 205",
+            "name": "SAFETY LAB & WORKSHOP",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "3rd Semester": [
+          {
+            "code": "BTHS 301",
+            "name": "INDUSTRIAL VENTILATION SYSTEM DESIGN",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 302",
+            "name": "AERODYNAMICS & AIR FILTRATION (HEPA/ULPA)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 303",
+            "name": "OCCUPATIONAL TOXICOLOGY & GAS SAMPLING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 304",
+            "name": "THERMAL ENVIRONMENT ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 305",
+            "name": "VENTILATION TESTING LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "4th Semester": [
+          {
+            "code": "BTHS 401",
+            "name": "ACOUSTIC ENGINEERING & NOISE CONTROL",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 402",
+            "name": "VIBRATION DAMPING & SEISMIC ISOLATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 403",
+            "name": "RADIATION SHIELDING DESIGN",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 404",
+            "name": "SAFETY INSTRUMENTATION & SENSORS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 405",
+            "name": "ACOUSTIC & RADIATION LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "5th Semester": [
+          {
+            "code": "BTHS 501",
+            "name": "ERGONOMIC SYSTEMS & TOOLING DESIGN",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 502",
+            "name": "HUMAN-MACHINE INTERFACE (HMI) SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 503",
+            "name": "COGNITIVE SAFETY & WORKPLACE FATIGUE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 504",
+            "name": "HEALTHCARE WASTE TREATMENT ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 505",
+            "name": "ERGONOMIC DESIGN STUDIO",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "6th Semester": [
+          {
+            "code": "BTHS 601",
+            "name": "BIOHAZARD CONTAINMENT DESIGN (BSL 1-4)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 602",
+            "name": "HOSPITAL ARCHITECTURE & SAFETY SYSTEMS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 603",
+            "name": "CLEANROOM HVAC & CONTAMINATION CONTROL",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 604",
+            "name": "QUANTITATIVE HEALTH RISK ASSESSMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 605",
+            "name": "BIOHAZARD FACILITY SIMULATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "7th Semester": [
+          {
+            "code": "BTHS 701",
+            "name": "GLOBAL EHS GOVERNANCE & ISO 45001 AUDITING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 702",
+            "name": "ENTERPRISE CRISIS MANAGEMENT & RESILIENCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 703",
+            "name": "ENVIRONMENTAL COMPLIANCE & LIFE CYCLE ASSESSMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 704",
+            "name": "STATUTORY SAFETY LAW & ETHICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 705",
+            "name": "PRE-PROJECT WORK",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "8th Semester": [
+          {
+            "code": "BTHS 801",
+            "name": "INDUSTRY EHS APPRENTICESHIP",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 802",
+            "name": "CAPSTONE HEALTH & SAFETY DESIGN PROJECT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTHS 803",
+            "name": "DISSERTATION DEFENSE & VIVA",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ]
+      }
+    },
+    {
+      "name": "Bachelor of Science (B.Sc.) in Fire and Safety",
+      "type": "semester",
+      "terms": {
+        "1st Semester": [
+          {
+            "code": "BFS 101",
+            "name": "CHEMISTRY OF COMBUSTION & FIRE DYNAMICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 102",
+            "name": "FIRE PHYSICS & HEAT TRANSFER",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 103",
+            "name": "CLASSIFICATION OF FIRES & EXTINGUISHING AGENTS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 104",
+            "name": "PORTABLE FIRE FIGHTING EQUIPMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 105",
+            "name": "FIRE SCIENCE EXPERIMENTATION LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "2nd Semester": [
+          {
+            "code": "BFS 201",
+            "name": "FIRE HYDRANT NETWORKS & RISING MAINS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 202",
+            "name": "AUTOMATIC SPRINKLER SYSTEM OPERATIONS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 203",
+            "name": "FIRE PUMPS, CONTROLLERS & RESERVOIRS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 204",
+            "name": "BREATHING APPARATUS (SCBA) & DRILLS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 205",
+            "name": "FIRE APPARATUS PRACTICAL LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "3rd Semester": [
+          {
+            "code": "BFS 301",
+            "name": "FIRE ALARM PANELS & SMOKE DETECTION SYSTEMS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 302",
+            "name": "PASSIVE FIRE PROTECTION & BUILDING MATERIALS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 303",
+            "name": "SMOKE EXTRACTION & FIRE COMPARTMENTATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 304",
+            "name": "ELECTRICAL FIRE PREVENTION STANDARDS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 305",
+            "name": "FIRE DETECTION & ALARM LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "4th Semester": [
+          {
+            "code": "BFS 401",
+            "name": "HAZARDOUS CHEMICALS & DANGEROUS GOODS (HAZMAT)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 402",
+            "name": "PETROLEUM & GAS STORAGE FIRE SAFETY (LPG/CNG)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 403",
+            "name": "EXPLOSIVES HANDLING & CHEMICAL TRANSPORT SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 404",
+            "name": "SPECIAL HAZARD FOAM & GASEOUS FLOODING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 405",
+            "name": "HAZMAT SIMULATION LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "5th Semester": [
+          {
+            "code": "BFS 501",
+            "name": "HIGH-RISE EVACUATION & EMERGENCY PLANNING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 502",
+            "name": "SPECIALIZED RESCUE TECHNIQUES & FIRST AID",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 503",
+            "name": "FIRE INVESTIGATION & FORENSIC EVIDENCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 504",
+            "name": "NATIONAL BUILDING CODE (NBC PART IV) & BYLAWS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 505",
+            "name": "RESCUE & DISASTER DRILL WORKSHOP",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "6th Semester": [
+          {
+            "code": "BFS 601",
+            "name": "LIVE DRILL & MOCK TURNOUT TRAINING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 602",
+            "name": "MAJOR FIRE AUDIT PROJECT & THESIS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BFS 603",
+            "name": "COMPREHENSIVE FIRE VIVA VOCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ]
+      }
+    },
+    {
+      "name": "Bachelor of Technology (B.Tech.) in Fire and Safety",
+      "type": "semester",
+      "terms": {
+        "1st Semester": [
+          {
+            "code": "BTFS 101",
+            "name": "ENGINEERING MATHEMATICS - I",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 102",
+            "name": "APPLIED PHYSICS & THERMODYNAMICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 103",
+            "name": "COMBUSTION CHEMISTRY FOR ENGINEERS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 104",
+            "name": "FUNDAMENTALS OF FIRE ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 105",
+            "name": "ENGINEERING DRAWING & CAD",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "2nd Semester": [
+          {
+            "code": "BTFS 201",
+            "name": "ENGINEERING MATHEMATICS - II",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 202",
+            "name": "FLUID MECHANICS & PIPE HYDRAULICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 203",
+            "name": "STRENGTH OF MATERIALS & STRUCTURES",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 204",
+            "name": "ELECTRICAL HAZARDS & EXPLOSION PROOFING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 205",
+            "name": "FLUID MECHANICS LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "3rd Semester": [
+          {
+            "code": "BTFS 301",
+            "name": "FIRE HYDRAULICS & WATER NETWORK DESIGN",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 302",
+            "name": "HEAT TRANSFER & THERMAL RADIATION MODELING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 303",
+            "name": "FIXED FIRE PROTECTION & DELUGE SYSTEMS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 304",
+            "name": "AUTOMATIC SPRINKLER SYSTEM HYDRAULIC SIZING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 305",
+            "name": "HYDRAULIC SIMULATION LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "4th Semester": [
+          {
+            "code": "BTFS 401",
+            "name": "STRUCTURAL FIRE ENGINEERING (STEEL & CONCRETE)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 402",
+            "name": "COMPUTATIONAL FLUID DYNAMICS (CFD) FIRE MODELING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 403",
+            "name": "SMOKE CONTROL & ATRIUM VENTILATION DESIGN",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 404",
+            "name": "HIGH-RISE EVACUATION & OCCUPANT MOVEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 405",
+            "name": "CFD FIRE MODELING LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "5th Semester": [
+          {
+            "code": "BTFS 501",
+            "name": "GASEOUS SUPPRESSION (NFPA 2001 CO2/FM200/NOVEC)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 502",
+            "name": "FOAM PROPORTIONING & HIGH-EXPANSION GENERATORS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 503",
+            "name": "EXPLOSION VENTING & DEFLAGRATION ARRESTORS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 504",
+            "name": "DRY CHEMICAL & WATER MIST ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 505",
+            "name": "SUPPRESSION DESIGN LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "6th Semester": [
+          {
+            "code": "BTFS 601",
+            "name": "NFPA & NATIONAL BUILDING CODE (NBC) COMPLIANCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 602",
+            "name": "INDUSTRIAL RISK ASSESSMENT & LOSS PREVENTION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 603",
+            "name": "ELECTRICAL FIRE SAFETY & SUBSTATION PROTECTION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 604",
+            "name": "PETROLEUM REFINERY & TANK FARM FIRE SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 605",
+            "name": "FIRE RISK AUDITING LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "7th Semester": [
+          {
+            "code": "BTFS 701",
+            "name": "OFFSHORE PLATFORM & MARINE FIRE PROTECTION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 702",
+            "name": "ADVANCED FORENSIC FIRE INVESTIGATION & ARSON",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 703",
+            "name": "CRISIS COMMAND & DISASTER MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 704",
+            "name": "FIRE LEGISLATION, STANDARDS & JURISPRUDENCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 705",
+            "name": "PRE-PROJECT CAPSTONE WORK",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "8th Semester": [
+          {
+            "code": "BTFS 801",
+            "name": "REFINERY / INDUSTRIAL FIRE ENGINEERING APPRENTICESHIP",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 802",
+            "name": "CAPSTONE FIRE PROTECTION DESIGN PROJECT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFS 803",
+            "name": "ENGINEERING DEFENSE & VIVA VOCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ]
+      }
+    },
+    {
+      "name": "Bachelor of Science (B.Sc.) in Occupational Health and Safety",
+      "type": "semester",
+      "terms": {
+        "1st Semester": [
+          {
+            "code": "BOHS 101",
+            "name": "PRINCIPLES OF OCCUPATIONAL HEALTH",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 102",
+            "name": "ANATOMY & PHYSIOLOGY OF WORK",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 103",
+            "name": "OCCUPATIONAL HYGIENE BASICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 104",
+            "name": "WORKPLACE HAZARD RECOGNITION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 105",
+            "name": "HYGIENE SURVEY PRACTICAL",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "2nd Semester": [
+          {
+            "code": "BOHS 201",
+            "name": "CHEMICAL & BIOLOGICAL EXPOSURE LIMITS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 202",
+            "name": "PHYSICAL AGENTS: NOISE, HEAT & RADIATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 203",
+            "name": "INDUSTRIAL TOXICOLOGY & METABOLISM",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 204",
+            "name": "AIR SAMPLING & RESPIRABLE PARTICLES",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 205",
+            "name": "EXPOSURE MONITORING LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "3rd Semester": [
+          {
+            "code": "BOHS 301",
+            "name": "OCCUPATIONAL ERGONOMICS & ANTHROPOMETRY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 302",
+            "name": "WORK-RELATED MUSCULOSKELETAL DISORDERS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 303",
+            "name": "PSYCHOSOCIAL HAZARDS & STRESS MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 304",
+            "name": "SHIFT WORK PHYSIOLOGY & HUMAN ERROR",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 305",
+            "name": "ERGONOMIC ASSESSMENT LAB (RULA/REBA)",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "4th Semester": [
+          {
+            "code": "BOHS 401",
+            "name": "OCCUPATIONAL EPIDEMIOLOGY & DISEASE SURVEILLANCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 402",
+            "name": "DIAGNOSIS OF OCCUPATIONAL DISEASES (PNEUMOCONIOSIS/DERMATITIS)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 403",
+            "name": "AUDIOMETRIC TESTING & SPIROMETRY PROTOCOLS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 404",
+            "name": "FIRST AID & OCCUPATIONAL HEALTH CENTER (OHC) OPS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 405",
+            "name": "OHC CLINICAL PRACTICAL",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "5th Semester": [
+          {
+            "code": "BOHS 501",
+            "name": "STATUTORY OHS LEGISLATION & ILO STANDARDS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 502",
+            "name": "OSHA / FACTORIES ACT COMPLIANCE INSPECTIONS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 503",
+            "name": "ISO 45001 OCCUPATIONAL HEALTH AUDITING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 504",
+            "name": "WORKPLACE WELLNESS & REHABILITATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 505",
+            "name": "OHS AUDITING WORKSHOP",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "6th Semester": [
+          {
+            "code": "BOHS 601",
+            "name": "FIELD OHS INTERNSHIP IN INDUSTRIAL UNIT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 602",
+            "name": "MAJOR OCCUPATIONAL HEALTH SURVEY PROJECT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BOHS 603",
+            "name": "COMPREHENSIVE OHS VIVA VOCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ]
+      }
+    },
+    {
+      "name": "Bachelor of Technology (B.Tech.) in Fire and Industrial Safety",
+      "type": "semester",
+      "terms": {
+        "1st Semester": [
+          {
+            "code": "BTFIS 101",
+            "name": "ENGINEERING MATHEMATICS - I",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 102",
+            "name": "ENGINEERING PHYSICS & COMBUSTION DYNAMICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 103",
+            "name": "APPLIED CHEMISTRY FOR PROCESS SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 104",
+            "name": "PRINCIPLES OF FIRE & SAFETY ENGINEERING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 105",
+            "name": "COMPUTER AIDED ENGINEERING GRAPHICS",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "2nd Semester": [
+          {
+            "code": "BTFIS 201",
+            "name": "ENGINEERING MATHEMATICS - II",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 202",
+            "name": "STRENGTH OF MATERIALS & MECHANICAL STRUCTURES",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 203",
+            "name": "THERMODYNAMICS & HEAT TRANSFER",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 204",
+            "name": "ELECTRICAL ENGINEERING SAFETY CODES",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 205",
+            "name": "MECHANICAL & SAFETY WORKSHOP",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "3rd Semester": [
+          {
+            "code": "BTFIS 301",
+            "name": "CHEMICAL PROCESS HAZARDS & REACTION SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 302",
+            "name": "FIRE DYNAMICS & PLUME DISPERSION MODELING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 303",
+            "name": "STORAGE & HANDLING OF FLAMMABLE LIQUIDS & GASES",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 304",
+            "name": "INDUSTRIAL HYGIENE & TOXICOLOGY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 305",
+            "name": "PROCESS HAZARDS SIMULATION LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "4th Semester": [
+          {
+            "code": "BTFIS 401",
+            "name": "INDUSTRIAL SAFETY ENGINEERING & MACHINE GUARDING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 402",
+            "name": "FIRE HYDRAULICS & AUTOMATIC SPRINKLER DESIGN",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 403",
+            "name": "FIRE DETECTION, GAS SENSING & ALARM NETWORKS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 404",
+            "name": "PRESSURE VESSEL & PIPING INTEGRITY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 405",
+            "name": "FIRE HYDRAULICS & DETECTION LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "5th Semester": [
+          {
+            "code": "BTFIS 501",
+            "name": "FIXED SUPPRESSION SYSTEMS (DELUGE, FOAM & GAS)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 502",
+            "name": "INDUSTRIAL VENTILATION & EXPLOSION CONTROL",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 503",
+            "name": "QUANTITATIVE RISK ASSESSMENT & CONSEqUENCE ANALYSIS",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 504",
+            "name": "HAZOP & FAULT TREE EVALUATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 505",
+            "name": "RISK ASSESSMENT COMPUTATION LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "6th Semester": [
+          {
+            "code": "BTFIS 601",
+            "name": "SAFETY INSTRUMENTED SYSTEMS (SIS) & SIL VERIFICATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 602",
+            "name": "HAZARDOUS AREA CLASSIFICATIONS (ATEX/IECEx)",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 603",
+            "name": "OFFSHORE, MARINE & MINING DISASTER PREVENTION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 604",
+            "name": "REFINERY, PETROCHEMICAL & POWER PLANT SAFETY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 605",
+            "name": "INSTRUMENTATION & SIL TESTING LAB",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "7th Semester": [
+          {
+            "code": "BTFIS 701",
+            "name": "PLANT LOSS PREVENTION & ASSET INTEGRITY MANAGEMENT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 702",
+            "name": "NFPA & NATIONAL BUILDING CODE FIRE SAFETY AUDITING",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 703",
+            "name": "ISO 45001 & STATUTORY LEGISLATION FOR INDUSTRY",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 704",
+            "name": "EMERGENCY CRISIS MANAGEMENT & DISASTER SIMULATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 705",
+            "name": "CAPSTONE PRE-PROJECT DISSERTATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ],
+        "8th Semester": [
+          {
+            "code": "BTFIS 801",
+            "name": "INDUSTRIAL APPRENTICESHIP IN MAJOR HAZARD INSTALLATION",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 802",
+            "name": "CAPSTONE FIRE & INDUSTRIAL SAFETY ENGINEERING PROJECT",
+            "maxMarks": 100,
+            "minMarks": 40
+          },
+          {
+            "code": "BTFIS 803",
+            "name": "TECHNICAL DEFENSE & VIVA VOCE",
+            "maxMarks": 100,
+            "minMarks": 40
+          }
+        ]
+      }
     }
   ],
   "centers": [],
