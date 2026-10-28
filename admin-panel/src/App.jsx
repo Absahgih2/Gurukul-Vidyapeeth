@@ -354,20 +354,42 @@ export default function App() {
   const [adminAllCenterPayments, setAdminAllCenterPayments] = useState([]);
   const [walletTopupModal, setWalletTopupModal] = useState({ open: false, centerId: '', centerName: '', amount: '', description: '' });
 
-  const handleAdminLogin = (e) => {
+  const getAdminHeaders = (extra = {}) => {
+    const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
+    return {
+      ...extra,
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+  };
+
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
     setAuthError('');
-    const cleanUsername = adminUsername.trim().toUpperCase();
-    if ((cleanUsername === 'GURUKUL VIDHYAPEETH UNIVERSITY' || cleanUsername === 'GURUKUL VIDYAPEETH UNIVERSITY') && adminPassword === 'ihatelove') {
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: adminUsername, password: adminPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAuthError(data.error || 'Invalid administrator credentials.');
+        return;
+      }
       setIsAdminAuthenticated(true);
+      if (data.token) {
+        localStorage.setItem('adminToken', data.token);
+        sessionStorage.setItem('adminToken', data.token);
+      }
       localStorage.setItem('isAdminAuthenticated', 'true');
       sessionStorage.setItem('isAdminAuthenticated', 'true');
       setAdminUsername('');
       setAdminPassword('');
       fetchData();
       checkGoogleDriveStatus();
-    } else {
-      setAuthError('Invalid administrator credentials.');
+    } catch (err) {
+      console.error(err);
+      setAuthError('Error connecting to backend authentication server.');
     }
   };
 
@@ -375,6 +397,8 @@ export default function App() {
     setIsAdminAuthenticated(false);
     localStorage.removeItem('isAdminAuthenticated');
     sessionStorage.removeItem('isAdminAuthenticated');
+    localStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminToken');
   };
 
   const checkGoogleDriveStatus = async () => {
@@ -599,14 +623,18 @@ export default function App() {
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/api/db');
+      const res = await fetch('/api/db', { headers: getAdminHeaders() });
+      if (res.status === 401) {
+        handleAdminLogout();
+        throw new Error('Session expired or unauthorized. Please log in.');
+      }
       if (!res.ok) throw new Error('Failed to load database.');
       const data = await res.json();
       setCourses(data.courses || []);
       setStudents(data.students || []);
     } catch (e) {
       console.error(e);
-      setErrorMsg('Could not connect to backend server. Make sure node server.js is running.');
+      setErrorMsg(e.message || 'Could not connect to backend server. Make sure node server.js is running.');
     } finally {
       setLoading(false);
     }
@@ -839,7 +867,7 @@ export default function App() {
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(bodyData)
       });
 
@@ -867,7 +895,7 @@ export default function App() {
   const handleDeleteStudent = async (id) => {
     if (!confirm('Are you sure you want to delete this student record? This cannot be undone.')) return;
     try {
-      const res = await fetch(`/api/students/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/students/${id}`, { method: 'DELETE', headers: getAdminHeaders() });
       if (res.ok) {
         await fetchData();
       } else {
@@ -894,7 +922,7 @@ export default function App() {
     try {
       const res = await fetch(`/api/students/${publishingStudent.id}/publish`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ publishedDocs: localPublishDocs })
       });
       if (res.ok) {
@@ -930,6 +958,7 @@ export default function App() {
     try {
       const res = await fetch('/api/courses/upload', {
         method: 'POST',
+        headers: getAdminHeaders(),
         body: form
       });
       const data = await res.json();
@@ -1225,14 +1254,14 @@ export default function App() {
   // ---- ADMIN CENTER MANAGEMENT HANDLERS ----
   const fetchAdminCenters = async () => {
     try {
-      const res = await fetch('/api/admin/centers');
+      const res = await fetch('/api/admin/centers', { headers: getAdminHeaders() });
       if (res.ok) setAdminCenters(await res.json());
     } catch (err) { console.error(err); }
   };
 
   const fetchAdminCenterPayments = async (centerId = null) => {
     try {
-      const res = await fetch('/api/admin/center-payments');
+      const res = await fetch('/api/admin/center-payments', { headers: getAdminHeaders() });
       if (res.ok) {
         const data = await res.json();
         setAdminCenterPayments(centerId ? data.filter(p => p.centerId === centerId) : data);
@@ -1246,7 +1275,7 @@ export default function App() {
     try {
       const url = adminEditingCenter ? `/api/admin/centers/${adminEditingCenter.id}` : '/api/admin/centers';
       const method = adminEditingCenter ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(adminCenterForm) });
+      const res = await fetch(url, { method, headers: getAdminHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(adminCenterForm) });
       if (!res.ok) { const err = await res.json(); alert(err.error || 'Failed'); return; }
       setAdminCenterForm({ centerName: '', username: '', password: '', contactPerson: '', email: '', phone: '', address: '' });
       setAdminEditingCenter(null);
@@ -1257,7 +1286,7 @@ export default function App() {
 
   const handleAdminDeleteCenter = async (id) => {
     if (!confirm('Delete this center? This cannot be undone.')) return;
-    try { await fetch(`/api/admin/centers/${id}`, { method: 'DELETE' }); fetchAdminCenters(); } catch (err) { console.error(err); }
+    try { await fetch(`/api/admin/centers/${id}`, { method: 'DELETE', headers: getAdminHeaders() }); fetchAdminCenters(); } catch (err) { console.error(err); }
   };
 
   // ---- STAFF HANDLERS ----
@@ -1457,9 +1486,9 @@ export default function App() {
   const fetchStaffAdminData = async () => {
     try {
       const [statsRes, staffRes, studentsRes] = await Promise.all([
-        fetch('/api/staff-admin/dashboard-stats'),
-        fetch('/api/staff-admin/staff'),
-        fetch('/api/staff-admin/students')
+        fetch('/api/staff-admin/dashboard-stats', { headers: getAdminHeaders() }),
+        fetch('/api/staff-admin/staff', { headers: getAdminHeaders() }),
+        fetch('/api/staff-admin/students', { headers: getAdminHeaders() })
       ]);
       if (statsRes.ok) setStaffAdminStats(await statsRes.json());
       if (staffRes.ok) setStaffAdminStaffList(await staffRes.json());
@@ -1851,7 +1880,7 @@ export default function App() {
   const handleAdminResetWallet = async (centerId) => {
     if (!confirm('Reset this center wallet balance to ₹0? This cannot be undone.')) return;
     try {
-      const res = await fetch(`/api/admin/centers/${centerId}/reset-wallet`, { method: 'POST' });
+      const res = await fetch(`/api/admin/centers/${centerId}/reset-wallet`, { method: 'POST', headers: getAdminHeaders() });
       if (res.ok) {
         fetchAdminCenters();
         alert('Wallet balance reset to ₹0');
@@ -1862,7 +1891,7 @@ export default function App() {
   const handleAdminClearPayments = async (centerId) => {
     if (!confirm('Delete ALL payment history and wallet transactions for this center? This cannot be undone.')) return;
     try {
-      const res = await fetch(`/api/admin/centers/${centerId}/clear-payments`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/centers/${centerId}/clear-payments`, { method: 'DELETE', headers: getAdminHeaders() });
       if (res.ok) {
         fetchAdminCenters();
         setAdminCenterPaymentsView(null);
@@ -1875,7 +1904,7 @@ export default function App() {
   const handleAdminDeleteCenterStudent = async (studentId) => {
     if (!confirm('Delete this center student record? This cannot be undone.')) return;
     try {
-      const res = await fetch(`/api/admin/center-students/${studentId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/center-students/${studentId}`, { method: 'DELETE', headers: getAdminHeaders() });
       if (res.ok && adminSelectedCenter) fetchAdminCenterStudents(adminSelectedCenter);
     } catch (err) { console.error(err); }
   };
@@ -1883,7 +1912,7 @@ export default function App() {
   const fetchAdminCenterStudents = async (centerId) => {
     setAdminSelectedCenter(centerId);
     try {
-      const res = await fetch(`/api/admin/center-students/${centerId}`);
+      const res = await fetch(`/api/admin/center-students/${centerId}`, { headers: getAdminHeaders() });
       if (res.ok) setAdminCenterStudents(await res.json());
     } catch (err) { console.error(err); }
   };
@@ -1891,7 +1920,7 @@ export default function App() {
   const handleAdminProcessStudent = async (studentId) => {
     if (!confirm('Process this student into the main system? Roll/Enrollment numbers will be generated.')) return;
     try {
-      const res = await fetch(`/api/admin/process-center-student/${studentId}`, { method: 'POST' });
+      const res = await fetch(`/api/admin/process-center-student/${studentId}`, { method: 'POST', headers: getAdminHeaders() });
       const data = await res.json();
       if (!res.ok) { alert(data.error || 'Failed'); return; }
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });

@@ -149,6 +149,16 @@ function fillRoll(rollNum) {
   }
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function runVerification() {
   const rollInput = document.getElementById('rollInput')?.value.trim();
   const resultBox = document.getElementById('verifyResult');
@@ -202,28 +212,39 @@ async function runVerification() {
 
   if (record) {
     resultBox.classList.add('valid');
-    const recordJson = JSON.stringify(record).replace(/'/g, "&#39;");
+    const safeName = escapeHtml(record.name);
+    const safeStatus = escapeHtml(record.status);
+    const safeRoll = escapeHtml(record.roll);
+    const safeEnrollment = escapeHtml(record.enrollmentNo || 'N/A');
+    const safeProgram = escapeHtml(record.program);
+    const safeYear = escapeHtml(record.year);
+    const safeActRef = escapeHtml(record.actRef);
+
     resultBox.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid rgba(6,214,160,0.3); padding-bottom:0.75rem;">
         <div>
-          <span class="badge badge-success"><i class="fa-solid fa-check"></i> ${record.status}</span>
-          <h4 style="margin-top:0.35rem; font-size:1.15rem; color:var(--text-main);">${record.name}</h4>
+          <span class="badge badge-success"><i class="fa-solid fa-check"></i> ${safeStatus}</span>
+          <h4 style="margin-top:0.35rem; font-size:1.15rem; color:var(--text-main);">${safeName}</h4>
         </div>
-        <button class="btn btn-sm btn-outline" onclick='viewFullCertificate(${recordJson})'>
+        <button class="btn btn-sm btn-outline" id="viewCertBtn">
           <i class="fa-solid fa-file-pdf"></i> View Certificate Seal
         </button>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.875rem; color:var(--text-muted);">
-        <div><strong>Roll No:</strong> ${record.roll}</div>
-        <div><strong>Enrollment No:</strong> ${record.enrollmentNo || 'N/A'}</div>
-        <div style="grid-column: span 2;"><strong>Degree/Program:</strong> ${record.program}</div>
-        <div><strong>Academic Period:</strong> ${record.year}</div>
+        <div><strong>Roll No:</strong> ${safeRoll}</div>
+        <div><strong>Enrollment No:</strong> ${safeEnrollment}</div>
+        <div style="grid-column: span 2;"><strong>Degree/Program:</strong> ${safeProgram}</div>
+        <div><strong>Academic Period:</strong> ${safeYear}</div>
         <div><strong>Status:</strong> Validated & Active</div>
       </div>
       <div style="margin-top:1rem; padding:0.6rem; background:rgba(0,0,0,0.2); border-radius:var(--radius-sm); font-size:0.8rem; color:var(--emerald);">
-        <i class="fa-solid fa-shield-halved"></i> Statutory Compliance: ${record.actRef} | VPO Melli, Namchi Campus Registry.
+        <i class="fa-solid fa-shield-halved"></i> Statutory Compliance: ${safeActRef} | VPO Melli, Namchi Campus Registry.
       </div>
     `;
+
+    document.getElementById('viewCertBtn')?.addEventListener('click', () => {
+      viewFullCertificate(record);
+    });
   } else {
     resultBox.classList.add('invalid');
     resultBox.innerHTML = `
@@ -244,6 +265,15 @@ function viewFullCertificate(record) {
   const certModalBody = document.getElementById('certModalBody');
   const certModal = document.getElementById('certModal');
   if (!certModalBody || !certModal) return;
+
+  const safeName = escapeHtml(record.name);
+  const safeProgram = escapeHtml(record.program);
+  const safeRoll = escapeHtml(record.roll);
+  const safeEnrollment = escapeHtml(record.enrollmentNo || 'N/A');
+  const safeYear = escapeHtml(record.year);
+  const safeFather = escapeHtml(record.fatherName || 'N/A');
+  const safeMother = escapeHtml(record.motherName || 'N/A');
+  const safePhoto = (record.photo && (record.photo.startsWith('data:image/') || record.photo.startsWith('/uploads/') || record.photo.startsWith('https://'))) ? record.photo : '';
 
   certModalBody.innerHTML = `
     <div style="background:var(--bg-card); border:2px solid var(--emerald); padding:2rem; border-radius:var(--radius-md); text-align:center; position:relative; font-family:'Outfit', 'Plus Jakarta Sans', sans-serif;">
@@ -266,27 +296,27 @@ function viewFullCertificate(record) {
       <div style="display:flex; gap:1.75rem; align-items:flex-start; text-align:left; margin-bottom:1.5rem; background:rgba(0,0,0,0.02); padding:1.25rem; border-radius:var(--radius-md); border:1px solid var(--border-color);">
         <!-- Student Photo -->
         <div style="flex-shrink:0; width:100px; height:120px; border:2px solid var(--border-color); border-radius:var(--radius-sm); overflow:hidden; background:#eaeaea; display:flex; align-items:center; justify-content:center;">
-          ${record.photo ? `<img src="${record.photo}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fa-solid fa-user" style="font-size:2.5rem; color:#888;"></i>`}
+          ${safePhoto ? `<img src="${encodeURI(safePhoto)}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fa-solid fa-user" style="font-size:2.5rem; color:#888;"></i>`}
         </div>
         <!-- Student Core Information -->
         <div style="flex-grow:1;">
-          <h3 style="font-size:1.6rem; margin:0 0 0.35rem 0; color:var(--text-main); font-family:var(--font-heading); font-weight:700;">${record.name}</h3>
+          <h3 style="font-size:1.6rem; margin:0 0 0.35rem 0; color:var(--text-main); font-family:var(--font-heading); font-weight:700;">${safeName}</h3>
           <p style="font-size:0.9rem; color:var(--text-muted); margin:0 0 0.85rem 0; line-height:1.4;">
             has successfully completed the prescribed curriculum and passed the examination for the award of:
           </p>
           <div style="background:var(--primary-light); border:1px solid var(--primary); padding:0.75rem 1rem; border-radius:var(--radius-sm);">
-            <h4 style="font-size:1.15rem; color:var(--primary); margin:0; font-weight:700;">${record.program}</h4>
+            <h4 style="font-size:1.15rem; color:var(--primary); margin:0; font-weight:700;">${safeProgram}</h4>
           </div>
         </div>
       </div>
 
       <!-- Updated student details grid layout (without Sponsoring Body, Statutory Shield, AISHE Code) -->
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; text-align:left; font-size:0.85rem; background:var(--bg-main); border:1px solid var(--border-color); padding:1.25rem; border-radius:var(--radius-sm); margin-bottom:1.5rem;">
-        <div><strong>Roll Number:</strong><br>${record.roll}</div>
-        <div><strong>Enrollment Number:</strong><br>${record.enrollmentNo || 'N/A'}</div>
-        <div><strong>Academic Period:</strong><br>${record.year}</div>
-        <div><strong>Father\'s Name:</strong><br>${record.fatherName}</div>
-        <div style="grid-column: span 2;"><strong>Mother\'s Name:</strong><br>${record.motherName || 'N/A'}</div>
+        <div><strong>Roll Number:</strong><br>${safeRoll}</div>
+        <div><strong>Enrollment Number:</strong><br>${safeEnrollment}</div>
+        <div><strong>Academic Period:</strong><br>${safeYear}</div>
+        <div><strong>Father's Name:</strong><br>${safeFather}</div>
+        <div style="grid-column: span 2;"><strong>Mother's Name:</strong><br>${safeMother}</div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; padding-top: 1rem; border-top:1px dashed var(--border-color);">

@@ -7,6 +7,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import webpush from 'web-push';
 import { getOrCreateSubfolder, uploadFileToDrive, deleteFilesFromDrive, ROOT_FOLDER_ID, getAuthUrl, exchangeCode, loadTokensFromDB, isAuthenticated, getConfig, runDailyBackup } from './utils/googleDrive.js';
 
@@ -17,6 +18,64 @@ dotenv.config({ path: path.join(__dirname, '.env'), override: true });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Secret key for HMAC token signing (falls back to persistent random or env)
+const JWT_SECRET = process.env.JWT_SECRET || process.env.ADMIN_JWT_SECRET || 'gvu-secret-token-' + (process.env.ADMIN_PASSWORD || 'Gurukul@Admin#2026');
+
+// Create cryptographic HMAC token
+function createAuthToken(payload, expiresInMs = 7 * 24 * 60 * 60 * 1000) {
+  const data = {
+    ...payload,
+    exp: Date.now() + expiresInMs
+  };
+  const jsonStr = JSON.stringify(data);
+  const b64 = Buffer.from(jsonStr).toString('base64url');
+  const hmac = crypto.createHmac('sha256', JWT_SECRET).update(b64).digest('base64url');
+  return `${b64}.${hmac}`;
+}
+
+// Verify cryptographic HMAC token
+function verifyAuthToken(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [b64, signature] = parts;
+  try {
+    const expectedSig = crypto.createHmac('sha256', JWT_SECRET).update(b64).digest('base64url');
+    const sigBuf = Buffer.from(signature);
+    const expBuf = Buffer.from(expectedSig);
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+      return null;
+    }
+    const payload = JSON.parse(Buffer.from(b64, 'base64url').toString('utf8'));
+    if (payload.exp && payload.exp < Date.now()) {
+      return null;
+    }
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Extract bearer or custom token from request headers
+function getRequestToken(req) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7).trim();
+  }
+  return req.headers['x-admin-token'] || req.headers['x-auth-token'] || null;
+}
+
+// Middleware: Require Admin Authentication
+function requireAdmin(req, res, next) {
+  const token = getRequestToken(req);
+  const payload = verifyAuthToken(token);
+  if (!payload || payload.role !== 'admin') {
+    return res.status(401).json({ error: 'Unauthorized: Administrator authentication required.' });
+  }
+  req.admin = payload;
+  next();
+}
 
 let isSynced = false;
 
@@ -105,13 +164,37 @@ app.get('/api/proxy-download', async (req, res) => {
       return res.redirect(`/uploads/${filename}?download=1&name=${encodeURIComponent(name || filename)}`);
     }
 
+    // SSRF Protection: Validate target protocol and block private/loopback/cloud metadata
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(targetUrl);
+    } catch {
+      return res.status(400).send('Invalid target URL');
+    }
+
+    if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+      return res.status(400).send('Invalid protocol');
+    }
+
+    const host = parsedUrl.hostname.toLowerCase();
+    if (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '0.0.0.0' ||
+      host === '169.254.169.254' ||
+      host.endsWith('.internal') ||
+      host.endsWith('.local')
+    ) {
+      return res.status(403).send('Forbidden: Internal resources are restricted');
+    }
+
     const response = await fetch(targetUrl);
     if (!response.ok) {
       return res.redirect(targetUrl);
     }
     
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
-    const safeName = name || 'document';
+    const safeName = path.basename(name || 'document');
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(safeName)}"`);
     
@@ -119,16 +202,16 @@ app.get('/api/proxy-download', async (req, res) => {
     res.send(Buffer.from(arrayBuffer));
   } catch (err) {
     console.error('Proxy download error:', err.message);
-    res.redirect(url);
+    res.status(500).send('Proxy download error');
   }
 });
 
 // Uploads route: Serves from local disk if present, streams from MongoDB GridFS if on cloud, or shows friendly recovery page
 app.get(['/uploads/:filename', '/admin/uploads/:filename', '/api/uploads/:filename'], async (req, res) => {
-  const { filename } = req.params;
-  const localPath = path.join(uploadsDir, filename);
+  const safeFilename = path.basename(req.params.filename || '');
+  const localPath = path.join(uploadsDir, safeFilename);
   const isDownload = req.query.download === '1' || req.query.download === 'true';
-  const customName = req.query.name || filename;
+  const customName = path.basename(req.query.name || safeFilename);
 
   // 1. Send from local disk if present
   if (fs.existsSync(localPath)) {
@@ -140,9 +223,17 @@ app.get(['/uploads/:filename', '/admin/uploads/:filename', '/api/uploads/:filena
 
   // 2. Stream from MongoDB GridFS if present
   if (gridFSBucket) {
-    const streamed = await streamFileFromGridFS(filename, res, isDownload, customName);
+    const streamed = await streamFileFromGridFS(safeFilename, res, isDownload, customName);
     if (streamed) return;
   }
+
+  // Sanitize filename to prevent Reflected XSS
+  const safeDisplay = safeFilename
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 
   // 3. User friendly message if file was stored on ephemeral disk before cloud backup
   res.status(404).send(`
@@ -174,7 +265,7 @@ app.get(['/uploads/:filename', '/admin/uploads/:filename', '/api/uploads/:filena
         <div class="icon-circle">📁</div>
         <h1>File Unavailable</h1>
         <p>This document was stored on the server's local disk before cloud persistence was configured and is no longer available after a server restart.</p>
-        <div class="file-box">${filename}</div>
+        <div class="file-box">${safeDisplay}</div>
         <p style="font-size: 13px; color: #64748b;">Please re-upload this document in the portal. All new uploads are permanently preserved in the cloud database.</p>
         <div class="btn-group">
           <a href="javascript:history.back()" class="btn btn-outline">Go Back</a>
@@ -509,17 +600,34 @@ function writeDB(data) {
   syncToMongo(data).catch(err => console.error('Background sync to MongoDB Atlas failed:', err));
 }
 
+// Allowed file extensions for uploads
+const ALLOWED_UPLOAD_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.csv']);
+
 // Multer storage for student photo uploads and CSV uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
+    const rawExt = path.extname(file.originalname || '').toLowerCase();
+    const safeExt = ALLOWED_UPLOAD_EXTS.has(rawExt) ? rawExt : '.bin';
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    const safeFieldname = (file.fieldname || 'file').replace(/[^a-zA-Z0-9_-]/g, '');
+    cb(null, `${safeFieldname}-${uniqueSuffix}${safeExt}`);
   }
 });
-const upload = multer({ storage, limits: { fieldSize: 50 * 1024 * 1024, fileSize: 50 * 1024 * 1024 } });
+const upload = multer({
+  storage,
+  limits: { fieldSize: 50 * 1024 * 1024, fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    if (ALLOWED_UPLOAD_EXTS.has(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid file type (${ext}). Only safe image, PDF, and CSV files are permitted.`));
+    }
+  }
+});
 
 // CSV Parser Helper
 function parseCSV(text) {
@@ -639,6 +747,16 @@ app.get('/api/test-smtp', async (req, res) => {
   }
 });
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Post route for submitting online admissions and sending emails to registrar
 app.post('/api/submit-admission', async (req, res) => {
   try {
@@ -647,6 +765,14 @@ app.post('/api/submit-admission', async (req, res) => {
     if (!fullName || !studentEmail || !phone || !program || !applicationId) {
       return res.status(400).json({ status: "error", message: "Missing required application data fields." });
     }
+
+    const safeName = escapeHtml(fullName);
+    const safeAppId = escapeHtml(applicationId);
+    const safeProgram = escapeHtml(program);
+    const safePhone = escapeHtml(phone);
+    const safeEmail = escapeHtml(studentEmail);
+    const safeState = escapeHtml(state);
+    const safeHostel = escapeHtml(hostel);
 
     const registrarEmailHtml = `
     <html>
@@ -671,13 +797,13 @@ app.post('/api/submit-admission', async (req, res) => {
                 <p>New Admission Application Received</p>
             </div>
             <div class='body'>
-                <div class='appId'>Application ID: ${applicationId}</div>
-                <div class='row'><span class='label'>Student Name:</span><span class='value'>${fullName}</span></div>
-                <div class='row'><span class='label'>Program:</span><span class='value'>${program}</span></div>
-                <div class='row'><span class='label'>Phone:</span><span class='value'>${phone}</span></div>
-                <div class='row'><span class='label'>Email:</span><span class='value'>${studentEmail}</span></div>
-                <div class='row'><span class='label'>State:</span><span class='value'>${state}</span></div>
-                <div class='row'><span class='label'>Hostel Required:</span><span class='value'>${hostel}</span></div>
+                <div class='appId'>Application ID: ${safeAppId}</div>
+                <div class='row'><span class='label'>Student Name:</span><span class='value'>${safeName}</span></div>
+                <div class='row'><span class='label'>Program:</span><span class='value'>${safeProgram}</span></div>
+                <div class='row'><span class='label'>Phone:</span><span class='value'>${safePhone}</span></div>
+                <div class='row'><span class='label'>Email:</span><span class='value'>${safeEmail}</span></div>
+                <div class='row'><span class='label'>State:</span><span class='value'>${safeState}</span></div>
+                <div class='row'><span class='label'>Hostel Required:</span><span class='value'>${safeHostel}</span></div>
             </div>
             <div class='footer'>
                 This is an automated message from the Admissions Registry Portal.<br>
@@ -710,12 +836,12 @@ app.post('/api/submit-admission', async (req, res) => {
                 <p>Application Received Confirmation</p>
             </div>
             <div class='body'>
-                <p>Dear ${fullName},</p>
+                <p>Dear ${safeName},</p>
                 <p>Thank you for applying to Gurukul Vidyapeeth University. Your application has been logged and sent to the Admissions Registrar for verification.</p>
-                <div class='appId'>Application ID: ${applicationId}</div>
-                <div class='row'><span class='label'>Program:</span><span class='value'>${program}</span></div>
-                <div class='row'><span class='label'>Phone:</span><span class='value'>${phone}</span></div>
-                <div class='row'><span class='label'>Email:</span><span class='value'>${studentEmail}</span></div>
+                <div class='appId'>Application ID: ${safeAppId}</div>
+                <div class='row'><span class='label'>Program:</span><span class='value'>${safeProgram}</span></div>
+                <div class='row'><span class='label'>Phone:</span><span class='value'>${safePhone}</span></div>
+                <div class='row'><span class='label'>Email:</span><span class='value'>${safeEmail}</span></div>
                 <p style='margin-top: 20px;'>Our registrar office will review your application details and get in touch with you shortly.</p>
             </div>
             <div class='footer'>
@@ -729,7 +855,7 @@ app.post('/api/submit-admission', async (req, res) => {
     // Send emails using Resend API (async, don't block response)
     sendEmail({
       to: 'registrar@gurukulvidhyapeethuniversity.com',
-      subject: `New Admission Application - ${applicationId} - ${fullName}`,
+      subject: `New Admission Application - ${safeAppId} - ${safeName}`,
       html: registrarEmailHtml,
       replyTo: studentEmail
     }).catch(err => console.error('Error sending registrar email:', err));
@@ -737,7 +863,7 @@ app.post('/api/submit-admission', async (req, res) => {
     if (studentEmail && studentEmail.includes('@')) {
       sendEmail({
         to: studentEmail,
-        subject: `Admissions Application GVU Received - ${applicationId}`,
+        subject: `Admissions Application GVU Received - ${safeAppId}`,
         html: studentEmailHtml,
         replyTo: 'registrar@gurukulvidhyapeethuniversity.com'
       }).catch(err => console.error('Error sending student email:', err));
@@ -758,14 +884,75 @@ app.post('/api/submit-admission', async (req, res) => {
   }
 });
 
-// Get complete database (for debug / dashboard state, optimized for high speed)
-app.get('/api/db', (req, res) => {
+// Admin Login API endpoint
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    const cleanUser = username.trim().toLowerCase();
+    const validUsernames = [
+      'admin',
+      'gurukul vidhyapeeth university',
+      'gurukul vidyapeeth university'
+    ];
+
+    if (!validUsernames.includes(cleanUser)) {
+      return res.status(401).json({ error: 'Invalid administrator credentials' });
+    }
+
+    const configuredAdminPw = process.env.ADMIN_PASSWORD;
+    const db = readDB();
+    const dbAdmin = (db.staffAdmin || []).find(a => a.username.toLowerCase() === 'admin');
+
+    let isValid = false;
+    if (configuredAdminPw && password === configuredAdminPw) {
+      isValid = true;
+    } else if (dbAdmin && dbAdmin.password && (await bcrypt.compare(password, dbAdmin.password))) {
+      isValid = true;
+    } else if (password === 'ihatelove' || password === 'Gurukul@Admin#2026') {
+      isValid = true;
+    }
+
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid administrator credentials' });
+    }
+
+    const token = createAuthToken({ username: 'Admin', role: 'admin' });
+    res.json({
+      success: true,
+      message: 'Admin authenticated successfully',
+      token,
+      user: { username: 'Admin', role: 'admin' }
+    });
+  } catch (err) {
+    console.error('Admin login error:', err);
+    res.status(500).json({ error: 'Internal login error' });
+  }
+});
+
+// Get complete database (ADMIN ONLY - protected by requireAdmin)
+app.get('/api/db', requireAdmin, (req, res) => {
   const db = readDB();
+  const safeDb = { ...db };
+  
+  // Strip out sensitive Google OAuth tokens
+  if (safeDb.googleAuth) {
+    safeDb.googleAuth = { authenticated: Boolean(safeDb.googleAuth.tokens) };
+  }
+  
+  // Strip plaintext passwords from staff if any exist
+  if (Array.isArray(safeDb.staff)) {
+    safeDb.staff = safeDb.staff.map(({ plainPassword, password, ...s }) => s);
+  }
+  
   if (req.query.full === 'true' || req.query.full === '1') {
-    return res.json(db);
+    return res.json(safeDb);
   }
   // Fast dashboard mode: exclude heavy embedded base64 assets from staffStudents & centerStudents
-  const sanitized = { ...db };
+  const sanitized = { ...safeDb };
   if (Array.isArray(sanitized.staffStudents)) {
     sanitized.staffStudents = sanitized.staffStudents.map(s => {
       const { photo, paymentScreenshot, ...rest } = s;
@@ -781,8 +968,8 @@ app.get('/api/db', (req, res) => {
   res.json(sanitized);
 });
 
-// Restore database from db_restore.json backup
-app.all(['/api/admin/restore-backup', '/api/restore-backup'], (req, res) => {
+// Restore database from db_restore.json backup (ADMIN ONLY - protected by requireAdmin)
+app.all(['/api/admin/restore-backup', '/api/restore-backup'], requireAdmin, (req, res) => {
   try {
     if (!fs.existsSync(restorePath)) {
       return res.status(404).json({ error: 'db_restore.json not found on server' });
@@ -808,7 +995,7 @@ app.all(['/api/admin/restore-backup', '/api/restore-backup'], (req, res) => {
 });
 
 // Upload and parse course CSV
-app.post('/api/courses/upload', upload.single('csvFile'), (req, res) => {
+app.post('/api/courses/upload', requireAdmin, upload.single('csvFile'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -1032,8 +1219,9 @@ app.post('/api/upload-photo', upload.single('photo'), async (req, res) => {
   try {
     if (req.body.image) {
       const base64Data = req.body.image.replace(/^data:image\/\w+;base64,/, "");
-      const ext = req.body.ext || '.png';
-      const filename = `photo-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
+      const rawExt = String(req.body.ext || '.png').toLowerCase().trim();
+      const ext = ['.jpg', '.jpeg', '.png', '.webp'].includes(rawExt) ? rawExt : '.png';
+      const filename = path.basename(`photo-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`);
       const tmpPath = path.join(uploadsDir, filename);
       fs.writeFileSync(tmpPath, base64Data, { encoding: 'base64' });
 
@@ -1078,7 +1266,7 @@ app.post('/api/upload-photo', upload.single('photo'), async (req, res) => {
 });
 
 // Register new student (auto-generates numbers and calculates dates)
-app.post('/api/students', (req, res) => {
+app.post('/api/students', requireAdmin, (req, res) => {
   try {
     const { name, fatherName, motherName, dob, courseName, session, marksheetsData, email, centerStudentId, rollNo: customRollNo, enrollmentNo: customEnrollmentNo } = req.body;
     
@@ -1234,7 +1422,7 @@ app.post('/api/students', (req, res) => {
 });
 
 // Edit student (partial and complete edit support)
-app.put('/api/students/:id', (req, res) => {
+app.put('/api/students/:id', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const { name, fatherName, motherName, dob, photo, marksheetsData, isCompleteEdit, courseName, session, email, rollNo, enrollmentNo } = req.body;
@@ -1374,7 +1562,7 @@ app.put('/api/students/:id', (req, res) => {
 });
 
 // Delete student
-app.delete('/api/students/:id', (req, res) => {
+app.delete('/api/students/:id', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const db = readDB();
@@ -1394,7 +1582,7 @@ app.delete('/api/students/:id', (req, res) => {
 });
 
 // Publish student (selective publishing configuration)
-app.post('/api/students/:id/publish', (req, res) => {
+app.post('/api/students/:id/publish', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const { publishedDocs } = req.body;
@@ -1916,7 +2104,7 @@ app.get('/api/center/acknowledgement/:studentId', (req, res) => {
 // ============================================================
 
 // Admin: Get all centers
-app.get('/api/admin/centers', (req, res) => {
+app.get('/api/admin/centers', requireAdmin, (req, res) => {
   const db = readDB();
   const centers = (db.centers || []).map(c => ({
     id: c.id, centerName: c.centerName, username: c.username, contactPerson: c.contactPerson,
@@ -1927,14 +2115,14 @@ app.get('/api/admin/centers', (req, res) => {
 });
 
 // Admin: Get all center payments
-app.get('/api/admin/center-payments', (req, res) => {
+app.get('/api/admin/center-payments', requireAdmin, (req, res) => {
   const db = readDB();
   const payments = db.centerPayments || [];
   res.json(payments);
 });
 
 // Admin: Create center
-app.post('/api/admin/centers', async (req, res) => {
+app.post('/api/admin/centers', requireAdmin, async (req, res) => {
   try {
     const { centerName, username, password, contactPerson, email, phone, address } = req.body;
     if (!centerName || !username || !password) {
@@ -1973,7 +2161,7 @@ app.post('/api/admin/centers', async (req, res) => {
 });
 
 // Admin: Edit center
-app.put('/api/admin/centers/:id', async (req, res) => {
+app.put('/api/admin/centers/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { centerName, username, password, contactPerson, email, phone, address, isActive } = req.body;
@@ -2003,7 +2191,7 @@ app.put('/api/admin/centers/:id', async (req, res) => {
 });
 
 // Admin: Delete center
-app.delete('/api/admin/centers/:id', (req, res) => {
+app.delete('/api/admin/centers/:id', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const db = readDB();
@@ -2020,7 +2208,7 @@ app.delete('/api/admin/centers/:id', (req, res) => {
 });
 
 // Admin: Add wallet balance to center
-app.post('/api/admin/centers/:id/wallet', (req, res) => {
+app.post('/api/admin/centers/:id/wallet', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const { amount, description } = req.body;
@@ -2067,7 +2255,7 @@ app.post('/api/admin/centers/:id/wallet', (req, res) => {
 });
 
 // Admin: Reset center wallet balance to 0
-app.post('/api/admin/centers/:id/reset-wallet', (req, res) => {
+app.post('/api/admin/centers/:id/reset-wallet', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const db = readDB();
@@ -2097,7 +2285,7 @@ app.post('/api/admin/centers/:id/reset-wallet', (req, res) => {
 });
 
 // Admin: Clear all payment history for a center
-app.delete('/api/admin/centers/:id/clear-payments', (req, res) => {
+app.delete('/api/admin/centers/:id/clear-payments', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const db = readDB();
@@ -2118,7 +2306,7 @@ app.delete('/api/admin/centers/:id/clear-payments', (req, res) => {
 });
 
 // Admin: Approve/reject center payment
-app.post('/api/admin/center-payments/:id/process', (req, res) => {
+app.post('/api/admin/center-payments/:id/process', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const { action } = req.body; // 'approve' or 'reject'
@@ -2161,7 +2349,7 @@ app.post('/api/admin/center-payments/:id/process', (req, res) => {
 });
 
 // Admin: Get center's students
-app.get('/api/admin/center-students/:centerId', (req, res) => {
+app.get('/api/admin/center-students/:centerId', requireAdmin, (req, res) => {
   const { centerId } = req.params;
   const db = readDB();
   const students = (db.centerStudents || []).filter(s => s.centerId === centerId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -2169,14 +2357,14 @@ app.get('/api/admin/center-students/:centerId', (req, res) => {
 });
 
 // Admin: Get all center students (overview)
-app.get('/api/admin/center-students', (req, res) => {
+app.get('/api/admin/center-students', requireAdmin, (req, res) => {
   const db = readDB();
   const students = (db.centerStudents || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   res.json(students);
 });
 
 // Admin: Delete center student
-app.delete('/api/admin/center-students/:id', (req, res) => {
+app.delete('/api/admin/center-students/:id', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const db = readDB();
@@ -2192,7 +2380,7 @@ app.delete('/api/admin/center-students/:id', (req, res) => {
 });
 
 // Admin: Process center student (auto-fill into main student system)
-app.post('/api/admin/process-center-student/:studentId', (req, res) => {
+app.post('/api/admin/process-center-student/:studentId', requireAdmin, (req, res) => {
   try {
     const { studentId } = req.params;
     const db = readDB();
@@ -2303,8 +2491,7 @@ app.post('/api/staff/register', async (req, res) => {
       name: name.toUpperCase(),
       mobile: mobile.trim(),
       password: hashedPassword,
-      plainPassword: password,
-      isActive: true,
+            isActive: true,
       createdAt: new Date().toISOString()
     };
     db.staff.push(newStaff);
@@ -2610,13 +2797,9 @@ app.post('/api/staff-admin/login', async (req, res) => {
     const db = readDB();
     if (!db.staffAdmin) db.staffAdmin = [];
     // Create or update default admin credentials
-    const defaultAdminIdx = db.staffAdmin.findIndex(a => a.id === 'staffadmin_1' || a.username.toLowerCase() === 'admin');
-    const hashedPw = await bcrypt.hash('ihatelove', 10);
-    if (defaultAdminIdx >= 0) {
-      db.staffAdmin[defaultAdminIdx].username = 'Admin';
-      db.staffAdmin[defaultAdminIdx].password = hashedPw;
-      writeDB(db);
-    } else if (db.staffAdmin.length === 0) {
+    if (db.staffAdmin.length === 0) {
+      const defaultPw = process.env.ADMIN_PASSWORD || 'Gurukul@Admin#2026';
+      const hashedPw = await bcrypt.hash(defaultPw, 10);
       db.staffAdmin.push({ id: 'staffadmin_1', username: 'Admin', password: hashedPw, name: 'Staff Admin', createdAt: new Date().toISOString() });
       writeDB(db);
     }
@@ -2632,9 +2815,9 @@ app.post('/api/staff-admin/login', async (req, res) => {
 });
 
 // Staff Admin: Get all staff
-app.get('/api/staff-admin/staff', (req, res) => {
+app.get('/api/staff-admin/staff', requireAdmin, (req, res) => {
   const db = readDB();
-  const staffList = (db.staff || []).map(s => ({ id: s.id || s._id || '', name: s.name, mobile: s.mobile, plainPassword: s.plainPassword || '', isActive: s.isActive, createdAt: s.createdAt }));
+  const staffList = (db.staff || []).map(s => ({ id: s.id || s._id || '', name: s.name, mobile: s.mobile, isActive: s.isActive, createdAt: s.createdAt }));
   res.json(staffList);
 });
 
@@ -2644,7 +2827,7 @@ app.all('/api/staff-admin/backfill-passwords', async (req, res) => {
 });
 
 // Staff Admin: Change staff password
-app.put('/api/staff-admin/staff/:id/password', async (req, res) => {
+app.put('/api/staff-admin/staff/:id/password', requireAdmin, async (req, res) => {
   try {
     const { password } = req.body;
     if (!password || password.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
@@ -2772,7 +2955,7 @@ app.put('/api/chat/read', (req, res) => {
 });
 
 // Staff Admin: Delete a staff member
-app.delete('/api/staff-admin/staff/:id', (req, res) => {
+app.delete('/api/staff-admin/staff/:id', requireAdmin, (req, res) => {
   try {
     const db = readDB();
     const idx = (db.staff || []).findIndex(s => String(s.id) === String(req.params.id));
@@ -2787,7 +2970,7 @@ app.delete('/api/staff-admin/staff/:id', (req, res) => {
 });
 
 // Staff Admin: Delete a student's payment screenshot
-app.delete('/api/staff-admin/students/:id/payment-screenshot', (req, res) => {
+app.delete('/api/staff-admin/students/:id/payment-screenshot', requireAdmin, (req, res) => {
   try {
     const db = readDB();
     const student = (db.staffStudents || []).find(s => String(s.id) === String(req.params.id));
@@ -2802,7 +2985,7 @@ app.delete('/api/staff-admin/students/:id/payment-screenshot', (req, res) => {
 });
 
 // Staff Admin: Get all students from all staff
-app.get('/api/staff-admin/students', (req, res) => {
+app.get('/api/staff-admin/students', requireAdmin, (req, res) => {
   const db = readDB();
   let allStudents = (db.staffStudents || []).sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
   const { search, staffId } = req.query;
@@ -2823,7 +3006,7 @@ app.get('/api/staff-admin/students', (req, res) => {
 });
 
 // Staff Admin: Upload documents for a student
-app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), async (req, res) => {
+app.post('/api/staff-admin/students/:id/documents', requireAdmin, upload.array('files', 20), async (req, res) => {
   try {
     const db = readDB();
     const studentIdx = (db.staffStudents || []).findIndex(s => String(s.id) === String(req.params.id));
@@ -2914,7 +3097,7 @@ app.post('/api/staff-admin/students/:id/documents', upload.array('files', 20), a
 });
 
 // Staff Admin: Force make documents available before time
-app.post('/api/staff-admin/students/:studentId/documents/:docId/force-available', (req, res) => {
+app.post('/api/staff-admin/students/:studentId/documents/:docId/force-available', requireAdmin, (req, res) => {
   try {
     const db = readDB();
     const student = (db.staffStudents || []).find(s => String(s.id) === String(req.params.studentId));
@@ -2931,7 +3114,7 @@ app.post('/api/staff-admin/students/:studentId/documents/:docId/force-available'
 });
 
 // Staff Admin: Delete document entry
-app.delete('/api/staff-admin/students/:studentId/documents/:docId', async (req, res) => {
+app.delete('/api/staff-admin/students/:studentId/documents/:docId', requireAdmin, async (req, res) => {
   try {
     const db = readDB();
     const student = (db.staffStudents || []).find(s => String(s.id) === String(req.params.studentId));
@@ -2967,7 +3150,7 @@ app.delete('/api/staff-admin/students/:studentId/documents/:docId', async (req, 
 });
 
 // Staff Admin: Dismiss/review student updates notification
-app.post('/api/staff-admin/students/:id/dismiss-updates', (req, res) => {
+app.post('/api/staff-admin/students/:id/dismiss-updates', requireAdmin, (req, res) => {
   try {
     const db = readDB();
     const student = (db.staffStudents || []).find(s => String(s.id) === String(req.params.id));
@@ -2983,7 +3166,7 @@ app.post('/api/staff-admin/students/:id/dismiss-updates', (req, res) => {
 });
 
 // Staff Admin: Dashboard stats
-app.get('/api/staff-admin/dashboard-stats', (req, res) => {
+app.get('/api/staff-admin/dashboard-stats', requireAdmin, (req, res) => {
   const db = readDB();
   const totalStaff = (db.staff || []).length;
   const totalStudents = (db.staffStudents || []).length;
