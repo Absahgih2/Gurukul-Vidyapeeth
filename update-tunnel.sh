@@ -24,7 +24,7 @@ fi
 RUNNER_SCRIPT="$HOME/run-tunnel.sh"
 cat << 'EOF' > "$RUNNER_SCRIPT"
 #!/bin/bash
-exec cloudflared tunnel --url http://127.0.0.1:5000
+exec cloudflared tunnel --protocol http2 --edge-ip-version 4 --url http://127.0.0.1:5000
 EOF
 chmod +x "$RUNNER_SCRIPT"
 
