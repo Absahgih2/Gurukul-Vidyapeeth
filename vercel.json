@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://building-parker-generates-teens.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://building-parker-generates-teens.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://camp-tax-hint-transmission.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://camp-tax-hint-transmission.trycloudflare.com/api/:path*" }
   ]
 }
