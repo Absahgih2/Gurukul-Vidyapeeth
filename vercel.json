@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://portion-farmers-illinois-planes.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://portion-farmers-illinois-planes.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://thickness-frames-how-basename.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://thickness-frames-how-basename.trycloudflare.com/api/:path*" }
   ]
 }
