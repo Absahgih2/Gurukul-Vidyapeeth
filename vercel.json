@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://lucia-educators-improvement-eau.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://lucia-educators-improvement-eau.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://simply-odds-cat-accompanying.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://simply-odds-cat-accompanying.trycloudflare.com/api/:path*" }
   ]
 }
