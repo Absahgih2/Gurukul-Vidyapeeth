@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://delhi-genres-trivia-handed.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://delhi-genres-trivia-handed.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://rather-requesting-henry-organized.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://rather-requesting-henry-organized.trycloudflare.com/api/:path*" }
   ]
 }
