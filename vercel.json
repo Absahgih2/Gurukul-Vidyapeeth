@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://soccer-words-realty-conscious.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://soccer-words-realty-conscious.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://guarantees-prince-pdas-seed.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://guarantees-prince-pdas-seed.trycloudflare.com/api/:path*" }
   ]
 }
