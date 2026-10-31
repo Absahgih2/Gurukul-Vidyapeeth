@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://concepts-sufficiently-charleston-vary.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://concepts-sufficiently-charleston-vary.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://parallel-website-habits-tested.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://parallel-website-habits-tested.trycloudflare.com/api/:path*" }
   ]
 }
