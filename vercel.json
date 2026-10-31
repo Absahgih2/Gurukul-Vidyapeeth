@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://appreciate-remove-virtue-rhythm.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://appreciate-remove-virtue-rhythm.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://thomson-forecast-thy-connecting.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://thomson-forecast-thy-connecting.trycloudflare.com/api/:path*" }
   ]
 }
