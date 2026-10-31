@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://material-michigan-flood-citizens.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://material-michigan-flood-citizens.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://springs-yearly-circumstances-meeting.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://springs-yearly-circumstances-meeting.trycloudflare.com/api/:path*" }
   ]
 }
