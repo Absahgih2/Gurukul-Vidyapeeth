@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://goat-corrected-preserve-cooked.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://goat-corrected-preserve-cooked.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://infections-senator-stuffed-appears.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://infections-senator-stuffed-appears.trycloudflare.com/api/:path*" }
   ]
 }
