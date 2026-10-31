@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://bullet-nirvana-carolina-agency.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://bullet-nirvana-carolina-agency.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://tip-migration-portion-sealed.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://tip-migration-portion-sealed.trycloudflare.com/api/:path*" }
   ]
 }
