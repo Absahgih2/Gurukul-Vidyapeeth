@@ -2130,8 +2130,10 @@ export default function App() {
                 </button>
                 
                 <div className="sidebar-footer-info">
-                  <RefreshCw size={14} className="spin-icon" onClick={fetchData} style={{ cursor: 'pointer' }} />
-                  <span>DB status: Connected</span>
+                  <RefreshCw size={14} className={`spin-icon ${loading ? 'spin-active' : ''}`} onClick={fetchData} style={{ cursor: 'pointer' }} />
+                  <span style={{ color: errorMsg ? '#ef4444' : '#10b981' }}>
+                    DB status: {errorMsg ? 'Disconnected' : 'Connected'}
+                  </span>
                 </div>
               </aside>
 
