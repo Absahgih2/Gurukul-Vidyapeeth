@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://involves-james-improved-trunk.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://involves-james-improved-trunk.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://suse-bikes-saw-mozilla.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://suse-bikes-saw-mozilla.trycloudflare.com/api/:path*" }
   ]
 }
