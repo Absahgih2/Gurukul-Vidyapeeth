@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://consistent-movers-medium-lawn.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://consistent-movers-medium-lawn.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://hughes-decreased-packet-organ.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://hughes-decreased-packet-organ.trycloudflare.com/api/:path*" }
   ]
 }
