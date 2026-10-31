@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://special-latest-truth-oscar.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://special-latest-truth-oscar.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://vid-gazette-builds-coins.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://vid-gazette-builds-coins.trycloudflare.com/api/:path*" }
   ]
 }
