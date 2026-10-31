@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://screenshots-pipe-strap-sublime.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://screenshots-pipe-strap-sublime.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://housewives-transcripts-postings-gnome.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://housewives-transcripts-postings-gnome.trycloudflare.com/api/:path*" }
   ]
 }
