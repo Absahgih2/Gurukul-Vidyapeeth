@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://hoped-hon-action-modified.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://hoped-hon-action-modified.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://inexpensive-stones-carroll-night.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://inexpensive-stones-carroll-night.trycloudflare.com/api/:path*" }
   ]
 }
