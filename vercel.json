@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://accommodate-vegetarian-song-dice.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://accommodate-vegetarian-song-dice.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://stanford-visible-sacrifice-delete.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://stanford-visible-sacrifice-delete.trycloudflare.com/api/:path*" }
   ]
 }
