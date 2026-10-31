@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://survive-programs-patio-cult.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://survive-programs-patio-cult.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://contracting-wrote-tcp-outlets.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://contracting-wrote-tcp-outlets.trycloudflare.com/api/:path*" }
   ]
 }
