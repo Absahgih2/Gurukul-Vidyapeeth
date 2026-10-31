@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://losses-right-black-amend.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://losses-right-black-amend.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://wiring-vancouver-labeled-cookies.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://wiring-vancouver-labeled-cookies.trycloudflare.com/api/:path*" }
   ]
 }
