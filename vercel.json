@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://adoption-nights-inexpensive-midnight.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://adoption-nights-inexpensive-midnight.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://survive-programs-patio-cult.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://survive-programs-patio-cult.trycloudflare.com/api/:path*" }
   ]
 }
