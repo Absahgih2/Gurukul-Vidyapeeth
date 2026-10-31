@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://aerospace-kathy-researchers-aims.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://aerospace-kathy-researchers-aims.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://concerts-moral-pas-effectiveness.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://concerts-moral-pas-effectiveness.trycloudflare.com/api/:path*" }
   ]
 }
