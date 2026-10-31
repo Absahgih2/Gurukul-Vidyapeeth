@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://nashville-outdoors-origins-prospect.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://nashville-outdoors-origins-prospect.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://length-nick-creative-hansen.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://length-nick-creative-hansen.trycloudflare.com/api/:path*" }
   ]
 }
