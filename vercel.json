@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://technical-settlement-hosted-west.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://technical-settlement-hosted-west.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://snapshot-plastics-closure-winners.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://snapshot-plastics-closure-winners.trycloudflare.com/api/:path*" }
   ]
 }
