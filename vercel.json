@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://sleeve-sam-renewable-ruling.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://sleeve-sam-renewable-ruling.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://mile-missions-knight-enabled.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://mile-missions-knight-enabled.trycloudflare.com/api/:path*" }
   ]
 }
