@@ -20,6 +20,14 @@ if [ -z "$(git config user.name 2>/dev/null)" ]; then
     git config user.name "Gurukul Vidyapeeth"
 fi
 
+# Ensure local backend is alive on port 5000
+local_status=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:5000/api/courses" --max-time 3 2>/dev/null || echo "000")
+if [ "$local_status" = "000" ]; then
+    echo "[Notice] Local backend on port 5000 not responding. Attempting to ensure PM2 backend is running..."
+    pm2 restart gvu-backend > /dev/null 2>&1 || pm2 restart server > /dev/null 2>&1 || pm2 restart app > /dev/null 2>&1 || true
+    sleep 3
+fi
+
 # 2. Write permanent stable runner script
 RUNNER_SCRIPT="$HOME/run-tunnel.sh"
 cat << 'EOF' > "$RUNNER_SCRIPT"
@@ -55,16 +63,30 @@ get_url() {
     echo "$url"
 }
 
+is_url_alive() {
+    local test_url="$1"
+    if [ -z "$test_url" ]; then return 1; fi
+    local status
+    status=$(curl -k -s -o /dev/null -w "%{http_code}" "$test_url/api/courses" --max-time 6 2>/dev/null || echo "000")
+    if [ "$status" = "200" ] || [ "$status" = "404" ] || [ "$status" = "401" ]; then
+        return 0
+    fi
+    return 1
+}
+
 echo "Searching for active trycloudflare.com URL..."
 NEW_URL=$(get_url)
 
-# 5. Check if URL is detected, if not wait a few seconds
-if [ -z "$NEW_URL" ]; then
-    echo "Waiting for URL in PM2 logs..."
-    for i in {1..15}; do
+# 5. Check if URL is detected and live; if stale or dead, restart tunnel cleanly
+if [ -z "$NEW_URL" ] || ! is_url_alive "$NEW_URL"; then
+    echo "Stale or inactive tunnel detected. Restarting $PM2_NAME with clean logs..."
+    pm2 flush "$PM2_NAME" > /dev/null 2>&1 || true
+    pm2 restart "$PM2_NAME" > /dev/null 2>&1 || true
+    echo "Waiting for fresh tunnel connection to establish..."
+    for i in {1..20}; do
         sleep 2
         NEW_URL=$(get_url)
-        if [ -n "$NEW_URL" ]; then
+        if [ -n "$NEW_URL" ] && is_url_alive "$NEW_URL"; then
             break
         fi
     done
@@ -80,7 +102,7 @@ if [ -z "$NEW_URL" ]; then
     exit 1
 fi
 
-echo "[OK] Active Live Tunnel Detected: $NEW_URL"
+echo "[OK] Active Live Tunnel Detected and Verified: $NEW_URL"
 
 # Sync latest changes from remote before updating
 git fetch origin main > /dev/null 2>&1 || true
