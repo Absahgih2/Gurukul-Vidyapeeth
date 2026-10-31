@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://neil-joshua-expertise-realtors.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://neil-joshua-expertise-realtors.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://bonds-equivalent-quit-artist.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://bonds-equivalent-quit-artist.trycloudflare.com/api/:path*" }
   ]
 }
