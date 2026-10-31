@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://gnome-slightly-registered-respiratory.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://gnome-slightly-registered-respiratory.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://rare-households-harbour-apollo.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://rare-households-harbour-apollo.trycloudflare.com/api/:path*" }
   ]
 }
