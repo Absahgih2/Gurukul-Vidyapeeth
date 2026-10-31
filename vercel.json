@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://salad-asus-briefs-face.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://salad-asus-briefs-face.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://makeup-automatically-leaf-lasting.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://makeup-automatically-leaf-lasting.trycloudflare.com/api/:path*" }
   ]
 }
