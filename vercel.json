@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://limit-amenities-memorial-automatically.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://limit-amenities-memorial-automatically.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://cheap-runs-kerry-loading.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://cheap-runs-kerry-loading.trycloudflare.com/api/:path*" }
   ]
 }
