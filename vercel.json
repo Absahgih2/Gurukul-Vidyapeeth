@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://aids-restructuring-approximately-blocks.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://aids-restructuring-approximately-blocks.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://facial-ave-sociology-served.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://facial-ave-sociology-served.trycloudflare.com/api/:path*" }
   ]
 }
