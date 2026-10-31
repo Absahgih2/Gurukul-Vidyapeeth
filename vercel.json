@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://brook-dem-retrieval-intro.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://brook-dem-retrieval-intro.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://presented-university-laser-costs.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://presented-university-laser-costs.trycloudflare.com/api/:path*" }
   ]
 }
