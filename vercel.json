@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://troubleshooting-dave-lobby-introducing.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://troubleshooting-dave-lobby-introducing.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://proper-philips-sacramento-distinction.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://proper-philips-sacramento-distinction.trycloudflare.com/api/:path*" }
   ]
 }
