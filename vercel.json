@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://against-amanda-complex-acquisition.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://against-amanda-complex-acquisition.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://rail-touring-continuing-uni.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://rail-touring-continuing-uni.trycloudflare.com/api/:path*" }
   ]
 }
