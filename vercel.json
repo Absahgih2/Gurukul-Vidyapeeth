@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://power-meals-ash-challenge.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://power-meals-ash-challenge.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://agreed-neighbor-lying-submitting.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://agreed-neighbor-lying-submitting.trycloudflare.com/api/:path*" }
   ]
 }
