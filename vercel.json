@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://alternatives-stakeholders-control-adoption.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://alternatives-stakeholders-control-adoption.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://trio-descending-shadows-poetry.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://trio-descending-shadows-poetry.trycloudflare.com/api/:path*" }
   ]
 }
