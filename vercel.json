@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://counseling-medications-clarity-ent.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://counseling-medications-clarity-ent.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://correct-rotary-publications-most.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://correct-rotary-publications-most.trycloudflare.com/api/:path*" }
   ]
 }
