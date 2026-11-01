@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://requires-hotel-surely-arbor.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://requires-hotel-surely-arbor.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://take-motors-chamber-nationally.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://take-motors-chamber-nationally.trycloudflare.com/api/:path*" }
   ]
 }
