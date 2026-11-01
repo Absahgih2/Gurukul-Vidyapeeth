@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://vote-navy-meeting-innovation.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://vote-navy-meeting-innovation.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://forbes-colours-airlines-collecting.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://forbes-colours-airlines-collecting.trycloudflare.com/api/:path*" }
   ]
 }
