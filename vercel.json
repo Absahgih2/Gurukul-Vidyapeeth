@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://metallic-copied-res-warehouse.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://metallic-copied-res-warehouse.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://seattle-primary-surfaces-bulk.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://seattle-primary-surfaces-bulk.trycloudflare.com/api/:path*" }
   ]
 }
