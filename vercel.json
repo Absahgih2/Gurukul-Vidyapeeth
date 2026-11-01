@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://thee-territories-saturn-possession.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://thee-territories-saturn-possession.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://own-engineer-analysis-property.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://own-engineer-analysis-property.trycloudflare.com/api/:path*" }
   ]
 }
