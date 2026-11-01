@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://ruling-mailto-proposals-rendered.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://ruling-mailto-proposals-rendered.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://barbie-typically-hughes-hobby.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://barbie-typically-hughes-hobby.trycloudflare.com/api/:path*" }
   ]
 }
