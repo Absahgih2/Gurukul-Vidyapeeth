@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://outlet-hiring-arch-oxygen.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://outlet-hiring-arch-oxygen.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://reward-reverse-tag-unlock.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://reward-reverse-tag-unlock.trycloudflare.com/api/:path*" }
   ]
 }
