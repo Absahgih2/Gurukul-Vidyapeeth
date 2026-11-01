@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://explaining-pleased-hobbies-sku.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://explaining-pleased-hobbies-sku.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://heavy-horizon-beauty-endangered.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://heavy-horizon-beauty-endangered.trycloudflare.com/api/:path*" }
   ]
 }
