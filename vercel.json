@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://creatures-receiving-moore-pci.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://creatures-receiving-moore-pci.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://text-nat-qld-excitement.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://text-nat-qld-excitement.trycloudflare.com/api/:path*" }
   ]
 }
