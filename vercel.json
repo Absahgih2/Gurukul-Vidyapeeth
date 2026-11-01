@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://jon-config-bulletin-yamaha.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://jon-config-bulletin-yamaha.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://detection-discovered-tribune-steel.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://detection-discovered-tribune-steel.trycloudflare.com/api/:path*" }
   ]
 }
