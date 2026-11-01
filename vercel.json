@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://upgrading-shake-driven-soil.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://upgrading-shake-driven-soil.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://philips-northern-california-impact.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://philips-northern-california-impact.trycloudflare.com/api/:path*" }
   ]
 }
