@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://believe-ministries-associate-olive.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://believe-ministries-associate-olive.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://range-recipient-its-sticker.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://range-recipient-its-sticker.trycloudflare.com/api/:path*" }
   ]
 }
