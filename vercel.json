@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://encyclopedia-indexes-beam-craft.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://encyclopedia-indexes-beam-craft.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://ladder-recreation-convinced-angels.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://ladder-recreation-convinced-angels.trycloudflare.com/api/:path*" }
   ]
 }
