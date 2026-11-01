@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://manner-gui-fabrics-shame.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://manner-gui-fabrics-shame.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://encountered-elected-run-transparency.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://encountered-elected-run-transparency.trycloudflare.com/api/:path*" }
   ]
 }
