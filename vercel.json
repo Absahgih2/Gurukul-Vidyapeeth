@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://repairs-authorities-moore-interfaces.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://repairs-authorities-moore-interfaces.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://brush-manufacturer-commitment-registry.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://brush-manufacturer-commitment-registry.trycloudflare.com/api/:path*" }
   ]
 }
