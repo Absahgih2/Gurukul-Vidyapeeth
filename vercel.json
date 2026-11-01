@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://obtaining-doug-lamb-quotes.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://obtaining-doug-lamb-quotes.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://richardson-identical-learned-webster.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://richardson-identical-learned-webster.trycloudflare.com/api/:path*" }
   ]
 }
