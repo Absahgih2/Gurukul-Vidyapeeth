@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://oven-differ-prevention-offers.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://oven-differ-prevention-offers.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://achievement-root-syracuse-monitored.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://achievement-root-syracuse-monitored.trycloudflare.com/api/:path*" }
   ]
 }
