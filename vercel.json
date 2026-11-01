@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://nursery-wildlife-walked-republic.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://nursery-wildlife-walked-republic.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://weighted-witch-thesis-seattle.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://weighted-witch-thesis-seattle.trycloudflare.com/api/:path*" }
   ]
 }
