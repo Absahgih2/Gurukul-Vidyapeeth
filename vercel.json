@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://flows-lbs-fields-oak.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://flows-lbs-fields-oak.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://aug-borough-observer-its.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://aug-borough-observer-its.trycloudflare.com/api/:path*" }
   ]
 }
