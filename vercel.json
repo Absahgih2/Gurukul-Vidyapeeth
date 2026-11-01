@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://designated-went-emerald-hunter.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://designated-went-emerald-hunter.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://exempt-extends-interval-contributing.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://exempt-extends-interval-contributing.trycloudflare.com/api/:path*" }
   ]
 }
