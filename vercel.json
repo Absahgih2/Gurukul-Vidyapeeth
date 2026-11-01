@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://identical-sunday-calgary-covered.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://identical-sunday-calgary-covered.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://hygiene-pleased-half-set.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://hygiene-pleased-half-set.trycloudflare.com/api/:path*" }
   ]
 }
