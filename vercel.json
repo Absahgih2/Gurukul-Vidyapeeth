@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://arts-bond-planned-wal.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://arts-bond-planned-wal.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://varied-divx-input-sic.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://varied-divx-input-sic.trycloudflare.com/api/:path*" }
   ]
 }
