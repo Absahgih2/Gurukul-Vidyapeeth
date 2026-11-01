@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://burn-definitely-cost-casio.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://burn-definitely-cost-casio.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://living-ohio-truly-creating.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://living-ohio-truly-creating.trycloudflare.com/api/:path*" }
   ]
 }
