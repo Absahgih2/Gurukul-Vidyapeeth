@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://bucks-opponent-sur-builders.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://bucks-opponent-sur-builders.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://linked-narrow-karen-testament.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://linked-narrow-karen-testament.trycloudflare.com/api/:path*" }
   ]
 }
