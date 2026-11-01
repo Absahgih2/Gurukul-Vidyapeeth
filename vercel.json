@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://four-longest-outer-small.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://four-longest-outer-small.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://considerations-wave-audit-complexity.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://considerations-wave-audit-complexity.trycloudflare.com/api/:path*" }
   ]
 }
