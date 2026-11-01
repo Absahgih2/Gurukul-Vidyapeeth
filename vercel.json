@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://underground-emerging-searched-louisville.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://underground-emerging-searched-louisville.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://traveller-advise-jelsoft-beverages.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://traveller-advise-jelsoft-beverages.trycloudflare.com/api/:path*" }
   ]
 }
