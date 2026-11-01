@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://shadows-permit-laughing-directories.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://shadows-permit-laughing-directories.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://gone-clerk-video-located.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://gone-clerk-video-located.trycloudflare.com/api/:path*" }
   ]
 }
