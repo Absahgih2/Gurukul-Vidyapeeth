@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://template-terrace-skills-portal.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://template-terrace-skills-portal.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://typing-attacks-monetary-projects.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://typing-attacks-monetary-projects.trycloudflare.com/api/:path*" }
   ]
 }
