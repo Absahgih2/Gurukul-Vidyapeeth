@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://sec-logan-installations-baseline.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://sec-logan-installations-baseline.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://maker-thesis-contest-gravity.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://maker-thesis-contest-gravity.trycloudflare.com/api/:path*" }
   ]
 }
