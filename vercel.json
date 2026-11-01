@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://october-coupled-bookmark-isa.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://october-coupled-bookmark-isa.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://treatment-investing-batman-managers.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://treatment-investing-batman-managers.trycloudflare.com/api/:path*" }
   ]
 }
