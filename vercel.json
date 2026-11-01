@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://perhaps-serve-recovery-jews.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://perhaps-serve-recovery-jews.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://sydney-endangered-tour-ferrari.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://sydney-endangered-tour-ferrari.trycloudflare.com/api/:path*" }
   ]
 }
