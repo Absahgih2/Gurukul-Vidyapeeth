@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://selection-gamecube-lanes-mutual.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://selection-gamecube-lanes-mutual.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://prompt-shows-favourite-desired.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://prompt-shows-favourite-desired.trycloudflare.com/api/:path*" }
   ]
 }
