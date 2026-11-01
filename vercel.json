@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://recordings-viii-prairie-davis.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://recordings-viii-prairie-davis.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://temple-coordinate-brisbane-reliable.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://temple-coordinate-brisbane-reliable.trycloudflare.com/api/:path*" }
   ]
 }
