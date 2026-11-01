@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://address-situation-accomplish-underwear.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://address-situation-accomplish-underwear.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://changes-aspects-sat-casinos.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://changes-aspects-sat-casinos.trycloudflare.com/api/:path*" }
   ]
 }
