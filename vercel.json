@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://terry-obtained-til-bikes.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://terry-obtained-til-bikes.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://believed-north-journal-websites.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://believed-north-journal-websites.trycloudflare.com/api/:path*" }
   ]
 }
