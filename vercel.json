@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://lens-geometry-reservoir-monitoring.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://lens-geometry-reservoir-monitoring.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://genesis-msgid-deal-asthma.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://genesis-msgid-deal-asthma.trycloudflare.com/api/:path*" }
   ]
 }
