@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://cookies-lcd-marble-mask.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://cookies-lcd-marble-mask.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://queue-bath-optional-compile.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://queue-bath-optional-compile.trycloudflare.com/api/:path*" }
   ]
 }
