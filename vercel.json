@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://result-regulatory-softball-top.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://result-regulatory-softball-top.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://affairs-cgi-happening-random.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://affairs-cgi-happening-random.trycloudflare.com/api/:path*" }
   ]
 }
