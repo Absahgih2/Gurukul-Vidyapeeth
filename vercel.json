@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://vocational-appointments-lightbox-responsible.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://vocational-appointments-lightbox-responsible.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://accent-pupils-quotations-sun.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://accent-pupils-quotations-sun.trycloudflare.com/api/:path*" }
   ]
 }
