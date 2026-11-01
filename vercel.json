@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://ethernet-maria-checks-pursuant.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://ethernet-maria-checks-pursuant.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://worked-authorities-university-reprints.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://worked-authorities-university-reprints.trycloudflare.com/api/:path*" }
   ]
 }
