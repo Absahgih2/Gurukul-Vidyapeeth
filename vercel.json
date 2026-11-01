@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://henderson-sms-pursuit-procedure.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://henderson-sms-pursuit-procedure.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://temp-occur-small-ways.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://temp-occur-small-ways.trycloudflare.com/api/:path*" }
   ]
 }
