@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://books-attempts-earnings-throw.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://books-attempts-earnings-throw.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://issues-safely-context-jennifer.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://issues-safely-context-jennifer.trycloudflare.com/api/:path*" }
   ]
 }
