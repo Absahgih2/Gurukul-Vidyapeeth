@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://logo-partnerships-survive-able.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://logo-partnerships-survive-able.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://forms-advice-public-mercury.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://forms-advice-public-mercury.trycloudflare.com/api/:path*" }
   ]
 }
