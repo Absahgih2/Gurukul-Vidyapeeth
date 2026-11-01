@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://dan-eyes-highly-survivors.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://dan-eyes-highly-survivors.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://sofa-suit-quarterly-vacuum.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://sofa-suit-quarterly-vacuum.trycloudflare.com/api/:path*" }
   ]
 }
