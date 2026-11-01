@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://mystery-costs-sugar-textile.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://mystery-costs-sugar-textile.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://dip-del-vertex-removable.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://dip-del-vertex-removable.trycloudflare.com/api/:path*" }
   ]
 }
