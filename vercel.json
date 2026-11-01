@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://durable-magazines-presently-adsl.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://durable-magazines-presently-adsl.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://charlie-accomplish-leadership-worm.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://charlie-accomplish-leadership-worm.trycloudflare.com/api/:path*" }
   ]
 }
