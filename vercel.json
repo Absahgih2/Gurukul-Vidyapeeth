@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://thoroughly-polished-soonest-equilibrium.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://thoroughly-polished-soonest-equilibrium.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://part-reuters-beneficial-interviews.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://part-reuters-beneficial-interviews.trycloudflare.com/api/:path*" }
   ]
 }
