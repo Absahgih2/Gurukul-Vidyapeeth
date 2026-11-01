@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://murphy-revision-donations-endless.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://murphy-revision-donations-endless.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://friendship-simpson-instances-generators.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://friendship-simpson-instances-generators.trycloudflare.com/api/:path*" }
   ]
 }
