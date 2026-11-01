@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://dash-registration-nitrogen-opposite.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://dash-registration-nitrogen-opposite.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://mature-intimate-wellness-big.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://mature-intimate-wellness-big.trycloudflare.com/api/:path*" }
   ]
 }
