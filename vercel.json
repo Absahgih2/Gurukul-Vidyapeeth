@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://buck-online-learning-closes.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://buck-online-learning-closes.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://upgrading-shake-driven-soil.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://upgrading-shake-driven-soil.trycloudflare.com/api/:path*" }
   ]
 }
