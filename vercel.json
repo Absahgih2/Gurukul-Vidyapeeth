@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://tunes-color-sister-train.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://tunes-color-sister-train.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://web-wan-virgin-jacket.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://web-wan-virgin-jacket.trycloudflare.com/api/:path*" }
   ]
 }
