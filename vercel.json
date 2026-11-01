@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://tag-breakdown-dollar-bryant.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://tag-breakdown-dollar-bryant.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://injuries-softball-switch-visits.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://injuries-softball-switch-visits.trycloudflare.com/api/:path*" }
   ]
 }
