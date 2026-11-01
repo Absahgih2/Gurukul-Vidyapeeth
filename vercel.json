@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://presently-reservations-antenna-moderators.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://presently-reservations-antenna-moderators.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://tracks-guns-rating-therapist.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://tracks-guns-rating-therapist.trycloudflare.com/api/:path*" }
   ]
 }
