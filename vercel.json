@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://one-textbooks-forestry-red.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://one-textbooks-forestry-red.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://kelkoo-police-threaded-attend.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://kelkoo-police-threaded-attend.trycloudflare.com/api/:path*" }
   ]
 }
