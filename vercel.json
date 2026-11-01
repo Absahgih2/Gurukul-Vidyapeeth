@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://remain-directors-pulled-exec.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://remain-directors-pulled-exec.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://amongst-nursing-other-amenities.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://amongst-nursing-other-amenities.trycloudflare.com/api/:path*" }
   ]
 }
