@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://decimal-dose-pride-necessary.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://decimal-dose-pride-necessary.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://fleet-wedding-switching-parliament.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://fleet-wedding-switching-parliament.trycloudflare.com/api/:path*" }
   ]
 }
