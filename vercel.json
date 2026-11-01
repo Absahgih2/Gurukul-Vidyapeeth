@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://dinner-jewish-setup-will.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://dinner-jewish-setup-will.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://shelter-shoot-continue-solved.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://shelter-shoot-continue-solved.trycloudflare.com/api/:path*" }
   ]
 }
