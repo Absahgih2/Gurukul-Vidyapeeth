@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://thompson-dealer-dropped-authorization.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://thompson-dealer-dropped-authorization.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://pdf-quantity-trucks-located.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://pdf-quantity-trucks-located.trycloudflare.com/api/:path*" }
   ]
 }
