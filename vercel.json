@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://smell-photo-describe-martin.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://smell-photo-describe-martin.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://train-plenty-generators-cumulative.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://train-plenty-generators-cumulative.trycloudflare.com/api/:path*" }
   ]
 }
