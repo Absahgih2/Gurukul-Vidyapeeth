@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://fun-announced-fishing-touch.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://fun-announced-fishing-touch.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://itunes-cliff-weapon-slots.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://itunes-cliff-weapon-slots.trycloudflare.com/api/:path*" }
   ]
 }
