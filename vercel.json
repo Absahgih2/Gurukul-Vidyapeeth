@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://queen-announcement-sodium-lodging.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://queen-announcement-sodium-lodging.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://dean-viruses-temperatures-flux.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://dean-viruses-temperatures-flux.trycloudflare.com/api/:path*" }
   ]
 }
