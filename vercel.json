@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://pick-trailer-restaurant-tucson.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://pick-trailer-restaurant-tucson.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://jerusalem-organised-arrested-europe.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://jerusalem-organised-arrested-europe.trycloudflare.com/api/:path*" }
   ]
 }
