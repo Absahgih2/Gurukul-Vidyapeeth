@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://gratuit-net-solved-invisible.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://gratuit-net-solved-invisible.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://sacred-stretch-attorneys-max.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://sacred-stretch-attorneys-max.trycloudflare.com/api/:path*" }
   ]
 }
