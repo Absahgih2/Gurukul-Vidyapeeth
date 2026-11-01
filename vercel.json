@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://jeffrey-perfume-vanilla-comments.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://jeffrey-perfume-vanilla-comments.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://convenience-rescue-ceremony-image.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://convenience-rescue-ceremony-image.trycloudflare.com/api/:path*" }
   ]
 }
