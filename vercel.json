@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://application-disclose-mardi-ranging.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://application-disclose-mardi-ranging.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://pick-trailer-restaurant-tucson.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://pick-trailer-restaurant-tucson.trycloudflare.com/api/:path*" }
   ]
 }
