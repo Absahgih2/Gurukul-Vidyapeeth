@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://disclosure-upgrade-angela-amazing.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://disclosure-upgrade-angela-amazing.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://lots-ind-available-archives.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://lots-ind-available-archives.trycloudflare.com/api/:path*" }
   ]
 }
