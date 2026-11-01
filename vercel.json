@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://consulting-ratios-leaves-sponsors.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://consulting-ratios-leaves-sponsors.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://consisting-accepted-supplements-colorado.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://consisting-accepted-supplements-colorado.trycloudflare.com/api/:path*" }
   ]
 }
