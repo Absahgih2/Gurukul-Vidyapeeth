@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://request-humor-above-current.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://request-humor-above-current.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://throws-melissa-people-dvds.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://throws-melissa-people-dvds.trycloudflare.com/api/:path*" }
   ]
 }
