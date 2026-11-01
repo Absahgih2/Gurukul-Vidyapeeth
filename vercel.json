@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://throws-melissa-people-dvds.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://throws-melissa-people-dvds.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://weighted-afterwards-columns-been.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://weighted-afterwards-columns-been.trycloudflare.com/api/:path*" }
   ]
 }
