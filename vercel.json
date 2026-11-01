@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://reasons-thank-pod-edited.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://reasons-thank-pod-edited.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://sapphire-conferences-howard-cars.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://sapphire-conferences-howard-cars.trycloudflare.com/api/:path*" }
   ]
 }
