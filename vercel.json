@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://chemical-horses-geological-exchange.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://chemical-horses-geological-exchange.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://thee-color-islands-asylum.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://thee-color-islands-asylum.trycloudflare.com/api/:path*" }
   ]
 }
