@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://interim-settlement-filling-empire.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://interim-settlement-filling-empire.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://mass-manner-falling-spoke.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://mass-manner-falling-spoke.trycloudflare.com/api/:path*" }
   ]
 }
