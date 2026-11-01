@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://wellness-rated-ministers-reporters.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://wellness-rated-ministers-reporters.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://geological-nav-creative-structural.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://geological-nav-creative-structural.trycloudflare.com/api/:path*" }
   ]
 }
