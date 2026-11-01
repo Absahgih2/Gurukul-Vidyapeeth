@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://wax-mpegs-rats-mixer.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://wax-mpegs-rats-mixer.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://carefully-computed-sims-valve.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://carefully-computed-sims-valve.trycloudflare.com/api/:path*" }
   ]
 }
