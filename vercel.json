@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://merit-cut-developers-characterization.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://merit-cut-developers-characterization.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://mtv-syndication-parcel-moments.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://mtv-syndication-parcel-moments.trycloudflare.com/api/:path*" }
   ]
 }
