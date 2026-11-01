@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://implementation-magnificent-offerings-glory.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://implementation-magnificent-offerings-glory.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://firewire-butler-screening-nyc.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://firewire-butler-screening-nyc.trycloudflare.com/api/:path*" }
   ]
 }
