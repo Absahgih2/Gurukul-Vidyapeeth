@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://forbes-colours-airlines-collecting.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://forbes-colours-airlines-collecting.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://cord-dried-leaf-drawings.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://cord-dried-leaf-drawings.trycloudflare.com/api/:path*" }
   ]
 }
