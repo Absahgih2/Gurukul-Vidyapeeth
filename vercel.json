@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://protected-visual-exercise-problems.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://protected-visual-exercise-problems.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://explaining-pills-respondents-specially.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://explaining-pills-respondents-specially.trycloudflare.com/api/:path*" }
   ]
 }
