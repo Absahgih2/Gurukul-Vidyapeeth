@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://wild-retired-edt-broker.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://wild-retired-edt-broker.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://laser-fixes-reasoning-single.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://laser-fixes-reasoning-single.trycloudflare.com/api/:path*" }
   ]
 }
