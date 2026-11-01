@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://network-opened-crew-linda.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://network-opened-crew-linda.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://feb-riders-wet-obtaining.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://feb-riders-wet-obtaining.trycloudflare.com/api/:path*" }
   ]
 }
