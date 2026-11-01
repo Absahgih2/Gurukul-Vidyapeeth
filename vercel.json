@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://thumbs-walnut-labor-newbie.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://thumbs-walnut-labor-newbie.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://this-rides-denver-assistant.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://this-rides-denver-assistant.trycloudflare.com/api/:path*" }
   ]
 }
