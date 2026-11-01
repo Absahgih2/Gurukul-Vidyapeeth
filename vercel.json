@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://this-rides-denver-assistant.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://this-rides-denver-assistant.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://providers-blond-billing-breed.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://providers-blond-billing-breed.trycloudflare.com/api/:path*" }
   ]
 }
