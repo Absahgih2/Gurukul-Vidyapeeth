@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://ridge-clips-winners-burn.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://ridge-clips-winners-burn.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://seas-dressing-dialog-honest.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://seas-dressing-dialog-honest.trycloudflare.com/api/:path*" }
   ]
 }
