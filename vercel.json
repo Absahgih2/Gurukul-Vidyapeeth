@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://samples-dover-gmt-acceptance.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://samples-dover-gmt-acceptance.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://strong-silver-ent-advertisers.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://strong-silver-ent-advertisers.trycloudflare.com/api/:path*" }
   ]
 }
