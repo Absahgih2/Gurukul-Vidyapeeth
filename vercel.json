@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://device-roberts-february-middle.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://device-roberts-february-middle.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://expenses-vat-pepper-commit.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://expenses-vat-pepper-commit.trycloudflare.com/api/:path*" }
   ]
 }
