@@ -61,11 +61,14 @@ exec $CF_BIN tunnel --url http://127.0.0.1:5000
 EOF
 chmod +x "$RUNNER_SCRIPT"
 
-# 3. Ensure PM2 runs ~/run-tunnel.sh directly
+# 3. Ensure PM2 runs ~/run-tunnel.sh with healthy memory state
 PM2_NAME="tunnel"
 PM2_INFO=$(pm2 jlist 2>/dev/null || echo "[]")
-if ! echo "$PM2_INFO" | grep -q '"pm_exec_path":".*run-tunnel\.sh"'; then
-    echo "Setting up stable PM2 runner..."
+
+# If process does not exist or has 0b memory (crashed boot loop), restart it cleanly
+tunnel_mem=$(echo "$PM2_INFO" | grep -oE "\"name\":\"$PM2_NAME\"[^\}]*\"memory\":[0-9]+" | grep -oE "[0-9]+$" || echo "0")
+if ! echo "$PM2_INFO" | grep -q "\"name\":\"$PM2_NAME\"" || [ "$tunnel_mem" -eq 0 ] 2>/dev/null; then
+    echo "Starting / Refreshing PM2 tunnel process with clean environment..."
     pm2 delete "$PM2_NAME" > /dev/null 2>&1 || true
     pm2 delete cloudflared > /dev/null 2>&1 || true
     pm2 start "$RUNNER_SCRIPT" --name "$PM2_NAME"
@@ -87,20 +90,11 @@ get_url() {
     echo "$url"
 }
 
-is_tunnel_process_alive() {
-    pm2 jlist 2>/dev/null | grep -q "\"name\":\"$PM2_NAME\".*\"status\":\"online\""
-}
-
 echo "Searching for active trycloudflare.com URL..."
 NEW_URL=$(get_url)
 
-# 5. Only restart if no URL exists or process is offline
-if [ -z "$NEW_URL" ] || ! is_tunnel_process_alive; then
-    echo "Starting / Refreshing tunnel process..."
-    pm2 flush "$PM2_NAME" > /dev/null 2>&1 || true
-    pm2 restart "$PM2_NAME" > /dev/null 2>&1 || true
+if [ -z "$NEW_URL" ]; then
     echo "Waiting for fresh tunnel URL..."
-    NEW_URL=""
     for i in {1..15}; do
         sleep 2
         NEW_URL=$(get_url)
