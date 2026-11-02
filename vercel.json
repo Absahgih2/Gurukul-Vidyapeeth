@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://ron-vanilla-examples-comprehensive.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://ron-vanilla-examples-comprehensive.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://enabled-sister-moisture-contemporary.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://enabled-sister-moisture-contemporary.trycloudflare.com/api/:path*" }
   ]
 }
