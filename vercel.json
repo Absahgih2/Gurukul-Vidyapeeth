@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://comparable-reveals-cardiovascular-clip.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://comparable-reveals-cardiovascular-clip.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://closure-stats-towns-band.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://closure-stats-towns-band.trycloudflare.com/api/:path*" }
   ]
 }
