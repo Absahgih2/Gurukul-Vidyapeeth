@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://remote-ana-miller-magazine.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://remote-ana-miller-magazine.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://less-balanced-pvc-prospects.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://less-balanced-pvc-prospects.trycloudflare.com/api/:path*" }
   ]
 }
