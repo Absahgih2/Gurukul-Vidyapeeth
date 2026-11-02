@@ -61,20 +61,17 @@ exec $CF_BIN tunnel --url http://127.0.0.1:5000
 EOF
 chmod +x "$RUNNER_SCRIPT"
 
-# 3. Ensure PM2 runs ~/run-tunnel.sh with healthy memory state
+# 3. Ensure PM2 runs ~/run-tunnel.sh directly
 PM2_NAME="tunnel"
 PM2_INFO=$(pm2 jlist 2>/dev/null || echo "[]")
-
-# If process does not exist or has 0b memory (crashed boot loop), restart it cleanly
-tunnel_mem=$(echo "$PM2_INFO" | grep -oE "\"name\":\"$PM2_NAME\"[^\}]*\"memory\":[0-9]+" | grep -oE "[0-9]+$" || echo "0")
-if ! echo "$PM2_INFO" | grep -q "\"name\":\"$PM2_NAME\"" || [ "$tunnel_mem" -eq 0 ] 2>/dev/null; then
-    echo "Starting / Refreshing PM2 tunnel process with clean environment..."
+if ! echo "$PM2_INFO" | grep -q '"pm_exec_path":".*run-tunnel\.sh"'; then
+    echo "Replacing legacy PM2 tunnel with stable runner..."
     pm2 delete "$PM2_NAME" > /dev/null 2>&1 || true
     pm2 delete cloudflared > /dev/null 2>&1 || true
     pm2 start "$RUNNER_SCRIPT" --name "$PM2_NAME"
     pm2 save
     echo "Waiting for tunnel connections to establish..."
-    sleep 6
+    sleep 8
 fi
 
 # 4. Helper to extract real tunnel URL (ignoring api.trycloudflare.com)
@@ -94,12 +91,11 @@ echo "Searching for active trycloudflare.com URL..."
 NEW_URL=$(get_url)
 
 if [ -z "$NEW_URL" ]; then
-    echo "Waiting for fresh tunnel URL..."
+    echo "Waiting for tunnel URL..."
     for i in {1..15}; do
         sleep 2
         NEW_URL=$(get_url)
         if [ -n "$NEW_URL" ]; then
-            echo "[OK] Tunnel URL captured: $NEW_URL"
             break
         fi
     done
@@ -119,7 +115,7 @@ echo "[OK] Active Live Tunnel: $NEW_URL"
 git fetch origin main > /dev/null 2>&1 || true
 git merge origin/main --ff-only > /dev/null 2>&1 || true
 
-# 6. Read current URL in vercel.json
+# 5. Read current URL in vercel.json
 CURRENT_URL=$(grep -a -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' vercel.json | head -n 1 || true)
 
 if [ "$NEW_URL" == "$CURRENT_URL" ]; then
@@ -130,10 +126,10 @@ fi
 
 echo "Updating vercel.json: $CURRENT_URL -> $NEW_URL"
 
-# 7. Replace in vercel.json
+# 6. Replace in vercel.json
 sed -i -E "s|https://[a-zA-Z0-9.-]+\.trycloudflare\.com|$NEW_URL|g" vercel.json
 
-# 8. Commit and push
+# 7. Commit and push
 git add vercel.json
 git commit -m "chore: auto-sync tunnel url to $NEW_URL"
 
