@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://sisters-exceed-toddler-thirty.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://sisters-exceed-toddler-thirty.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://belkin-designed-distributor-convert.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://belkin-designed-distributor-convert.trycloudflare.com/api/:path*" }
   ]
 }
