@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://intervention-forever-plains-office.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://intervention-forever-plains-office.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://digital-suppose-gulf-serious.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://digital-suppose-gulf-serious.trycloudflare.com/api/:path*" }
   ]
 }
