@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://dominant-abu-ahead-sensors.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://dominant-abu-ahead-sensors.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://incredible-drill-dragon-mobility.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://incredible-drill-dragon-mobility.trycloudflare.com/api/:path*" }
   ]
 }
