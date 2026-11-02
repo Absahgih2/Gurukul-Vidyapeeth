@@ -8,6 +8,18 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:$HOME/.nvm/v
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Concurrency lock to prevent multiple watchers or manual commands from colliding
+LOCKFILE="/tmp/gvu-update-tunnel.lock"
+if [ -e "$LOCKFILE" ]; then
+    PREV_PID=$(cat "$LOCKFILE" 2>/dev/null || echo "")
+    if [ -n "$PREV_PID" ] && kill -0 "$PREV_PID" 2>/dev/null; then
+        echo "[Notice] Another update-tunnel process (PID $PREV_PID) is already running. Skipping this cycle."
+        exit 0
+    fi
+fi
+echo $$ > "$LOCKFILE"
+trap 'rm -f "$LOCKFILE"' EXIT INT TERM
+
 echo "=========================================================="
 echo "    Cloudflare Tunnel to Vercel Auto-Sync Utility        "
 echo "=========================================================="
@@ -28,37 +40,41 @@ if [ "$local_status" = "000" ]; then
     sleep 3
 fi
 
-# 2. Write permanent stable runner script
+# 2. Write permanent stable runner script (standard reliable cloudflared invocation)
 RUNNER_SCRIPT="$HOME/run-tunnel.sh"
 cat << 'EOF' > "$RUNNER_SCRIPT"
 #!/bin/bash
-exec cloudflared tunnel --protocol http2 --edge-ip-version 4 --url http://127.0.0.1:5000
+exec cloudflared tunnel --url http://127.0.0.1:5000
 EOF
 chmod +x "$RUNNER_SCRIPT"
 
-# 3. Ensure PM2 runs ~/run-tunnel.sh directly (prevents crash/restart loop)
+# 3. Ensure PM2 runs ~/run-tunnel.sh directly
+PM2_NAME="tunnel"
 PM2_INFO=$(pm2 jlist 2>/dev/null || echo "[]")
 if ! echo "$PM2_INFO" | grep -q '"pm_exec_path":".*run-tunnel\.sh"'; then
-    echo "Replacing legacy PM2 tunnel with stable runner..."
-    pm2 delete tunnel > /dev/null 2>&1 || true
+    echo "Setting up stable PM2 runner..."
+    pm2 delete "$PM2_NAME" > /dev/null 2>&1 || true
     pm2 delete cloudflared > /dev/null 2>&1 || true
-    pm2 start "$RUNNER_SCRIPT" --name "tunnel"
+    pm2 start "$RUNNER_SCRIPT" --name "$PM2_NAME"
     pm2 save
     echo "Waiting for tunnel connections to establish..."
-    sleep 8
+    sleep 6
 fi
-
-PM2_NAME="tunnel"
 
 # 4. Helper to extract real tunnel URL (ignoring api.trycloudflare.com)
 get_url() {
     local url=""
-    # First priority: live PM2 stream (last 100 lines of current process)
-    url=$(pm2 logs "$PM2_NAME" --lines 100 --nostream 2>/dev/null | grep -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
+    # 1st priority: live PM2 stream
+    url=$(pm2 logs "$PM2_NAME" --lines 150 --nostream 2>/dev/null | grep -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
     
-    # Second priority: direct error log where cloudflared outputs
+    # 2nd priority: direct error log where cloudflared outputs banner
     if [ -z "$url" ] && [ -f "$HOME/.pm2/logs/${PM2_NAME}-error.log" ]; then
         url=$(grep -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' "$HOME/.pm2/logs/${PM2_NAME}-error.log" 2>/dev/null | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
+    fi
+
+    # 3rd priority: direct out log
+    if [ -z "$url" ] && [ -f "$HOME/.pm2/logs/${PM2_NAME}-out.log" ]; then
+        url=$(grep -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' "$HOME/.pm2/logs/${PM2_NAME}-out.log" 2>/dev/null | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
     fi
     echo "$url"
 }
@@ -68,7 +84,8 @@ is_url_alive() {
     if [ -z "$test_url" ]; then return 1; fi
     local status
     status=$(curl -k -s -o /dev/null -w "%{http_code}" "$test_url/api/courses" --max-time 6 2>/dev/null || echo "000")
-    if [ "$status" = "200" ] || [ "$status" = "404" ] || [ "$status" = "401" ]; then
+    # Any HTTP 2xx, 3xx, or 4xx status confirms Cloudflare connected to backend
+    if [[ "$status" =~ ^[2-4][0-9]{2}$ ]]; then
         return 0
     fi
     return 1
@@ -83,11 +100,17 @@ if [ -z "$NEW_URL" ] || ! is_url_alive "$NEW_URL"; then
     pm2 flush "$PM2_NAME" > /dev/null 2>&1 || true
     pm2 restart "$PM2_NAME" > /dev/null 2>&1 || true
     echo "Waiting for fresh tunnel connection to establish..."
+    NEW_URL=""
     for i in {1..20}; do
         sleep 2
         NEW_URL=$(get_url)
-        if [ -n "$NEW_URL" ] && is_url_alive "$NEW_URL"; then
-            break
+        if [ -n "$NEW_URL" ]; then
+            if is_url_alive "$NEW_URL"; then
+                echo "[OK] Tunnel confirmed active and reachable: $NEW_URL"
+                break
+            else
+                echo "Tunnel URL found ($NEW_URL), waiting for Cloudflare edge routing (attempt $i/20)..."
+            fi
         fi
     done
 fi
@@ -102,7 +125,7 @@ if [ -z "$NEW_URL" ]; then
     exit 1
 fi
 
-echo "[OK] Active Live Tunnel Detected and Verified: $NEW_URL"
+echo "[OK] Active Live Tunnel: $NEW_URL"
 
 # Sync latest changes from remote before updating
 git fetch origin main > /dev/null 2>&1 || true
