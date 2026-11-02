@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://critics-shopzilla-hotel-measurement.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://critics-shopzilla-hotel-measurement.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://revision-venture-sold-essex.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://revision-venture-sold-essex.trycloudflare.com/api/:path*" }
   ]
 }
