@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://sail-posts-today-photography.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://sail-posts-today-photography.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://loads-alex-silk-virtue.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://loads-alex-silk-virtue.trycloudflare.com/api/:path*" }
   ]
 }
