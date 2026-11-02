@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://suffering-car-ellen-aaa.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://suffering-car-ellen-aaa.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://excess-hearing-freedom-executed.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://excess-hearing-freedom-executed.trycloudflare.com/api/:path*" }
   ]
 }
