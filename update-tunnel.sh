@@ -3,7 +3,7 @@ set -e
 
 # Export standard environment paths
 export HOME="${HOME:-/home/gurukul}"
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$HOME/.npm-global/bin:$PATH"
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$HOME/.npm-global/bin:$HOME/.local/bin:$PATH"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -40,11 +40,24 @@ if [ "$local_status" = "000" ]; then
     sleep 3
 fi
 
-# 2. Write permanent stable runner script
+# Locate absolute path of cloudflared binary
+CF_BIN=$(which cloudflared 2>/dev/null || true)
+if [ -z "$CF_BIN" ] && [ -x "/usr/local/bin/cloudflared" ]; then
+    CF_BIN="/usr/local/bin/cloudflared"
+fi
+if [ -z "$CF_BIN" ] && [ -x "/usr/bin/cloudflared" ]; then
+    CF_BIN="/usr/bin/cloudflared"
+fi
+if [ -z "$CF_BIN" ]; then
+    CF_BIN="cloudflared"
+fi
+
+# 2. Write permanent stable runner script with full PATH and absolute cloudflared path
 RUNNER_SCRIPT="$HOME/run-tunnel.sh"
-cat << 'EOF' > "$RUNNER_SCRIPT"
+cat << EOF > "$RUNNER_SCRIPT"
 #!/bin/bash
-exec cloudflared tunnel --url http://127.0.0.1:5000
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:\$HOME/.local/bin:\$PATH"
+exec $CF_BIN tunnel --url http://127.0.0.1:5000
 EOF
 chmod +x "$RUNNER_SCRIPT"
 
