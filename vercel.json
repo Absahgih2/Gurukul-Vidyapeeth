@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://interested-ronald-specialized-visited.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://interested-ronald-specialized-visited.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://graphs-purchasing-gaming-festivals.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://graphs-purchasing-gaming-festivals.trycloudflare.com/api/:path*" }
   ]
 }
