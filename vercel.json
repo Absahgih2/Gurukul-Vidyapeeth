@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://funny-showed-entrepreneurs-spent.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://funny-showed-entrepreneurs-spent.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://ear-meets-entire-determining.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://ear-meets-entire-determining.trycloudflare.com/api/:path*" }
   ]
 }
