@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://embedded-prisoners-south-electrical.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://embedded-prisoners-south-electrical.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://alias-reflections-onion-pdt.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://alias-reflections-onion-pdt.trycloudflare.com/api/:path*" }
   ]
 }
