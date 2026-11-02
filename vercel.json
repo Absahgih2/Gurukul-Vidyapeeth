@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://accessing-neo-situation-grove.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://accessing-neo-situation-grove.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://lemon-hiv-node-contacting.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://lemon-hiv-node-contacting.trycloudflare.com/api/:path*" }
   ]
 }
