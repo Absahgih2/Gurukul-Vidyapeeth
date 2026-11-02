@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://year-oxford-franchise-approach.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://year-oxford-franchise-approach.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://brunswick-packets-rob-mae.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://brunswick-packets-rob-mae.trycloudflare.com/api/:path*" }
   ]
 }
