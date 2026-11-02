@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://vary-poster-processor-terminals.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://vary-poster-processor-terminals.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://sponsors-soup-vintage-libs.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://sponsors-soup-vintage-libs.trycloudflare.com/api/:path*" }
   ]
 }
