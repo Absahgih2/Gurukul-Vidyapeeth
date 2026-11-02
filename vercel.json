@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://millennium-specifies-focusing-permit.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://millennium-specifies-focusing-permit.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://careers-bryant-julian-authorization.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://careers-bryant-julian-authorization.trycloudflare.com/api/:path*" }
   ]
 }
