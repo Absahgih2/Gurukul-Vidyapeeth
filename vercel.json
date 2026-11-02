@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://pen-clone-reprint-heart.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://pen-clone-reprint-heart.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://stocks-insights-processor-locks.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://stocks-insights-processor-locks.trycloudflare.com/api/:path*" }
   ]
 }
