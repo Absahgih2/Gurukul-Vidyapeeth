@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://loads-alex-silk-virtue.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://loads-alex-silk-virtue.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://advise-advertising-eggs-districts.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://advise-advertising-eggs-districts.trycloudflare.com/api/:path*" }
   ]
 }
