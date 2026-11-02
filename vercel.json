@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://the-spreading-thursday-titten.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://the-spreading-thursday-titten.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://howto-intelligent-pets-volumes.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://howto-intelligent-pets-volumes.trycloudflare.com/api/:path*" }
   ]
 }
