@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://agenda-fired-backing-paste.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://agenda-fired-backing-paste.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://bon-powerseller-gravity-scuba.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://bon-powerseller-gravity-scuba.trycloudflare.com/api/:path*" }
   ]
 }
