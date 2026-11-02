@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://prize-portsmouth-corresponding-guy.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://prize-portsmouth-corresponding-guy.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://airports-museum-browsers-section.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://airports-museum-browsers-section.trycloudflare.com/api/:path*" }
   ]
 }
