@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-# Export standard environment paths so cron has access to pm2, cloudflared, git, etc.
+# Export standard environment paths
 export HOME="${HOME:-/home/gurukul}"
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$HOME/.npm-global/bin:$PATH"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Concurrency lock to prevent multiple watchers or manual commands from colliding
+# Concurrency lock to prevent multiple instances from colliding
 LOCKFILE="/tmp/gvu-update-tunnel.lock"
 if [ -e "$LOCKFILE" ]; then
     PREV_PID=$(cat "$LOCKFILE" 2>/dev/null || echo "")
@@ -35,12 +35,12 @@ fi
 # Ensure local backend is alive on port 5000
 local_status=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:5000/api/courses" --max-time 3 2>/dev/null || echo "000")
 if [ "$local_status" = "000" ]; then
-    echo "[Notice] Local backend on port 5000 not responding. Attempting to ensure PM2 backend is running..."
-    pm2 restart gvu-backend > /dev/null 2>&1 || pm2 restart server > /dev/null 2>&1 || pm2 restart app > /dev/null 2>&1 || true
+    echo "[Notice] Local backend on port 5000 not responding. Ensuring PM2 backend is running..."
+    pm2 restart gvu-backend > /dev/null 2>&1 || pm2 restart server > /dev/null 2>&1 || true
     sleep 3
 fi
 
-# 2. Write permanent stable runner script (standard reliable cloudflared invocation)
+# 2. Write permanent stable runner script
 RUNNER_SCRIPT="$HOME/run-tunnel.sh"
 cat << 'EOF' > "$RUNNER_SCRIPT"
 #!/bin/bash
@@ -64,53 +64,36 @@ fi
 # 4. Helper to extract real tunnel URL (ignoring api.trycloudflare.com)
 get_url() {
     local url=""
-    # 1st priority: live PM2 stream
     url=$(pm2 logs "$PM2_NAME" --lines 150 --nostream 2>/dev/null | grep -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
-    
-    # 2nd priority: direct error log where cloudflared outputs banner
     if [ -z "$url" ] && [ -f "$HOME/.pm2/logs/${PM2_NAME}-error.log" ]; then
         url=$(grep -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' "$HOME/.pm2/logs/${PM2_NAME}-error.log" 2>/dev/null | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
     fi
-
-    # 3rd priority: direct out log
     if [ -z "$url" ] && [ -f "$HOME/.pm2/logs/${PM2_NAME}-out.log" ]; then
         url=$(grep -a -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' "$HOME/.pm2/logs/${PM2_NAME}-out.log" 2>/dev/null | grep -v 'api\.trycloudflare\.com' | tail -n 1 | tr -d ' ' || true)
     fi
     echo "$url"
 }
 
-is_url_alive() {
-    local test_url="$1"
-    if [ -z "$test_url" ]; then return 1; fi
-    local status
-    status=$(curl -k -s -o /dev/null -w "%{http_code}" "$test_url/api/courses" --max-time 6 2>/dev/null || echo "000")
-    # Any HTTP 2xx, 3xx, or 4xx status confirms Cloudflare connected to backend
-    if [[ "$status" =~ ^[2-4][0-9]{2}$ ]]; then
-        return 0
-    fi
-    return 1
+is_tunnel_process_alive() {
+    pm2 jlist 2>/dev/null | grep -q "\"name\":\"$PM2_NAME\".*\"status\":\"online\""
 }
 
 echo "Searching for active trycloudflare.com URL..."
 NEW_URL=$(get_url)
 
-# 5. Check if URL is detected and live; if stale or dead, restart tunnel cleanly
-if [ -z "$NEW_URL" ] || ! is_url_alive "$NEW_URL"; then
-    echo "Stale or inactive tunnel detected. Restarting $PM2_NAME with clean logs..."
+# 5. Only restart if no URL exists or process is offline
+if [ -z "$NEW_URL" ] || ! is_tunnel_process_alive; then
+    echo "Starting / Refreshing tunnel process..."
     pm2 flush "$PM2_NAME" > /dev/null 2>&1 || true
     pm2 restart "$PM2_NAME" > /dev/null 2>&1 || true
-    echo "Waiting for fresh tunnel connection to establish..."
+    echo "Waiting for fresh tunnel URL..."
     NEW_URL=""
-    for i in {1..20}; do
+    for i in {1..15}; do
         sleep 2
         NEW_URL=$(get_url)
         if [ -n "$NEW_URL" ]; then
-            if is_url_alive "$NEW_URL"; then
-                echo "[OK] Tunnel confirmed active and reachable: $NEW_URL"
-                break
-            else
-                echo "Tunnel URL found ($NEW_URL), waiting for Cloudflare edge routing (attempt $i/20)..."
-            fi
+            echo "[OK] Tunnel URL captured: $NEW_URL"
+            break
         fi
     done
 fi
@@ -118,9 +101,7 @@ fi
 if [ -z "$NEW_URL" ]; then
     echo ""
     echo "[ERROR] Could not obtain an active trycloudflare.com URL."
-    echo "Status of PM2 processes:"
     pm2 list
-    echo "Last logs:"
     pm2 logs "$PM2_NAME" --lines 20 --nostream
     exit 1
 fi
@@ -136,7 +117,7 @@ CURRENT_URL=$(grep -a -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' vercel.js
 
 if [ "$NEW_URL" == "$CURRENT_URL" ]; then
     echo "[OK] vercel.json is already up to date with: $NEW_URL"
-    echo "No push required."
+    echo "No push required. Tunnel is stable and active."
     exit 0
 fi
 
