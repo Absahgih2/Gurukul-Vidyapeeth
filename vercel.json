@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://refine-classified-sciences-thumb.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://refine-classified-sciences-thumb.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://states-loaded-mph-kid.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://states-loaded-mph-kid.trycloudflare.com/api/:path*" }
   ]
 }
