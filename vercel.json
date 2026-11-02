@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://proper-cottages-realize-gods.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://proper-cottages-realize-gods.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://storage-ways-signature-manager.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://storage-ways-signature-manager.trycloudflare.com/api/:path*" }
   ]
 }
