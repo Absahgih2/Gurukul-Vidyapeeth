@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://assistant-provincial-guests-tuesday.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://assistant-provincial-guests-tuesday.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://medical-ivory-restored-exterior.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://medical-ivory-restored-exterior.trycloudflare.com/api/:path*" }
   ]
 }
