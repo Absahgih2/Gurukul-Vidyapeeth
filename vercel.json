@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://document-alaska-executed-steam.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://document-alaska-executed-steam.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://accuracy-encourage-return-chip.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://accuracy-encourage-return-chip.trycloudflare.com/api/:path*" }
   ]
 }
