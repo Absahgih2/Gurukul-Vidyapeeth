@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://abraham-revealed-penalty-endangered.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://abraham-revealed-penalty-endangered.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://hostels-lesser-reunion-companion.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://hostels-lesser-reunion-companion.trycloudflare.com/api/:path*" }
   ]
 }
