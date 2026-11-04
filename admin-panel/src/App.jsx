@@ -317,7 +317,9 @@ export default function App() {
   // ---- STAFF ADMIN STATES ----
   const [staffAdminView, setStaffAdminView] = useState('login');
   const [staffAdminAuthenticated, setStaffAdminAuthenticated] = useState(() => {
-    return localStorage.getItem('staffAdminAuthenticated') === 'true' || sessionStorage.getItem('staffAdminAuthenticated') === 'true';
+    const isAuth = localStorage.getItem('staffAdminAuthenticated') === 'true' || sessionStorage.getItem('staffAdminAuthenticated') === 'true';
+    const hasToken = !!(localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken'));
+    return isAuth && hasToken;
   });
   const [staffAdminData, setStaffAdminData] = useState(() => getStoredStaffAdmin());
   const [staffAdminUsername, setStaffAdminUsername] = useState('');
@@ -420,7 +422,7 @@ export default function App() {
   const handleGoogleDriveDisconnect = async () => {
     if (!confirm('Disconnect Google Drive? Files already uploaded will remain in your Drive.')) return;
     try {
-      await fetch('/api/auth/google/disconnect', { method: 'POST' });
+      await fetch('/api/auth/google/disconnect', { method: 'POST', headers: getAdminHeaders() });
       setGoogleDriveConnected(false);
     } catch (err) { alert('Failed to disconnect'); }
   };
@@ -1474,6 +1476,10 @@ export default function App() {
       }
       setStaffAdminAuthenticated(true);
       setStaffAdminData(data.admin);
+      if (data.token) {
+        localStorage.setItem('adminToken', data.token);
+        sessionStorage.setItem('adminToken', data.token);
+      }
       localStorage.setItem('staffAdminAuthenticated', 'true');
       localStorage.setItem('staffAdminData', JSON.stringify(data.admin));
       sessionStorage.setItem('staffAdminAuthenticated', 'true');
@@ -1490,6 +1496,16 @@ export default function App() {
         fetch('/api/staff-admin/staff', { headers: getAdminHeaders() }),
         fetch('/api/staff-admin/students', { headers: getAdminHeaders() })
       ]);
+      if (statsRes.status === 401 || staffRes.status === 401 || studentsRes.status === 401) {
+        setStaffAdminAuthenticated(false);
+        localStorage.removeItem('staffAdminAuthenticated');
+        sessionStorage.removeItem('staffAdminAuthenticated');
+        localStorage.removeItem('adminToken');
+        sessionStorage.removeItem('adminToken');
+        setStaffAdminView('login');
+        showAlert('Administrator session expired. Please log in again to continue.', 'Authentication Required');
+        return;
+      }
       if (statsRes.ok) setStaffAdminStats(await statsRes.json());
       if (staffRes.ok) setStaffAdminStaffList(await staffRes.json());
       if (studentsRes.ok) {
@@ -1512,6 +1528,11 @@ export default function App() {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `/api/staff-admin/students/${studentId}/documents`);
 
+      const adminHeaders = getAdminHeaders();
+      if (adminHeaders.Authorization) {
+        xhr.setRequestHeader('Authorization', adminHeaders.Authorization);
+      }
+
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
           const percent = Math.round((e.loaded / e.total) * 100);
@@ -1533,32 +1554,43 @@ export default function App() {
               }
             }
           });
-          alert('Documents uploaded successfully!');
+          showAlert('Documents uploaded successfully!', 'Upload Complete');
+        } else if (xhr.status === 401) {
+          setStaffAdminAuthenticated(false);
+          localStorage.removeItem('staffAdminAuthenticated');
+          sessionStorage.removeItem('staffAdminAuthenticated');
+          localStorage.removeItem('adminToken');
+          sessionStorage.removeItem('adminToken');
+          setStaffAdminView('login');
+          showAlert('Administrator authentication expired or required. Please log in again.', 'Authentication Required');
         } else {
           try {
             const err = JSON.parse(xhr.responseText);
-            alert(err.error || 'Failed');
+            showAlert(err.error || 'Upload failed', 'Upload Error');
           } catch {
-            alert('Failed');
+            showAlert('Upload failed', 'Upload Error');
           }
         }
       };
 
       xhr.onerror = () => {
         setStaffAdminUploadProgress(null);
-        alert('Connection error');
+        showAlert('Connection error', 'Network Error');
       };
 
       xhr.send(fd);
     } catch (err) {
       setStaffAdminUploadProgress(null);
-      alert('Connection error');
+      showAlert('Connection error', 'Network Error');
     }
   };
 
   const handleStaffAdminForceAvailable = async (studentId, docId) => {
     try {
-      const res = await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}/force-available`, { method: 'POST' });
+      const res = await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}/force-available`, {
+        method: 'POST',
+        headers: getAdminHeaders()
+      });
       if (res.ok) {
         fetchStaffAdminData().then((updatedList) => {
           if (updatedList) {
@@ -1568,30 +1600,45 @@ export default function App() {
             }
           }
         });
+      } else if (res.status === 401) {
+        setStaffAdminAuthenticated(false);
+        setStaffAdminView('login');
+        showAlert('Administrator session expired. Please log in again.', 'Authentication Required');
       }
-    } catch (err) { alert('Error'); }
+    } catch (err) { showAlert('Error updating document', 'Error'); }
   };
 
   const handleStaffAdminDeleteDoc = async (studentId, docId) => {
-    if (!confirm('Delete this document?')) return;
-    try {
-      const res = await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}`, { method: 'DELETE' });
-      if (res.ok) {
-        fetchStaffAdminData().then((updatedList) => {
-          if (updatedList) {
-            const updatedStudent = updatedList.find(s => String(s.id) === String(studentId));
-            if (updatedStudent) {
-              setStaffAdminSelectedStudent(updatedStudent);
-            }
-          }
+    showConfirm('Delete this document?', async () => {
+      try {
+        const res = await fetch(`/api/staff-admin/students/${studentId}/documents/${docId}`, {
+          method: 'DELETE',
+          headers: getAdminHeaders()
         });
-      }
-    } catch (err) { alert('Error'); }
+        if (res.ok) {
+          fetchStaffAdminData().then((updatedList) => {
+            if (updatedList) {
+              const updatedStudent = updatedList.find(s => String(s.id) === String(studentId));
+              if (updatedStudent) {
+                setStaffAdminSelectedStudent(updatedStudent);
+              }
+            }
+          });
+        } else if (res.status === 401) {
+          setStaffAdminAuthenticated(false);
+          setStaffAdminView('login');
+          showAlert('Administrator session expired. Please log in again.', 'Authentication Required');
+        }
+      } catch (err) { showAlert('Error deleting document', 'Error'); }
+    });
   };
 
   const handleStaffAdminDismissUpdates = async (studentId) => {
     try {
-      const res = await fetch(`/api/staff-admin/students/${studentId}/dismiss-updates`, { method: 'POST' });
+      const res = await fetch(`/api/staff-admin/students/${studentId}/dismiss-updates`, {
+        method: 'POST',
+        headers: getAdminHeaders()
+      });
       if (res.ok) {
         fetchStaffAdminData().then((updatedList) => {
           if (updatedList) {
@@ -1601,14 +1648,18 @@ export default function App() {
             }
           }
         });
-      } else { alert('Error updating record'); }
-    } catch (err) { alert('Connection error'); }
+      } else if (res.status === 401) {
+        setStaffAdminAuthenticated(false);
+        setStaffAdminView('login');
+        showAlert('Administrator session expired. Please log in again.', 'Authentication Required');
+      } else { showAlert('Error updating record', 'Error'); }
+    } catch (err) { showAlert('Connection error', 'Error'); }
   };
 
   const handleStaffAdminDeleteStaff = (staffId) => {
     showConfirm('Are you sure you want to delete this staff member?', async () => {
       try {
-        const res = await fetch(`/api/staff-admin/staff/${staffId}`, { method: 'DELETE' });
+        const res = await fetch(`/api/staff-admin/staff/${staffId}`, { method: 'DELETE', headers: getAdminHeaders() });
         if (res.ok) {
           fetchStaffAdminData();
           showAlert('Staff member deleted successfully');
@@ -1636,7 +1687,7 @@ export default function App() {
     try {
       const res = await fetch(`/api/staff-admin/staff/${staffId}/password`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ password: staffListNewPass })
       });
       if (res.ok) {
@@ -1654,7 +1705,7 @@ export default function App() {
   const handleStaffAdminDeletePaymentScreenshot = (studentId) => {
     showConfirm('Are you sure you want to delete this payment screenshot? This action cannot be undone.', async () => {
       try {
-        const res = await fetch(`/api/staff-admin/students/${studentId}/payment-screenshot`, { method: 'DELETE' });
+        const res = await fetch(`/api/staff-admin/students/${studentId}/payment-screenshot`, { method: 'DELETE', headers: getAdminHeaders() });
         if (res.ok) {
           fetchStaffAdminData().then((updatedList) => {
             if (updatedList && staffAdminSelectedStudent && String(staffAdminSelectedStudent.id) === String(studentId)) {
@@ -1681,7 +1732,7 @@ export default function App() {
   const fetchStaffDetail = async (staffId) => {
     setStaffDetailError(null);
     try {
-      const res = await fetch(`/api/staff-admin/staff/${staffId}/details`);
+      const res = await fetch(`/api/staff-admin/staff/${staffId}/details`, { headers: getAdminHeaders() });
       if (res.ok) {
         setStaffDetailData(await res.json());
       } else {
@@ -1868,7 +1919,7 @@ export default function App() {
     const { centerId, amount, description } = walletTopupModal;
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0) { alert('Please enter a valid amount'); return; }
     try {
-      const res = await fetch(`/api/admin/centers/${centerId}/wallet`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: parseFloat(amount), description: description || 'Admin wallet top-up' }) });
+      const res = await fetch(`/api/admin/centers/${centerId}/wallet`, { method: 'POST', headers: getAdminHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ amount: parseFloat(amount), description: description || 'Admin wallet top-up' }) });
       if (res.ok) {
         setWalletTopupModal({ open: false, centerId: '', centerName: '', amount: '', description: '' });
         fetchAdminCenters();
