@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://viewed-lap-locks-chuck.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://viewed-lap-locks-chuck.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://modern-fabulous-foods-opportunity.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://modern-fabulous-foods-opportunity.trycloudflare.com/api/:path*" }
   ]
 }
