@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://carlos-administered-aquatic-homework.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://carlos-administered-aquatic-homework.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://variables-identity-prepare-releases.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://variables-identity-prepare-releases.trycloudflare.com/api/:path*" }
   ]
 }
