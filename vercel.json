@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://lauderdale-eligible-ethnic-wear.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://lauderdale-eligible-ethnic-wear.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://ongoing-sphere-binding-detect.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://ongoing-sphere-binding-detect.trycloudflare.com/api/:path*" }
   ]
 }
