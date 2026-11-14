@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://engage-occupation-boost-completely.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://engage-occupation-boost-completely.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://exempt-nhs-lifestyle-worthy.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://exempt-nhs-lifestyle-worthy.trycloudflare.com/api/:path*" }
   ]
 }
