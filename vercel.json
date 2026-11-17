@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://coverage-cat-accessibility-wages.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://coverage-cat-accessibility-wages.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://transport-customise-uni-dynamic.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://transport-customise-uni-dynamic.trycloudflare.com/api/:path*" }
   ]
 }
