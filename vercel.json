@@ -42,7 +42,7 @@
     { "source": "/admin", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/", "destination": "/admin-panel/dist/index.html" },
     { "source": "/admin/:path*", "destination": "/admin-panel/dist/index.html" },
-    { "source": "/uploads/:path*", "destination": "https://rising-maximize-quest-another.trycloudflare.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://rising-maximize-quest-another.trycloudflare.com/api/:path*" }
+    { "source": "/uploads/:path*", "destination": "https://qualified-affect-memory-subscribers.trycloudflare.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://qualified-affect-memory-subscribers.trycloudflare.com/api/:path*" }
   ]
 }
